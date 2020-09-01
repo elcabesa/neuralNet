@@ -2,11 +2,13 @@
 #define _LABELED_EXAMPLE_H
 
 #include <vector>
+#include "input.h"
 
 class LabeledExample {
 public:
-    std::vector<double> features;
-    std::vector<double> label;
+    LabeledExample(const std::vector<double>& in, double l):features(in), label(l){};
+    Input features;
+    double label;
 };
 
 #endif

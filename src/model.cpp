@@ -21,20 +21,20 @@ void Model::printParams() {
     for(auto& p: _layers) {p->printParams();}
 }
 
-const std::vector<double>& Model::forwardPass(std::vector<double> input, bool verbose /* = false */) {
-    const std::vector<double>* in = &input;
+const Input& Model::forwardPass(const Input& input, bool verbose /* = false */) {
+    const Input* in = &input;
     for(auto& p: _layers) {
         if(verbose){p->printOutput();}
         p->propagate(*in);
         in = &p->output();
     }
-    if(verbose){for(auto& el: *in) {std::cout<< el<< " ";} std::cout<<std::endl;}
+    if(verbose){in->print();}
     return *in;
 }
 
 double Model::calcLoss(const LabeledExample& le) {
     auto& out = forwardPass(le.features);
-    return cost.calc(out[0], le.label[0]);
+    return cost.calc(out.get(0), le.label);
 }
 
 double Model::calcTotalLoss(const std::vector<LabeledExample>& input) {
@@ -50,7 +50,7 @@ void Model::calcLossGradient(const LabeledExample& le) {
         // todo uniformare
         if(actualLayer == _layers.rbegin()) {
             // todo manage multi output network
-            std::vector<double> h = {cost.derivate(out[0], le.label[0])};
+            std::vector<double> h = {cost.derivate(out.get(0), le.label)};
             (*actualLayer)->backwardCalcBias(h);
         }
         else {
@@ -61,11 +61,11 @@ void Model::calcLossGradient(const LabeledExample& le) {
         
         auto nextLayer = actualLayer + 1;
         if(nextLayer != _layers.rend()) {
-            const std::vector<double>& PreviousOut = (*nextLayer)->output();
+            const Input& PreviousOut = (*nextLayer)->output();
             (*actualLayer)->backwardCalcWeight(PreviousOut);
         }
         else {
-            const std::vector<double>& PreviousOut = le.features;
+            const Input& PreviousOut = le.features;
             (*actualLayer)->backwardCalcWeight(PreviousOut);
         }
         
