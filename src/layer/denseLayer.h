@@ -12,17 +12,12 @@ class DenseLayer: public Layer {
 public:
     DenseLayer(const unsigned int inputSize, const unsigned int outputSize, std::unique_ptr<Activation> act);
     ~DenseLayer();
-
-    //std::vector<double>& biasGradient();
-    //std::vector<double>& weightGradient();
-    //const std::vector<double>& netOutput() const;
-    //const Activation& activation() const;
     
-    void propagate(const std::vector<double>& input);
+    void propagate(const Input& input);
     void printParams() const;
     void randomizeParams();
     void backwardCalcBias(const std::vector<double>& h);
-    void backwardCalcWeight(const std::vector<double>& prevOut);
+    void backwardCalcWeight(const Input& prevOut);
     std::vector<double> backPropHelper() const;
     
     void resetSum();
@@ -45,7 +40,7 @@ private:
     std::unique_ptr<Activation> _act;
     
     unsigned int _calcWeightIndex(const unsigned int i, const unsigned int o) const;
-    void calcNetOut(const std::vector<double>& input);
+    void calcNetOut(const Input& input);
     void calcOut();
 };
 

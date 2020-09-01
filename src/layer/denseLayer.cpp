@@ -1,8 +1,9 @@
 #include <iostream>
 #include <random>
 
-#include "denseLayer.h"
 #include "activation.h"
+#include "denseLayer.h"
+#include "input.h"
 
 DenseLayer::DenseLayer(const unsigned int inputSize, const unsigned int outputSize, std::unique_ptr<Activation> act):
     Layer{inputSize, outputSize},
@@ -23,27 +24,29 @@ DenseLayer::DenseLayer(const unsigned int inputSize, const unsigned int outputSi
 
 DenseLayer::~DenseLayer() {}
 
-void DenseLayer::calcNetOut(const std::vector<double>& input) {
+void DenseLayer::calcNetOut(const Input& input) {
     _netOutput = _bias;
-    for(unsigned int o=0; o < _outputSize; ++o) {
-        for(unsigned int i=0; i < _inputSize; ++i) {
-            _netOutput[o] += input[i] * _weight[_calcWeightIndex(i,o)];
+    for(unsigned int o = 0; o < _outputSize; ++o) {
+        for(unsigned int idx = 0; idx < input.getElementNumber(); ++idx) {
+            _netOutput[o] += input.getElementFromIndex(idx) * _weight[_calcWeightIndex(input.getPositionFromIndex(idx),o)];
         }
     }
 }
 
 void DenseLayer::calcOut() {
     for(unsigned int o=0; o < _outputSize; ++o) {
-        _output[o] = _act->propagate(_netOutput[o]);
+        _output.get(o) = _act->propagate(_netOutput[o]);
     }
 }
 
-void DenseLayer::propagate(const std::vector<double>& input) {
+void DenseLayer::propagate(const Input& input) {
     calcNetOut(input);
     calcOut();
 }
 
 unsigned int DenseLayer::_calcWeightIndex(const unsigned int i, const unsigned int o) const {
+    // TODO invert order
+    // TODO return o + i * _outputSize;
     return i + o * _inputSize;
 }
 
@@ -110,11 +113,11 @@ void DenseLayer::backwardCalcBias(const std::vector<double>& h) {
     }
 }
 
-void DenseLayer::backwardCalcWeight(const std::vector<double>& prevOut) {
-    for(unsigned int i = 0; i < _inputSize; ++i) {
+void DenseLayer::backwardCalcWeight(const Input& prevOut) {
+    for(unsigned int idx = 0; idx < prevOut.getElementNumber(); ++idx) {
         for(unsigned int o = 0; o < _outputSize; ++o) {
-            double w = _biasGradient[o] * prevOut[i];
-            _weightGradient[_calcWeightIndex(i,o)] = w;
+            double w = _biasGradient[o] * prevOut.getElementFromIndex(idx);
+            _weightGradient[_calcWeightIndex(prevOut.getPositionFromIndex(idx),o)] = w;
         }
     }
 }

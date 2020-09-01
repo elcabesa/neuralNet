@@ -21,7 +21,9 @@ std::vector<LabeledExample> generateInput() {
         for(unsigned int x2 = 0; x2<10; ++x2) {
             for(unsigned int x3 = 0; x3<10; ++x3) {
                 for(unsigned int x4 = 0; x4<10; ++x4) {
-                    input.push_back({{double(x1), double(x2),double(x3),double(x4)},{function(x1,x2,x3,x4)}});
+                    std::vector<double> in = {double(x1), double(x2),double(x3),double(x4)};
+                    LabeledExample le(in,function(x1,x2,x3,x4));
+                    input.push_back({in,{function(x1,x2,x3,x4)}});
                 }
             }
         }
@@ -48,7 +50,7 @@ int main() {
     
     //split
     std::vector<LabeledExample> validationSet(trainSet.begin() + t1, trainSet.end() );
-    trainSet.resize(t1);
+    trainSet.erase(trainSet.begin() + t1, trainSet.end() );
     
     
     Model m;
