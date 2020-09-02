@@ -49,10 +49,10 @@ const std::pair<unsigned int, double> ParalledSparseInput::getElementFromIndex(u
     for (unsigned int i = 0; i<n; ++i) {
         auto& el = _si.getElementFromIndex(i);
         if(el.first >= _number * _size && el.first < (_number + 1) * _size) {
-            ++count;
             if( count == index) {
                 return el;
             }
+            ++count;
         }
     }
     tempReply = std::make_pair(index, 0/0);

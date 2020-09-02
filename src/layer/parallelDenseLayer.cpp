@@ -61,7 +61,7 @@ void ParallelDenseLayer::randomizeParams() {
 void ParallelDenseLayer::propagate(const Input& input) {
     unsigned int n= 0;
     for(auto& l: _parallelLayers) {
-        const ParalledSparseInput psi(input, _inputSize / _number, n);
+        const ParalledSparseInput psi(input, n, _inputSize / _number);
         l.propagate(psi);
         auto& out = l.output();
         for(unsigned int o = 0; o < out.getElementNumber(); o++){
@@ -76,7 +76,6 @@ void ParallelDenseLayer::propagate(const Input& input) {
 void ParallelDenseLayer::printParams() const {
     unsigned int n= 0;
     for(auto& l: _parallelLayers) {
-        std::cout<<"parallel layer "<<n<<std::endl;
         l.printParams();
         ++n;
     }
@@ -128,7 +127,7 @@ void ParallelDenseLayer::backwardCalcBias(const std::vector<double>& h) {
 void ParallelDenseLayer::backwardCalcWeight(const Input& prevOut) {
     unsigned int n= 0;
     for(auto& l: _parallelLayers) {
-        const ParalledSparseInput psi(prevOut, prevOut.size() / _number, n);
+        const ParalledSparseInput psi(prevOut, n , prevOut.size() / _number);
         l.backwardCalcWeight(psi);
         ++n;
     }

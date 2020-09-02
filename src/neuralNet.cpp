@@ -59,19 +59,15 @@ int main() {
     
     Model m;
     m.addLayer(std::make_unique<ParallelDenseLayer>(2, 2, 4, ActivationFactory::create(ActivationFactory::type::linear)));
-    std::cout<<"add layer1"<<std::endl;
     m.addLayer(std::make_unique<DenseLayer>(8,8, ActivationFactory::create(ActivationFactory::type::relu)));
-    std::cout<<"add layer2"<<std::endl;
     m.addLayer(std::make_unique<DenseLayer>(8,8, ActivationFactory::create(ActivationFactory::type::relu)));
-    std::cout<<"add layer3"<<std::endl;
     m.addLayer(std::make_unique<DenseLayer>(8, 1, ActivationFactory::create(ActivationFactory::type::linear)));
-    std::cout<<"add layer4"<<std::endl;
     
     std::cout<<"-------------------------"<<std::endl;
     for(int i =0; i< 1; ++i){
         m.randomizeParams();
         std::cout<<"randomized params"<<std::endl;
-        std::cout<<m.train(1e6, 1e-7, trainSet, validationSet, 1.0, 1)<<std::endl;
+        std::cout<<m.train(1e6, 1e-5, trainSet, validationSet, 1.0, 1)<<std::endl;
     }
     /*std::cout<<"-------------------------"<<std::endl;
     for(int i =0; i< 10; ++i){
