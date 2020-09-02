@@ -2,22 +2,23 @@
 #define _INPUT_H
 
 #include <vector>
+#include <utility>
 
 class Input {
 public:
-    Input(const std::vector<double> v);
+    
     Input(const unsigned int size);
-    ~Input();
-    void print() const;
-    const double& get(unsigned int index) const;
-    double& get(unsigned int index);
-    unsigned int getElementNumber() const;
-    double& getElementFromIndex( unsigned int index);
-    const double& getElementFromIndex(unsigned int index) const;
-    unsigned int getPositionFromIndex(unsigned int index) const;
-private:
+    virtual ~Input();
+    
+    virtual void print() const = 0;
+    
+    virtual const double& get(unsigned int index) const = 0;
+    virtual double& get(unsigned int index) = 0;
+    
+    virtual unsigned int getElementNumber() const = 0;
+    virtual const std::pair<unsigned int, double> getElementFromIndex(unsigned int index) const = 0;
+protected:
     unsigned int _size;
-    std::vector<double> _in;
 };
 
 #endif  

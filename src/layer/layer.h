@@ -1,7 +1,7 @@
 #ifndef _LAYER_H
 #define _LAYER_H
 
-#include "input.h"
+#include "dense.h"
 
 class Layer {
 public:
@@ -33,7 +33,7 @@ public:
 protected:
     unsigned int _inputSize;
     unsigned int _outputSize;
-    Input _output;
+    DenseInput _output;
     
 };
 

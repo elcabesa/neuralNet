@@ -2,12 +2,12 @@
 #define _LABELED_EXAMPLE_H
 
 #include <vector>
-#include "input.h"
+#include "sparse.h"
 
 class LabeledExample {
 public:
     LabeledExample(const std::vector<double>& in, double l):features(in), label(l){};
-    Input features;
+    SparseInput features;
     double label;
 };
 
