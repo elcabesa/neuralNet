@@ -33,24 +33,24 @@ const Input& Model::forwardPass(const Input& input, bool verbose /* = false */) 
 }
 
 double Model::calcLoss(const LabeledExample& le) {
-    auto& out = forwardPass(le.features);
-    return cost.calc(out.get(0), le.label);
+    auto& out = forwardPass(le.features());
+    return cost.calc(out.get(0), le.label());
 }
 
-double Model::calcTotalLoss(const std::vector<LabeledExample>& input) {
+double Model::calcTotalLoss(const std::vector<std::shared_ptr<LabeledExample>>& input) {
     double error = 0.0;
-    for(auto& le: input) {error += calcLoss(le);}
+    for(auto& le: input) {error += calcLoss(*le);}
     return error / input.size();
 }
 
 void Model::calcLossGradient(const LabeledExample& le) {
-    auto& out = forwardPass(le.features);
+    auto& out = forwardPass(le.features());
     for (auto actualLayer = _layers.rbegin(); actualLayer!= _layers.rend(); ++actualLayer) {
         
         // todo uniformare
         if(actualLayer == _layers.rbegin()) {
             // todo manage multi output network
-            std::vector<double> h = {cost.derivate(out.get(0), le.label)};
+            std::vector<double> h = {cost.derivate(out.get(0), le.label())};
             (*actualLayer)->backwardCalcBias(h);
         }
         else {
@@ -65,26 +65,26 @@ void Model::calcLossGradient(const LabeledExample& le) {
             (*actualLayer)->backwardCalcWeight(PreviousOut);
         }
         else {
-            const Input& PreviousOut = le.features;
+            const Input& PreviousOut = le.features();
             (*actualLayer)->backwardCalcWeight(PreviousOut);
         }
         
     }
 }
 
-void Model::calcTotalLossGradient(const std::vector<LabeledExample>& input) {
+void Model::calcTotalLossGradient(const std::vector<std::shared_ptr<LabeledExample>>& input) {
     for(auto& l :_layers) {
         (*l).resetSum();
     }
     for(auto& ex: input) {
-        calcLossGradient(ex);
+        calcLossGradient(*ex);
         for(auto& l :_layers) {
             (*l).accumulateGradients();
         }
     }
 }
 
-double Model::train(unsigned int passes, double learnRate, const std::vector<LabeledExample>& trainSet, const std::vector<LabeledExample>& validationSet, double regularization, const unsigned int decimation) {
+double Model::train(unsigned int passes, double learnRate, const std::vector<std::shared_ptr<LabeledExample>>& trainSet, const std::vector<std::shared_ptr<LabeledExample>>& validationSet, double regularization, const unsigned int decimation) {
     unsigned int decimationCount = 0;
     std::cout<<"trainSet total loss: " << calcTotalLoss(trainSet)<<std::endl;
     for(unsigned int p = 0; p < passes; ++p) {

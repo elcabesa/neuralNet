@@ -8,22 +8,24 @@
 #include "linear.h"
 #include "relu.h"
 #include "denseLayer.h"
+#include "sparse.h"
 
 double function(double x1, double x2, double x3, double x4) {
     return x1+ x2*x2 -0.2*x3*x4;
 }
 
-std::vector<LabeledExample> generateInput() {
+std::vector<std::shared_ptr<LabeledExample>> generateInput() {
     std::cout<<"create input "<<std::flush;
     
-    std::vector<LabeledExample> input;
+    std::vector<std::shared_ptr<LabeledExample>> input;
     for(unsigned int x1 = 0; x1<10; ++x1) {
         for(unsigned int x2 = 0; x2<10; ++x2) {
             for(unsigned int x3 = 0; x3<10; ++x3) {
                 for(unsigned int x4 = 0; x4<10; ++x4) {
-                    std::vector<double> in = {double(x1), double(x2),double(x3),double(x4)};
-                    LabeledExample le(in,function(x1,x2,x3,x4));
-                    input.push_back({in,{function(x1,x2,x3,x4)}});
+                    std::vector<double> inVec = {double(x1), double(x2),double(x3),double(x4)};
+                    std::shared_ptr<Input> in(new SparseInput(inVec));
+                    std::shared_ptr<LabeledExample> le(new LabeledExample(std::move(in),function(x1,x2,x3,x4)));
+                    input.push_back(std::move(le));
                 }
             }
         }
@@ -49,7 +51,7 @@ int main() {
 
     
     //split
-    std::vector<LabeledExample> validationSet(trainSet.begin() + t1, trainSet.end() );
+    std::vector<std::shared_ptr<LabeledExample>> validationSet(trainSet.begin() + t1, trainSet.end() );
     trainSet.erase(trainSet.begin() + t1, trainSet.end() );
     
     

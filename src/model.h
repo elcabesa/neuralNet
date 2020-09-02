@@ -18,10 +18,10 @@ public:
     void printParams();
     const Input& forwardPass(const Input& input, bool verbose = false);
     double calcLoss(const LabeledExample& le);
-    double calcTotalLoss(const std::vector<LabeledExample>& input);
+    double calcTotalLoss(const std::vector<std::shared_ptr<LabeledExample>>& input);
     void calcLossGradient(const LabeledExample& le);
-    void calcTotalLossGradient(const std::vector<LabeledExample>& input);
-    double train(unsigned int passes, double learnRate, const std::vector<LabeledExample>& trainSet, const std::vector<LabeledExample>& validationSet, double regularization = 0.99, const unsigned int decimation = 1);
+    void calcTotalLossGradient(const std::vector<std::shared_ptr<LabeledExample>>& input);
+    double train(unsigned int passes, double learnRate, const std::vector<std::shared_ptr<LabeledExample>>& trainSet, const std::vector<std::shared_ptr<LabeledExample>>& validationSet, double regularization = 0.99, const unsigned int decimation = 1);
     
 private:
     std::vector<std::unique_ptr<Layer>> _layers;

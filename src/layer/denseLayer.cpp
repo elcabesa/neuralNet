@@ -28,7 +28,8 @@ void DenseLayer::calcNetOut(const Input& input) {
     _netOutput = _bias;
     for(unsigned int o = 0; o < _outputSize; ++o) {
         for(unsigned int idx = 0; idx < input.getElementNumber(); ++idx) {
-            _netOutput[o] += input.getElementFromIndex(idx) * _weight[_calcWeightIndex(input.getPositionFromIndex(idx),o)];
+            auto& el = input.getElementFromIndex(idx);
+            _netOutput[o] += el.second * _weight[_calcWeightIndex(el.first,o)];
         }
     }
 }
@@ -116,8 +117,9 @@ void DenseLayer::backwardCalcBias(const std::vector<double>& h) {
 void DenseLayer::backwardCalcWeight(const Input& prevOut) {
     for(unsigned int idx = 0; idx < prevOut.getElementNumber(); ++idx) {
         for(unsigned int o = 0; o < _outputSize; ++o) {
-            double w = _biasGradient[o] * prevOut.getElementFromIndex(idx);
-            _weightGradient[_calcWeightIndex(prevOut.getPositionFromIndex(idx),o)] = w;
+            auto & el = prevOut.getElementFromIndex(idx);
+            double w = _biasGradient[o] * el.second;
+            _weightGradient[_calcWeightIndex(el.first,o)] = w;
         }
     }
 }

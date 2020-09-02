@@ -1,14 +1,19 @@
 #ifndef _LABELED_EXAMPLE_H
 #define _LABELED_EXAMPLE_H
 
+#include <memory>
 #include <vector>
-#include "input.h"
+
+class Input;
 
 class LabeledExample {
 public:
-    LabeledExample(const std::vector<double>& in, double l):features(in), label(l){};
-    Input features;
-    double label;
+    LabeledExample(std::shared_ptr<Input> features, double l);
+    const Input& features() const;
+    double label() const;
+private:
+    std::shared_ptr<Input> _features;
+    double _label;
 };
 
 #endif
