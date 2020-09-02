@@ -32,6 +32,8 @@ std::vector<std::shared_ptr<LabeledExample>> generateInput() {
         }
     }
     
+    
+    
     std::cout<<"DONE"<<std::endl;
     std::cout<<"input size "<<input.size()<<std::endl;
     
@@ -58,16 +60,16 @@ int main() {
     std::cout<<"splitted set"<<std::endl;
     
     Model m;
-    m.addLayer(std::make_unique<ParallelDenseLayer>(2, 2, 4, ActivationFactory::create(ActivationFactory::type::linear)));
-    m.addLayer(std::make_unique<DenseLayer>(8,8, ActivationFactory::create(ActivationFactory::type::relu)));
-    m.addLayer(std::make_unique<DenseLayer>(8,8, ActivationFactory::create(ActivationFactory::type::relu)));
-    m.addLayer(std::make_unique<DenseLayer>(8, 1, ActivationFactory::create(ActivationFactory::type::linear)));
-    
+    m.addLayer(std::make_unique<DenseLayer>(2, 10, ActivationFactory::create(ActivationFactory::type::linear)));
+    m.addLayer(std::make_unique<DenseLayer>(10,10, ActivationFactory::create(ActivationFactory::type::relu)));
+    m.addLayer(std::make_unique<DenseLayer>(10,10, ActivationFactory::create(ActivationFactory::type::relu)));
+    m.addLayer(std::make_unique<DenseLayer>(10, 1, ActivationFactory::create(ActivationFactory::type::linear)));
+
     std::cout<<"-------------------------"<<std::endl;
     for(int i =0; i< 1; ++i){
         m.randomizeParams();
         std::cout<<"randomized params"<<std::endl;
-        std::cout<<m.train(1e6, 1e-5, trainSet, validationSet, 1.0, 1)<<std::endl;
+        std::cout<<m.train(1e6, 1e-5, trainSet, validationSet, 1.0, 1000)<<std::endl;
     }
     /*std::cout<<"-------------------------"<<std::endl;
     for(int i =0; i< 10; ++i){
