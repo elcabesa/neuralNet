@@ -1,4 +1,5 @@
 add_library(libNeuralNet 
+    labeledExample.cpp
     model.cpp
 )
 
