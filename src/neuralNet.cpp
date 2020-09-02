@@ -9,6 +9,7 @@
 #include "relu.h"
 #include "denseLayer.h"
 #include "sparse.h"
+#include "parallelDenseLayer.h"
 
 double function(double x1, double x2, double x3, double x4) {
     return x1+ x2*x2 -0.2*x3*x4;
@@ -54,16 +55,22 @@ int main() {
     std::vector<std::shared_ptr<LabeledExample>> validationSet(trainSet.begin() + t1, trainSet.end() );
     trainSet.erase(trainSet.begin() + t1, trainSet.end() );
     
+    std::cout<<"splitted set"<<std::endl;
     
     Model m;
-    m.addLayer(std::make_unique<DenseLayer>(4, 512, ActivationFactory::create(ActivationFactory::type::linear)));
-    m.addLayer(std::make_unique<DenseLayer>(512,32, ActivationFactory::create(ActivationFactory::type::relu)));
-    m.addLayer(std::make_unique<DenseLayer>(32,32, ActivationFactory::create(ActivationFactory::type::relu)));
-    m.addLayer(std::make_unique<DenseLayer>(32, 1, ActivationFactory::create(ActivationFactory::type::linear)));
+    m.addLayer(std::make_unique<ParallelDenseLayer>(2, 2, 4, ActivationFactory::create(ActivationFactory::type::linear)));
+    std::cout<<"add layer1"<<std::endl;
+    m.addLayer(std::make_unique<DenseLayer>(8,8, ActivationFactory::create(ActivationFactory::type::relu)));
+    std::cout<<"add layer2"<<std::endl;
+    m.addLayer(std::make_unique<DenseLayer>(8,8, ActivationFactory::create(ActivationFactory::type::relu)));
+    std::cout<<"add layer3"<<std::endl;
+    m.addLayer(std::make_unique<DenseLayer>(8, 1, ActivationFactory::create(ActivationFactory::type::linear)));
+    std::cout<<"add layer4"<<std::endl;
     
     std::cout<<"-------------------------"<<std::endl;
     for(int i =0; i< 1; ++i){
         m.randomizeParams();
+        std::cout<<"randomized params"<<std::endl;
         std::cout<<m.train(1e6, 1e-7, trainSet, validationSet, 1.0, 1)<<std::endl;
     }
     /*std::cout<<"-------------------------"<<std::endl;
