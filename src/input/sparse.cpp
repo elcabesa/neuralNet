@@ -23,12 +23,17 @@ void SparseInput::print() const {
     std::cout<<std::endl;
 }
 
-double& SparseInput::get(unsigned int index) {
+/*double& SparseInput::get(unsigned int index) {
     auto it = _in.find(index);
     if (it != _in.end()) {
         return it->second;
     }
     return _zeroInput;
+}*/
+
+void SparseInput::set(unsigned int index, double v) {
+    
+    _in[index] = v;
 }
 
 const double& SparseInput::get(unsigned int index) const {

@@ -17,8 +17,11 @@ void DenseInput::print() const {
     std::cout<<std::endl;
 }
 
-double& DenseInput::get(unsigned int index) {
+/*double& DenseInput::get(unsigned int index) {
     return _in[index];
+}*/
+void DenseInput::set(unsigned int index, double v) {
+    _in[index] = v;
 }
 
 const double& DenseInput::get(unsigned int index) const {

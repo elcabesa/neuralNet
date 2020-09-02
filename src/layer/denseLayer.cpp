@@ -5,7 +5,7 @@
 #include "denseLayer.h"
 #include "input.h"
 
-DenseLayer::DenseLayer(const unsigned int inputSize, const unsigned int outputSize, std::unique_ptr<Activation> act):
+DenseLayer::DenseLayer(const unsigned int inputSize, const unsigned int outputSize, std::shared_ptr<Activation> act):
     Layer{inputSize, outputSize},
     _act(std::move(act))
     
@@ -36,7 +36,7 @@ void DenseLayer::calcNetOut(const Input& input) {
 
 void DenseLayer::calcOut() {
     for(unsigned int o=0; o < _outputSize; ++o) {
-        _output.get(o) = _act->propagate(_netOutput[o]);
+        _output.set(o, _act->propagate(_netOutput[o]));
     }
 }
 
