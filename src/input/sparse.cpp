@@ -14,6 +14,12 @@ SparseInput::SparseInput(const std::vector<double> v):Input(v.size()) {
     }
 }
 
+SparseInput::SparseInput(unsigned int size, const std::vector<unsigned int> v):Input(size) {
+    for(auto& val: v) {
+        _in.insert(std::pair<unsigned int, double>(val,1.0));
+    }
+}
+
 SparseInput::~SparseInput() {}
 
 void SparseInput::print() const {
