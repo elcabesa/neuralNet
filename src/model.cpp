@@ -1,7 +1,8 @@
-
 #include <iostream>
+
 #include "activation.h"
 #include "labeledExample.h"
+#include "inputSet.h"
 #include "model.h"
 
 void Model::addLayer(std::unique_ptr<Layer> l) {
@@ -84,71 +85,6 @@ void Model::calcTotalLossGradient(const std::vector<std::shared_ptr<LabeledExamp
     }
 }
 
-double Model::train(unsigned int passes, double learnRate, const std::vector<std::shared_ptr<LabeledExample>>& trainSet, const std::vector<std::shared_ptr<LabeledExample>>& validationSet, double regularization, const unsigned int decimation) {
-    decimationCount = 0;
-    std::cout<<"trainSet total loss: " << calcTotalLoss(trainSet)<<std::endl;
-    
-    auto batches = createBatches(trainSet, 100);
-    auto batchIter = batches.begin();
-    
-    for(unsigned int p = 0; p < passes; ++p) {
-        pass(*batchIter, learnRate, regularization);
-        
-        printTrainResult(p, passes, decimation, trainSet, validationSet);
-        ++batchIter;
-        if(batchIter == batches.end()) {
-            batchIter = batches.begin();
-        }
-    }
-    std::cout<<"final total loss: " <<calcTotalLoss(trainSet)<<" "<<calcTotalLoss(validationSet)<<std::endl;
-    return calcTotalLoss(validationSet);
-    
-}
-
-void Model::pass(const std::vector<std::shared_ptr<LabeledExample>>& trainSet, double learnRate, double regularization) {
-    calcTotalLossGradient(trainSet);
-    for(auto& l :_layers) {
-        auto& biasSumGradient = l->biasSumGradient();
-        unsigned int i = 0;
-        for(auto& b: l->bias()){
-            //std::cout<<" bias "<<biasSumGradient[i]<<std::endl;
-            b -= biasSumGradient[i] * learnRate / trainSet.size();
-            ++i;
-        }
-        auto& weightSumGradient = l->weightSumGradient();
-        i = 0;
-        for(auto& w: l->weight()){
-            //std::cout<<" weight "<<weightSumGradient[i]<<std::endl;
-            w = (regularization * w) - weightSumGradient[i] * learnRate / trainSet.size();
-            ++i;
-        }
-    }
-    
-}
-
-
-void Model::printTrainResult(const unsigned int pass, const unsigned int passes, const unsigned int decimation, const std::vector<std::shared_ptr<LabeledExample>>& trainSet, const std::vector<std::shared_ptr<LabeledExample>>& validationSet) {
-    if(++decimationCount >= decimation) {
-        std::cout<<"pass: "<< pass + 1 <<"/"<<passes<< " total loss: " <<calcTotalLoss(trainSet)<<" "<<calcTotalLoss(validationSet)<<std::endl;
-        decimationCount = 0;
-    }
-}
-
-const std::vector<std::vector<std::shared_ptr<LabeledExample>>> Model::createBatches( const std::vector<std::shared_ptr<LabeledExample>>& trainSet, const unsigned int batchSize) {
-    std::vector<std::vector<std::shared_ptr<LabeledExample>>> batches;
-    
-    auto start = trainSet.begin();
-    auto end = trainSet.begin() + batchSize;
-    while(end != trainSet.end()) {
-        std::vector<std::shared_ptr<LabeledExample>> batch(start, end);
-        batches.push_back(batch);
-        start += batchSize;
-        end += batchSize;
-    }
-    return batches;
-    
-    
-}
 
 void Model::serialize(std::ofstream& ss) const {
     ss<<"{";
@@ -166,4 +102,11 @@ bool Model::deserialize(std::ifstream& ss) {
     }
     if(ss.get() != '}') {std::cout<<"MODEL missing }"<<std::endl;return false;} 
     return true;
+}
+
+Layer& Model::getLayer(unsigned int index) {
+    return *(_layers[index]);
+}
+unsigned int Model::getLayerCount() {
+    return _layers.size();
 }
