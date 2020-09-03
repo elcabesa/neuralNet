@@ -1,4 +1,6 @@
 add_library(libNeuralNet 
+    gradientDescend.cpp
+    inputSet.cpp
     labeledExample.cpp
     model.cpp
 )
