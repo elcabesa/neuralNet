@@ -123,3 +123,39 @@ void DenseLayer::backwardCalcWeight(const Input& prevOut) {
         }
     }
 }
+
+void DenseLayer::serialize(std::ofstream& ss) const{
+    ss << "{";
+    for( auto & b: _bias) {
+        ss<<b<<", ";
+    }
+    ss <<std::endl;
+    for( auto & w: _weight) {
+        ss<<w<<", ";
+    }
+    
+    ss << "}"<<std::endl;
+}
+
+bool DenseLayer::deserialize(std::ifstream& ss) {
+    //std::cout<<"DESERIALIZE DENSE LAYER"<<std::endl;
+    if(ss.get() != '{') {std::cout<<"DenseLayer missing {"<<std::endl;return false;}
+    for( auto & b: _bias) {
+        char data[256];
+        ss.get(data, 256, ',');
+        b = std::stod(data);
+        if(ss.get() != ',') {std::cout<<"DenseLayer missing ,"<<std::endl;return false;} 
+        if(ss.get() != ' ') {std::cout<<"DenseLayer missing space"<<std::endl;return false;}
+    }
+    if(ss.get() != '\n') {std::cout<<"DenseLayer missing line feed"<<std::endl;return false;}
+    for( auto & w: _weight) {
+        char data[256];
+        ss.get(data, 256, ',');
+        w = std::stod(data);
+        if(ss.get() != ',') {std::cout<<"DenseLayer missing ,"<<std::endl;return false;} 
+        if(ss.get() != ' ') {std::cout<<"DenseLayer missing space"<<std::endl;return false;}
+    }
+    if(ss.get() != '}') {std::cout<<"DenseLayer missing }"<<std::endl;return false;} 
+    if(ss.get() != '\n') {std::cout<<"DenseLayer missing line feed"<<std::endl;return false;}
+    return true;
+}

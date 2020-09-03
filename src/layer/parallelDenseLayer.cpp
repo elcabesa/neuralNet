@@ -133,3 +133,22 @@ void ParallelDenseLayer::backwardCalcWeight(const Input& prevOut) {
     }
 }
 
+
+void ParallelDenseLayer::serialize(std::ofstream& ss) const{
+    ss << "{";
+    for(auto& l: _parallelLayers) {
+        l.serialize(ss);
+    }
+    ss << "}"<<std::endl;
+}
+
+bool ParallelDenseLayer::deserialize(std::ifstream& ss) {
+    //std::cout<<"DESERIALIZE PARALLEL DENSE LAYER"<<std::endl;
+    if(ss.get() != '{') {std::cout<<"ParallelDenseLayer missing {"<<std::endl;return false;}
+    for(auto& l :_parallelLayers) {
+        if(!l.deserialize(ss)) {std::cout<<"ParallelDenseLayer internal layer error"<<std::endl;return false;}
+    }
+    if(ss.get() != '}') {std::cout<<"ParallelDenseLayer missing }"<<std::endl;return false;}
+    if(ss.get() != '\n') {std::cout<<"DenseLayer missing line feed"<<std::endl;return false;}
+    return true;
+}

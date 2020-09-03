@@ -149,3 +149,21 @@ const std::vector<std::vector<std::shared_ptr<LabeledExample>>> Model::createBat
     
     
 }
+
+void Model::serialize(std::ofstream& ss) const {
+    ss<<"{";
+    for(auto& l :_layers) {
+        l->serialize(ss);
+    }
+    ss<<"}"<<std::endl;
+}
+
+bool Model::deserialize(std::ifstream& ss) {
+    //std::cout<<"DESERIALIZE MODEL"<<std::endl;
+    if(ss.get() != '{') {std::cout<<"MODEL missing {"<<std::endl;return false;}
+    for(auto& l :_layers) {
+        if(!l->deserialize(ss)) {std::cout<<"MODEL internal layer error"<<std::endl;return false;}
+    }
+    if(ss.get() != '}') {std::cout<<"MODEL missing }"<<std::endl;return false;} 
+    return true;
+}

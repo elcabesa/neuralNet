@@ -18,12 +18,12 @@ double function(double x1, double x2, double x3, double x4) {
 
 std::vector<std::shared_ptr<LabeledExample>> generateInput() {
     std::cout<<"create input "<<std::flush;
-    
+    const int SIZE = 10;
     std::vector<std::shared_ptr<LabeledExample>> input;
-    for(unsigned int x1 = 0; x1<10; ++x1) {
-        for(unsigned int x2 = 0; x2<10; ++x2) {
-            for(unsigned int x3 = 0; x3<10; ++x3) {
-                for(unsigned int x4 = 0; x4<10; ++x4) {
+    for(unsigned int x1 = 0; x1<SIZE; ++x1) {
+        for(unsigned int x2 = 0; x2<SIZE; ++x2) {
+            for(unsigned int x3 = 0; x3<SIZE; ++x3) {
+                for(unsigned int x4 = 0; x4<SIZE; ++x4) {
                     std::vector<double> inVec = {double(x1), double(x2),double(x3),double(x4)};
                     std::shared_ptr<Input> in(new DenseInput(inVec));
                     std::shared_ptr<LabeledExample> le(new LabeledExample(std::move(in),function(x1,x2,x3,x4)));
@@ -61,7 +61,7 @@ int main() {
     std::cout<<"splitted set"<<std::endl;
     
     Model m;
-    m.addLayer(std::make_unique<DenseLayer>(4, 10, ActivationFactory::create(ActivationFactory::type::linear)));
+    m.addLayer(std::make_unique<ParallelDenseLayer>(2, 2, 5, ActivationFactory::create(ActivationFactory::type::linear)));
     m.addLayer(std::make_unique<DenseLayer>(10,10, ActivationFactory::create(ActivationFactory::type::relu)));
     m.addLayer(std::make_unique<DenseLayer>(10,10, ActivationFactory::create(ActivationFactory::type::relu)));
     m.addLayer(std::make_unique<DenseLayer>(10, 1, ActivationFactory::create(ActivationFactory::type::linear)));
@@ -72,6 +72,32 @@ int main() {
         std::cout<<"randomized params"<<std::endl;
         std::cout<<m.train(1e6, 1e-5, trainSet, validationSet, 1.0, 10000)<<std::endl;
     }
+    {
+        std::cout<<"serialize"<<std::endl;
+        std::ofstream nnFile;
+        nnFile.open ("nn.txt");
+        m.serialize(nnFile);
+        nnFile.close();
+        std::cout<<"done"<<std::endl;
+    }
+    m.randomizeParams();
+    std::cout<<"final total loss: " <<m.calcTotalLoss(trainSet)<<" "<<m.calcTotalLoss(validationSet)<<std::endl;
+    {
+        std::cout<<"deserialize"<<std::endl;
+        std::ifstream nnFile;
+        nnFile.open ("nn.txt");
+        if(m.deserialize(nnFile)){
+             std::cout<<"done"<<std::endl;
+        }else {
+             std::cout<<"FAIL"<<std::endl;
+        }
+        nnFile.close();
+    }
+    //m.printParams();
+    
+    std::cout<<"final total loss: " <<m.calcTotalLoss(trainSet)<<" "<<m.calcTotalLoss(validationSet)<<std::endl;
+    
+    
     /*std::cout<<"-------------------------"<<std::endl;
     for(int i =0; i< 10; ++i){
         m.randomizeParams();
