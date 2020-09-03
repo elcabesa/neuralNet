@@ -1,6 +1,8 @@
 #ifndef _LAYER_H
 #define _LAYER_H
 
+#include <iostream>
+#include <fstream>
 #include "dense.h"
 
 class Layer {
@@ -29,6 +31,9 @@ public:
     
     virtual std::vector<double>& biasSumGradient() = 0;
     virtual std::vector<double>& weightSumGradient() = 0;
+    
+    virtual void serialize(std::ofstream& ss) const = 0;
+    virtual bool deserialize(std::ifstream& ss) = 0;
 
 protected:
     unsigned int _inputSize;

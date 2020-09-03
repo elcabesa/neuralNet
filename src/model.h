@@ -26,6 +26,9 @@ public:
     void printTrainResult(const unsigned int pass, const unsigned int passes, const unsigned int decimation, const std::vector<std::shared_ptr<LabeledExample>>& trainSet, const std::vector<std::shared_ptr<LabeledExample>>& validationSet);
     const std::vector<std::vector<std::shared_ptr<LabeledExample>>> createBatches( const std::vector<std::shared_ptr<LabeledExample>>& trainSet, const unsigned int batchSize);
     
+    void serialize(std::ofstream& ss) const;
+    bool deserialize(std::ifstream& ss);
+    
 private:
     std::vector<std::unique_ptr<Layer>> _layers;
     Cost cost;

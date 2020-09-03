@@ -33,6 +33,9 @@ public:
     unsigned int _calcWeightIndex(const unsigned int layer, const unsigned int i, const unsigned int o) const;
     unsigned int _calcBiasIndex(const unsigned int layer, const unsigned int o) const;
     
+    void serialize(std::ofstream& ss) const;
+    bool deserialize(std::ifstream& ss);
+    
 private:
     std::vector<double> _bias;
     std::vector<double> _weight;
