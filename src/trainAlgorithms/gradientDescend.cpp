@@ -1,3 +1,4 @@
+#include <chrono>
 #include <iostream>
 
 #include "gradientDescend.h" 
@@ -19,12 +20,16 @@ GradientDescend::~GradientDescend() {
 }
 
 double GradientDescend::train() {
+    auto start = std::chrono::high_resolution_clock::now();
     _decimationCount = 0;
     std::cout<<"trainSet total loss: " << _model.calcTotalLoss(_inputSet.validationSet())<<std::endl;
     
     for(unsigned int p = 0; p < _passes; ++p) {
         _pass();
         _printTrainResult(p);
+        auto finish = std::chrono::high_resolution_clock::now();
+        std::chrono::duration<double> elapsed = finish - start;
+        std::cout << "Elapsed time: " << elapsed.count() << " s\n";
     }
     std::cout<<"final total loss: " <<_model.calcTotalLoss(_inputSet.validationSet())<<std::endl;
     return _model.calcTotalLoss(_inputSet.validationSet());

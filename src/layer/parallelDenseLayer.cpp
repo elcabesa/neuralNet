@@ -62,7 +62,8 @@ void ParallelDenseLayer::propagate(const Input& input) {
         const ParalledSparseInput psi(input, n, _inputSize / _number);
         l.propagate(psi);
         auto& out = l.output();
-        for(unsigned int o = 0; o < out.getElementNumber(); o++){
+        unsigned int num = out.getElementNumber();
+        for(unsigned int o = 0; o < num; ++o){
             auto el = out.getElementFromIndex(o);
             _output.set(_calcBiasIndex(n, el.first), el.second); 
         }

@@ -69,6 +69,7 @@ void Model::calcLossGradient(const LabeledExample& le) {
             const Input& PreviousOut = le.features();
             (*actualLayer)->backwardCalcWeight(PreviousOut);
         }
+        (*actualLayer)->accumulateGradients();
         
     }
 }
@@ -82,9 +83,6 @@ void Model::calcTotalLossGradient(const std::vector<std::shared_ptr<LabeledExamp
         calcLossGradient(*ex);
         if((count % (input.size()/20)) ==0) {
             std::cout<<"+"<<std::flush;
-        }
-        for(auto& l :_layers) {
-            (*l).accumulateGradients();
         }
         ++count;
     }
