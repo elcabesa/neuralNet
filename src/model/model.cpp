@@ -77,11 +77,16 @@ void Model::calcTotalLossGradient(const std::vector<std::shared_ptr<LabeledExamp
     for(auto& l :_layers) {
         (*l).resetSum();
     }
+    unsigned int count = 0;
     for(auto& ex: input) {
         calcLossGradient(*ex);
+        if((count % (input.size()/20)) ==0) {
+            std::cout<<"+"<<std::flush;
+        }
         for(auto& l :_layers) {
             (*l).accumulateGradients();
         }
+        ++count;
     }
 }
 

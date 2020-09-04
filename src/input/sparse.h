@@ -8,7 +8,7 @@
 class SparseInput: public Input {
 public:
     
-    SparseInput(const std::map<unsigned int, double> v);
+    SparseInput(unsigned int size, const std::map<unsigned int, double> v);
     SparseInput(const std::vector<double> v);
     SparseInput(unsigned int size, const std::vector<unsigned int> v);
     SparseInput(const unsigned int size);

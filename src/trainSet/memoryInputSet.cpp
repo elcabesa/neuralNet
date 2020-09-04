@@ -1,20 +1,20 @@
 #include <iostream>
 #include <random>
 
-#include "inputSet.h"
+#include "memoryInputSet.h"
 #include "labeledExample.h"
 #include "dense.h"
 
-InputSet::InputSet(){}
-InputSet::~InputSet(){}
+MemoryInputSet::MemoryInputSet(){}
+MemoryInputSet::~MemoryInputSet(){}
 
-void InputSet::generate() {
+void MemoryInputSet::generate() {
     std::cout<<"create input "<<std::flush;
     const int SIZE = 10;
     const int BATCH_SIZE = 1000;
     double TRAIN_SET_PERC = 0.9;
     
-    _trainSet.clear();
+    std::vector<std::shared_ptr<LabeledExample>> _trainSet;
     _verificationSet.clear();
     _batches.clear();
     
@@ -86,19 +86,16 @@ void InputSet::generate() {
 
 }
     
-double InputSet::function(double x1, double x2, double x3, double x4) {
+double MemoryInputSet::function(double x1, double x2, double x3, double x4) {
     return x1 + x2*x2 - 0.2*x3*x4;
 }
 
-const std::vector<std::shared_ptr<LabeledExample>>& InputSet::trainSet() const {
-    return _trainSet;
-}
 
-const std::vector<std::shared_ptr<LabeledExample>>& InputSet::validationSet() const {
+const std::vector<std::shared_ptr<LabeledExample>>& MemoryInputSet::validationSet() const {
     return _verificationSet;
 }
 
-const std::vector<std::shared_ptr<LabeledExample>>& InputSet::batch()const {
+const std::vector<std::shared_ptr<LabeledExample>>& MemoryInputSet::batch()const {
     if(_n >= _batches.size()) {
         _n = 0;
     }

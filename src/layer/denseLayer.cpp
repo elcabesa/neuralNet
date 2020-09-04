@@ -59,9 +59,10 @@ std::vector<double>& DenseLayer::weightSumGradient() {return _weightSumGradient;
 void DenseLayer::randomizeParams() {
     std::random_device rnd;
     std::normal_distribution<double> dist(0.0, 1.0);
+    std::normal_distribution<double> dist2(0.0, 1.0 / sqrt(_inputSize));
     
     for(auto& x: _bias) {x = dist(rnd);}
-    for(auto& x: _weight) {x = dist(rnd);}
+    for(auto& x: _weight) {x = dist2(rnd);}
 }
 
 void DenseLayer::printParams() const {

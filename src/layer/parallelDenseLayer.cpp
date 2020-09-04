@@ -38,9 +38,7 @@ unsigned int ParallelDenseLayer::_calcBiasIndex(const unsigned int layer, const 
     return o + (layer * (_outputSize / _number));
 }
 
-void ParallelDenseLayer::randomizeParams() {
-    std::random_device rnd;
-    std::normal_distribution<double> dist(0.0, 1.0);
+void ParallelDenseLayer::randomizeParams() {    
     unsigned int n = 0;
     for(auto& l: _parallelLayers) {
         l.randomizeParams();

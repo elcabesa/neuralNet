@@ -1,7 +1,12 @@
+#include <cassert>
 #include <iostream>
+
 #include "parallelSparse.h"
 
-ParalledSparseInput::ParalledSparseInput(const Input& si, unsigned int number, unsigned int size):Input(size), _si(si), _number(number) {}
+ParalledSparseInput::ParalledSparseInput(const Input& si, unsigned int number, unsigned int size):Input(size), _si(si), _number(number), _elementNumber(0) {
+    assert((number+1)*size <= si.size());
+    assert(si.size() % size == 0);
+}
 
 
 ParalledSparseInput::~ParalledSparseInput() {}
@@ -23,15 +28,18 @@ void ParalledSparseInput::print() const {
 }*/
 
 const double& ParalledSparseInput::get(unsigned int index) const {
+    assert(index < _size);
     unsigned int newIndex = index + _number * _size;
     return _si.get(newIndex);
 }
 
 void ParalledSparseInput::set(unsigned int, double) {
+    assert(false);
     //_si.set(index + _number * _size, v);
 }
 
 unsigned int ParalledSparseInput::getElementNumber() const {
+    if(_elementNumber) { return _elementNumber;}
     unsigned int count = 0;
     unsigned int  n = _si.getElementNumber();
     for (unsigned int i = 0; i < n; ++i) {
@@ -40,10 +48,12 @@ unsigned int ParalledSparseInput::getElementNumber() const {
             ++count;
         }
     }
+    _elementNumber = count;
     return count;
 }
 
 const std::pair<unsigned int, double> ParalledSparseInput::getElementFromIndex(unsigned int index) const {
+    assert(index < getElementNumber());
     unsigned int count = 0;
     unsigned int  n = _si.getElementNumber();
     for (unsigned int i = 0; i<n; ++i) {
