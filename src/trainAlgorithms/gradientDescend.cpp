@@ -57,6 +57,7 @@ void GradientDescend::_pass() {
             w = (_regularization * w) - weightSumGradient[i] * (_learnRate / batch.size());
             ++i;
         }
+        l.consolidateResult();
         std::cout<<"*"<<std::flush;
     }
     std::cout<<"*"<<std::endl;

@@ -27,6 +27,8 @@ public:
     std::vector<double>& bias();
     std::vector<double>& weight();
     
+    void consolidateResult();
+    
     std::vector<double>& biasSumGradient();
     std::vector<double>& weightSumGradient();
     

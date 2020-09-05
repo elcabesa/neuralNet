@@ -54,6 +54,9 @@ unsigned int DenseLayer::_calcWeightIndex(const unsigned int i, const unsigned i
 
 std::vector<double>& DenseLayer::bias() {return _bias;}
 std::vector<double>& DenseLayer::weight() {return _weight;}
+
+void DenseLayer::consolidateResult() {}
+
 std::vector<double>& DenseLayer::biasSumGradient() {return _biasSumGradient;}
 std::vector<double>& DenseLayer::weightSumGradient() {return _weightSumGradient;}
 

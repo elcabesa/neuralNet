@@ -27,6 +27,24 @@ ParallelDenseLayer::~ParallelDenseLayer() {}
 
 std::vector<double>& ParallelDenseLayer::bias() {return _bias;}
 std::vector<double>& ParallelDenseLayer::weight() {return _weight;}
+
+void ParallelDenseLayer::consolidateResult() {
+    unsigned int n =0;
+    for(auto& l: _parallelLayers) {
+        auto & b = l.bias();
+        for(unsigned int o = 0; o<l.getOutputSize(); ++o) {
+            b[0] = _bias[_calcBiasIndex(n, o)];
+        }
+        auto & w = l.weight();
+        for(unsigned int i = 0; i<l.getInputSize(); ++i) {
+            for(unsigned int o = 0; o<l.getOutputSize(); ++o) {
+                w[l._calcWeightIndex(i,o)] = _weight[_calcWeightIndex(n, i, o)];
+            }
+        }
+        ++n;
+    }
+}
+
 std::vector<double>& ParallelDenseLayer::biasSumGradient() {return _biasSumGradient;}
 std::vector<double>& ParallelDenseLayer::weightSumGradient() {return _weightSumGradient;}
 

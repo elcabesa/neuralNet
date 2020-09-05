@@ -29,6 +29,8 @@ public:
     virtual std::vector<double>& bias() = 0;
     virtual std::vector<double>& weight() = 0;
     
+    virtual void consolidateResult() = 0;
+    
     virtual std::vector<double>& biasSumGradient() = 0;
     virtual std::vector<double>& weightSumGradient() = 0;
     
