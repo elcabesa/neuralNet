@@ -26,10 +26,10 @@ DenseLayer::~DenseLayer() {}
 
 void DenseLayer::calcNetOut(const Input& input) {
     _netOutput = _bias;
-    for(unsigned int o = 0; o < _outputSize; ++o) {
-        unsigned int num = input.getElementNumber();
-        for(unsigned int idx = 0; idx < num; ++idx) {
-            auto& el = input.getElementFromIndex(idx);
+    unsigned int num = input.getElementNumber();
+    for(unsigned int idx = 0; idx < num; ++idx) {
+        auto& el = input.getElementFromIndex(idx);
+        for(unsigned int o = 0; o < _outputSize; ++o) {
             _netOutput[o] += el.second * _weight[_calcWeightIndex(el.first,o)];
         }
     }

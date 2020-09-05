@@ -15,7 +15,7 @@ double reluActivation::propagate(double input) const {
 }
 
 double reluActivation::derivate(double input) const {
-    return input >=0 ? 1 : 0;
+    return input >=0 ? 1 : 1e-3;
 }
 
 const std::string reluActivation::getType() const {

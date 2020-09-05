@@ -81,7 +81,7 @@ void Model::calcTotalLossGradient(const std::vector<std::shared_ptr<LabeledExamp
     unsigned int count = 0;
     for(auto& ex: input) {
         calcLossGradient(*ex);
-        if((count % (input.size()/20)) ==0) {
+        if((input.size() > 20) && (count % (input.size()/20)) ==0) {
             std::cout<<"+"<<std::flush;
         }
         ++count;
