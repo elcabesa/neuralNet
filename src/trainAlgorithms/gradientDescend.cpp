@@ -1,3 +1,4 @@
+#include <chrono>
 #include <iostream>
 
 #include "gradientDescend.h" 
@@ -19,20 +20,25 @@ GradientDescend::~GradientDescend() {
 }
 
 double GradientDescend::train() {
+    auto start = std::chrono::high_resolution_clock::now();
     _decimationCount = 0;
-    std::cout<<"trainSet total loss: " << _model.calcTotalLoss(_inputSet.trainSet())<<std::endl;
+    std::cout<<"trainSet total loss: " << _model.calcTotalLoss(_inputSet.validationSet())<<std::endl;
     
     for(unsigned int p = 0; p < _passes; ++p) {
         _pass();
         _printTrainResult(p);
+        auto finish = std::chrono::high_resolution_clock::now();
+        std::chrono::duration<double> elapsed = finish - start;
+        std::cout << "Elapsed time: " << elapsed.count() << " s\n";
     }
-    std::cout<<"final total loss: " <<_model.calcTotalLoss(_inputSet.trainSet())<<" "<<_model.calcTotalLoss(_inputSet.validationSet())<<std::endl;
+    std::cout<<"final total loss: " <<_model.calcTotalLoss(_inputSet.validationSet())<<std::endl;
     return _model.calcTotalLoss(_inputSet.validationSet());
 }
 
 void GradientDescend::_pass() {
     auto & batch = _inputSet.batch();
     _model.calcTotalLossGradient(batch);
+    std::cout<<"*"<<std::flush;
     for( unsigned int ll = 0; ll < _model.getLayerCount(); ++ll) {
         Layer& l = _model.getLayer(ll);
         
@@ -40,22 +46,29 @@ void GradientDescend::_pass() {
         unsigned int i = 0;
         for(auto& b: l.bias()){
             //std::cout<<" bias "<<biasSumGradient[i]<<std::endl;
-            b -= biasSumGradient[i] * _learnRate / batch.size();
+            b -= biasSumGradient[i] * (_learnRate / batch.size());
             ++i;
         }
+        std::cout<<"*"<<std::flush;;
         auto& weightSumGradient = l.weightSumGradient();
         i = 0;
         for(auto& w: l.weight()){
+            double learnRate = _learnRate;
+            if(i == 0) {learnRate *= 1000;}
             //std::cout<<" weight "<<weightSumGradient[i]<<std::endl;
-            w = (_regularization * w) - weightSumGradient[i] * _learnRate / batch.size();
+            w = (_regularization * w) - weightSumGradient[i] * (learnRate / batch.size());
             ++i;
         }
+        l.consolidateResult();
+        std::cout<<"*"<<std::flush;
     }
+    std::cout<<"*"<<std::endl;
+    std::cout<<"intermediate loss "<< _model.calcTotalLoss(batch)<<std::endl;
 }
 
 void GradientDescend::_printTrainResult(const unsigned int pass) {
     if(++_decimationCount >= _decimation) {
-        std::cout<<"pass: "<< pass + 1 <<"/"<<_passes<< " total loss: " <<_model.calcTotalLoss(_inputSet.trainSet())<<" "<<_model.calcTotalLoss(_inputSet.validationSet())<<std::endl;
+        std::cout<<"pass: "<< pass + 1 <<"/"<<_passes<< " total loss: " <<_model.calcTotalLoss(_inputSet.validationSet())<<std::endl;
         _decimationCount = 0;
     }
 }

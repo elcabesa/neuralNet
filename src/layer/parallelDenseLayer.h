@@ -11,7 +11,7 @@ class Activation;
 
 class ParallelDenseLayer: public Layer {
 public:
-    ParallelDenseLayer(const unsigned int number, const unsigned int inputSize, const unsigned int outputSize, std::shared_ptr<Activation> act);
+    ParallelDenseLayer(const unsigned int number, const unsigned int inputSize, const unsigned int outputSize, std::shared_ptr<Activation> act, const double stdDev = 0.0);
     ~ParallelDenseLayer();
     
     void propagate(const Input& input);
@@ -26,6 +26,8 @@ public:
     
     std::vector<double>& bias();
     std::vector<double>& weight();
+    
+    void consolidateResult();
     
     std::vector<double>& biasSumGradient();
     std::vector<double>& weightSumGradient();

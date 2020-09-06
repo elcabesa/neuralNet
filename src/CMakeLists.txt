@@ -1,9 +1,4 @@
-add_library(libNeuralNet 
-    gradientDescend.cpp
-    inputSet.cpp
-    labeledExample.cpp
-    model.cpp
-)
+add_library(libNeuralNet)
 
 
 add_executable(neuralNet neuralNet.cpp )
@@ -17,4 +12,7 @@ add_subdirectory(activation)
 add_subdirectory(cost)
 add_subdirectory(layer)
 add_subdirectory(input)
+add_subdirectory(trainAlgorithms)
+add_subdirectory(model)
+add_subdirectory(trainSet)
 

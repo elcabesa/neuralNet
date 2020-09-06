@@ -3,10 +3,11 @@
 
 #include "layer.h"
 
-Layer::Layer(const unsigned int inputSize, const unsigned int outputSize):
+Layer::Layer(const unsigned int inputSize, const unsigned int outputSize, const double stdDev = 0.0):
     _inputSize(inputSize),
     _outputSize(outputSize),
-    _output(outputSize)
+    _output(outputSize),
+    _stdDev(stdDev)
 {}
 
 Layer::~Layer() {}

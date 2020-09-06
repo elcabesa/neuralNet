@@ -10,7 +10,7 @@ class Activation;
 
 class DenseLayer: public Layer {
 public:
-    DenseLayer(const unsigned int inputSize, const unsigned int outputSize, std::shared_ptr<Activation> act);
+    DenseLayer(const unsigned int inputSize, const unsigned int outputSize, std::shared_ptr<Activation> act, const double stdDev = 0.0);
     ~DenseLayer();
     
     void propagate(const Input& input);
@@ -25,6 +25,8 @@ public:
     
     std::vector<double>& bias();
     std::vector<double>& weight();
+    
+    void consolidateResult();
     
     std::vector<double>& biasSumGradient();
     std::vector<double>& weightSumGradient();

@@ -5,8 +5,8 @@
 #include "denseLayer.h"
 #include "input.h"
 
-DenseLayer::DenseLayer(const unsigned int inputSize, const unsigned int outputSize, std::shared_ptr<Activation> act):
-    Layer{inputSize, outputSize},
+DenseLayer::DenseLayer(const unsigned int inputSize, const unsigned int outputSize, std::shared_ptr<Activation> act, const double stdDev):
+    Layer{inputSize, outputSize, stdDev},
     _act(std::move(act))
     
 {
@@ -26,9 +26,10 @@ DenseLayer::~DenseLayer() {}
 
 void DenseLayer::calcNetOut(const Input& input) {
     _netOutput = _bias;
-    for(unsigned int o = 0; o < _outputSize; ++o) {
-        for(unsigned int idx = 0; idx < input.getElementNumber(); ++idx) {
-            auto& el = input.getElementFromIndex(idx);
+    unsigned int num = input.getElementNumber();
+    for(unsigned int idx = 0; idx < num; ++idx) {
+        auto& el = input.getElementFromIndex(idx);
+        for(unsigned int o = 0; o < _outputSize; ++o) {
             _netOutput[o] += el.second * _weight[_calcWeightIndex(el.first,o)];
         }
     }
@@ -53,15 +54,24 @@ unsigned int DenseLayer::_calcWeightIndex(const unsigned int i, const unsigned i
 
 std::vector<double>& DenseLayer::bias() {return _bias;}
 std::vector<double>& DenseLayer::weight() {return _weight;}
+
+void DenseLayer::consolidateResult() {}
+
 std::vector<double>& DenseLayer::biasSumGradient() {return _biasSumGradient;}
 std::vector<double>& DenseLayer::weightSumGradient() {return _weightSumGradient;}
 
 void DenseLayer::randomizeParams() {
+    double stdDev = _stdDev;
+    if( stdDev == 0.0) {
+        stdDev = 1.0 / sqrt(0.5 * _inputSize);
+    }
+    std::cout<<"std dev "<<stdDev<<std::endl;
     std::random_device rnd;
     std::normal_distribution<double> dist(0.0, 1.0);
+    std::normal_distribution<double> dist2(0.0, stdDev);
     
     for(auto& x: _bias) {x = dist(rnd);}
-    for(auto& x: _weight) {x = dist(rnd);}
+    for(auto& x: _weight) {x = dist2(rnd);}
 }
 
 void DenseLayer::printParams() const {
@@ -115,7 +125,8 @@ void DenseLayer::backwardCalcBias(const std::vector<double>& h) {
 }
 
 void DenseLayer::backwardCalcWeight(const Input& prevOut) {
-    for(unsigned int idx = 0; idx < prevOut.getElementNumber(); ++idx) {
+    unsigned int num = prevOut.getElementNumber();
+    for(unsigned int idx = 0; idx < num; ++idx) {
         for(unsigned int o = 0; o < _outputSize; ++o) {
             auto & el = prevOut.getElementFromIndex(idx);
             double w = _biasGradient[o] * el.second;

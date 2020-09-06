@@ -12,7 +12,7 @@ public:
     
     const double& get(unsigned int index) const;
     /*double& get(unsigned int index);*/
-    void set(unsigned int index, double v);
+    void set(unsigned int index, double v); // not allowed
     
     unsigned int getElementNumber() const;
     
@@ -21,6 +21,7 @@ private:
     const Input& _si;
     const unsigned int _number;
     mutable std::pair<unsigned int, double> tempReply;
+    mutable unsigned int _elementNumber;
 };
 
 #endif   

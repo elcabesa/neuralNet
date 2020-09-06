@@ -7,7 +7,7 @@
 
 class Layer {
 public:
-    Layer(const unsigned int inputSize, const unsigned int outputSize);
+    Layer(const unsigned int inputSize, const unsigned int outputSize, const double stdDev);
     virtual ~Layer();
     
     unsigned int getInputSize() const;
@@ -29,6 +29,8 @@ public:
     virtual std::vector<double>& bias() = 0;
     virtual std::vector<double>& weight() = 0;
     
+    virtual void consolidateResult() = 0;
+    
     virtual std::vector<double>& biasSumGradient() = 0;
     virtual std::vector<double>& weightSumGradient() = 0;
     
@@ -39,6 +41,7 @@ protected:
     unsigned int _inputSize;
     unsigned int _outputSize;
     DenseInput _output;
+    const double _stdDev;
     
 };
 
