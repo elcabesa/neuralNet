@@ -5,8 +5,8 @@
 #include "denseLayer.h"
 #include "input.h"
 
-DenseLayer::DenseLayer(const unsigned int inputSize, const unsigned int outputSize, std::shared_ptr<Activation> act):
-    Layer{inputSize, outputSize},
+DenseLayer::DenseLayer(const unsigned int inputSize, const unsigned int outputSize, std::shared_ptr<Activation> act, const double stdDev):
+    Layer{inputSize, outputSize, stdDev},
     _act(std::move(act))
     
 {
@@ -61,9 +61,14 @@ std::vector<double>& DenseLayer::biasSumGradient() {return _biasSumGradient;}
 std::vector<double>& DenseLayer::weightSumGradient() {return _weightSumGradient;}
 
 void DenseLayer::randomizeParams() {
+    double stdDev = _stdDev;
+    if( stdDev == 0.0) {
+        stdDev = 1.0 / sqrt(0.5 * _inputSize);
+    }
+    std::cout<<"std dev "<<stdDev<<std::endl;
     std::random_device rnd;
     std::normal_distribution<double> dist(0.0, 1.0);
-    std::normal_distribution<double> dist2(0.0, 1.0 / sqrt(_inputSize));
+    std::normal_distribution<double> dist2(0.0, stdDev);
     
     for(auto& x: _bias) {x = dist(rnd);}
     for(auto& x: _weight) {x = dist2(rnd);}

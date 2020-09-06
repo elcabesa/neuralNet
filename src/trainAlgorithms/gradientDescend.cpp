@@ -53,8 +53,10 @@ void GradientDescend::_pass() {
         auto& weightSumGradient = l.weightSumGradient();
         i = 0;
         for(auto& w: l.weight()){
+            double learnRate = _learnRate;
+            if(i == 0) {learnRate *= 1000;}
             //std::cout<<" weight "<<weightSumGradient[i]<<std::endl;
-            w = (_regularization * w) - weightSumGradient[i] * (_learnRate / batch.size());
+            w = (_regularization * w) - weightSumGradient[i] * (learnRate / batch.size());
             ++i;
         }
         l.consolidateResult();

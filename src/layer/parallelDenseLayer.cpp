@@ -7,8 +7,8 @@
 #include "input.h"
 #include "parallelSparse.h"
 
-ParallelDenseLayer::ParallelDenseLayer(const unsigned int number, const unsigned int inputSize, const unsigned int outputSize, std::shared_ptr<Activation> act):
-    Layer{number * inputSize, number * outputSize}, _number(number)
+ParallelDenseLayer::ParallelDenseLayer(const unsigned int number, const unsigned int inputSize, const unsigned int outputSize, std::shared_ptr<Activation> act, const double stdDev):
+    Layer{number * inputSize, number * outputSize, stdDev}, _number(number)
     
 {
     _bias.resize(number * outputSize, 0.0);
@@ -18,7 +18,7 @@ ParallelDenseLayer::ParallelDenseLayer(const unsigned int number, const unsigned
     _weightSumGradient.resize(number * outputSize * inputSize, 0.0);
     
     for(unsigned int n = 0 ; n < number; ++n){
-        _parallelLayers.emplace_back(DenseLayer(inputSize, outputSize, act));
+        _parallelLayers.emplace_back(DenseLayer(inputSize, outputSize, act, _stdDev));
     }
     
 }

@@ -39,15 +39,16 @@ int main() {
     
     std::cout<<"creating model"<<std::endl;
     Model m;
-    m.addLayer(std::make_unique<ParallelDenseLayer>(2, 40960, 256, ActivationFactory::create(ActivationFactory::type::linear)));
+    m.addLayer(std::make_unique<ParallelDenseLayer>(2, 40960, 256, ActivationFactory::create(ActivationFactory::type::linear),1.0/sqrt(6)));
     m.addLayer(std::make_unique<DenseLayer>(512,32, ActivationFactory::create(ActivationFactory::type::relu)));
     m.addLayer(std::make_unique<DenseLayer>(32,32, ActivationFactory::create(ActivationFactory::type::relu)));
     m.addLayer(std::make_unique<DenseLayer>(32, 1, ActivationFactory::create(ActivationFactory::type::linear)));
     std::cout<<"done"<<std::endl;
-    //m.randomizeParams();
-    //std::cout<<"randomized params"<<std::endl;
+    m.randomizeParams();
+    //m.printParams();
+    std::cout<<"randomized params"<<std::endl;
     
-    std::cout<<"reload"<<std::endl;
+    /*std::cout<<"reload"<<std::endl;
     {
         std::cout<<"deserialize"<<std::endl;
         std::ifstream nnFile;
@@ -58,14 +59,14 @@ int main() {
              std::cout<<"FAIL"<<std::endl;
         }
         nnFile.close();
-    }
+    }*/
 
-    GradientDescend gd(m, inSet, 500,1e-3, 1.0, 1);
+    GradientDescend gd(m, inSet, 500, 1e-3, 1.0, 1);
     
     gd.train();
     
 
-    std::cout<<"-------------------------"<<std::endl;
+    /*std::cout<<"-------------------------"<<std::endl;
 
     {
         std::cout<<"serialize"<<std::endl;
@@ -74,11 +75,11 @@ int main() {
         m.serialize(nnFile);
         nnFile.close();
         std::cout<<"done"<<std::endl;
-    }
+    }*/
     //std::cout<<"randomize Params"<<std::endl;
-    //m.randomizeParams();
+    //m.randomizeParams();*/
     std::cout<<"final total loss: " <<m.calcTotalLoss(inSet.validationSet())<<std::endl;
-    std::cout<<"reload"<<std::endl;
+    /*std::cout<<"reload"<<std::endl;
     {
         std::cout<<"deserialize"<<std::endl;
         std::ifstream nnFile;
@@ -90,7 +91,7 @@ int main() {
         }
         nnFile.close();
     }
-    std::cout<<"final total loss: " << m.calcTotalLoss(inSet.validationSet())<<std::endl;
+    std::cout<<"final total loss: " << m.calcTotalLoss(inSet.validationSet())<<std::endl;*/
     
 }
 
