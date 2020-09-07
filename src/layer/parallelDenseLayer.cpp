@@ -14,8 +14,6 @@ ParallelDenseLayer::ParallelDenseLayer(const unsigned int number, const unsigned
     _bias.resize(number * outputSize, 0.0);
     _weight.resize(number * outputSize * inputSize, 1.0);
     
-    _biasSumGradient.resize(number * outputSize, 0.0);
-    _weightSumGradient.resize(number * outputSize * inputSize, 0.0);
     
     for(unsigned int n = 0 ; n < number; ++n){
         _parallelLayers.emplace_back(DenseLayer(inputSize, outputSize, act, _stdDev));
@@ -45,8 +43,14 @@ void ParallelDenseLayer::consolidateResult() {
     }
 }
 
-std::vector<double>& ParallelDenseLayer::biasSumGradient() {return _biasSumGradient;}
-std::vector<double>& ParallelDenseLayer::weightSumGradient() {return _weightSumGradient;}
+double ParallelDenseLayer::getBiasSumGradient(unsigned int index) const{
+    unsigned int layerNum = index / (_outputSize / _number);
+    return _parallelLayers[layerNum].getBiasSumGradient(index%(_outputSize / _number));
+}
+double ParallelDenseLayer::getWeightSumGradient(unsigned int index) const {
+    unsigned int layerNum = index / ((_inputSize/ _number) * (_outputSize / _number));
+    return _parallelLayers[layerNum].getWeightSumGradient(index%((_inputSize/ _number) * (_outputSize / _number)));
+}
 
 unsigned int ParallelDenseLayer::_calcWeightIndex(const unsigned int layer, const unsigned int i, const unsigned int o) const {
     return i + (o * _inputSize / _number) + (layer * (_inputSize / _number) * (_outputSize / _number));
@@ -109,25 +113,17 @@ std::vector<double> ParallelDenseLayer::backPropHelper() const {
 }
 
 void ParallelDenseLayer::resetSum() {
-    _biasSumGradient.resize(_outputSize, 0.0);
-    _weightSumGradient.resize(_outputSize * _inputSize, 0.0);
-    
     for(auto& l: _parallelLayers) {
         l.resetSum();
-    }
-    
-    
+    } 
 }
 
-void ParallelDenseLayer::accumulateGradients() {
-    _biasSumGradient.clear();
-    _weightSumGradient.clear();
+void ParallelDenseLayer::accumulateGradients(const Input& input) {
+    unsigned int n= 0;
     for(auto& l: _parallelLayers) {
-        l.accumulateGradients();
-        auto bsg = l.biasSumGradient();
-        auto wsg = l.weightSumGradient();
-        _biasSumGradient.insert(_biasSumGradient.end(), bsg.begin(), bsg.end());
-        _weightSumGradient.insert(_weightSumGradient.end(), wsg.begin(), wsg.end());
+        const ParalledSparseInput psi(input, n , input.size() / _number);
+        l.accumulateGradients(psi);
+        ++n;
     }
 }
 
@@ -141,10 +137,10 @@ void ParallelDenseLayer::backwardCalcBias(const std::vector<double>& h) {
 }
 
 
-void ParallelDenseLayer::backwardCalcWeight(const Input& prevOut) {
+void ParallelDenseLayer::backwardCalcWeight(const Input& input) {
     unsigned int n= 0;
     for(auto& l: _parallelLayers) {
-        const ParalledSparseInput psi(prevOut, n , prevOut.size() / _number);
+        const ParalledSparseInput psi(input, n , input.size() / _number);
         l.backwardCalcWeight(psi);
         ++n;
     }

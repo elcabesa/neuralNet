@@ -18,19 +18,19 @@ public:
     void printParams() const;
     void randomizeParams();
     void backwardCalcBias(const std::vector<double>& h);
-    void backwardCalcWeight(const Input& prevOut);
+    void backwardCalcWeight(const Input& input);
     std::vector<double> backPropHelper() const;
     
     void resetSum();
-    void accumulateGradients();
+    void accumulateGradients(const Input& input);
     
     std::vector<double>& bias();
     std::vector<double>& weight();
     
     void consolidateResult();
     
-    std::vector<double>& biasSumGradient();
-    std::vector<double>& weightSumGradient();
+    double getBiasSumGradient(unsigned int index) const;
+    double getWeightSumGradient(unsigned int index) const;
     
     unsigned int _calcWeightIndex(const unsigned int layer, const unsigned int i, const unsigned int o) const;
     unsigned int _calcBiasIndex(const unsigned int layer, const unsigned int o) const;
@@ -41,8 +41,6 @@ public:
 private:
     std::vector<double> _bias;
     std::vector<double> _weight;
-    std::vector<double> _biasSumGradient;
-    std::vector<double> _weightSumGradient;
     std::vector<DenseLayer> _parallelLayers;
     const unsigned int _number;
 

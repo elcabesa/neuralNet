@@ -57,8 +57,12 @@ std::vector<double>& DenseLayer::weight() {return _weight;}
 
 void DenseLayer::consolidateResult() {}
 
-std::vector<double>& DenseLayer::biasSumGradient() {return _biasSumGradient;}
-std::vector<double>& DenseLayer::weightSumGradient() {return _weightSumGradient;}
+double DenseLayer::getBiasSumGradient(unsigned int index) const{
+    return _biasSumGradient[index];
+}
+double DenseLayer::getWeightSumGradient(unsigned int index) const{
+    return _weightSumGradient[index];
+}
 
 void DenseLayer::randomizeParams() {
     double stdDev = _stdDev;
@@ -101,7 +105,7 @@ void DenseLayer::resetSum() {
     _weightSumGradient.resize(_outputSize * _inputSize, 0.0);
 }
 
-void DenseLayer::accumulateGradients() {
+void DenseLayer::accumulateGradients(const Input& input) {
     unsigned int i= 0;
     for(auto& b: _biasSumGradient) {
         b += _biasGradient[i];
@@ -109,9 +113,14 @@ void DenseLayer::accumulateGradients() {
     }
     
     i= 0;
-    for(auto& w: _weightSumGradient) {
-        w += _weightGradient[i];
-        ++i;
+    
+    unsigned int num = input.getElementNumber();
+    for(unsigned int idx = 0; idx < num; ++idx) {
+        auto & el = input.getElementFromIndex(idx);
+        for(unsigned int o = 0; o < _outputSize; ++o) {
+            unsigned int index = _calcWeightIndex(el.first,o);
+            _weightSumGradient[index] += _weightGradient[index];
+        }
     }
 }
 
@@ -124,11 +133,11 @@ void DenseLayer::backwardCalcBias(const std::vector<double>& h) {
     }
 }
 
-void DenseLayer::backwardCalcWeight(const Input& prevOut) {
-    unsigned int num = prevOut.getElementNumber();
+void DenseLayer::backwardCalcWeight(const Input& input) {
+    unsigned int num = input.getElementNumber();
     for(unsigned int idx = 0; idx < num; ++idx) {
+        auto & el = input.getElementFromIndex(idx);
         for(unsigned int o = 0; o < _outputSize; ++o) {
-            auto & el = prevOut.getElementFromIndex(idx);
             double w = _biasGradient[o] * el.second;
             _weightGradient[_calcWeightIndex(el.first,o)] = w;
         }

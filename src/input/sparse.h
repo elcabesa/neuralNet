@@ -22,7 +22,7 @@ public:
     const std::pair<unsigned int, double> getElementFromIndex(unsigned int index) const;
 private:
     //TODO manage 
-    double _zeroInput = 0;
+    double _zeroInput = 0.0;
     std::map<unsigned int, double> _in;
 };
 

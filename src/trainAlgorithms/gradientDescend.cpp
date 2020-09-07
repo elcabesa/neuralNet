@@ -42,21 +42,19 @@ void GradientDescend::_pass() {
     for( unsigned int ll = 0; ll < _model.getLayerCount(); ++ll) {
         Layer& l = _model.getLayer(ll);
         
-        auto& biasSumGradient = l.biasSumGradient();
         unsigned int i = 0;
         for(auto& b: l.bias()){
             //std::cout<<" bias "<<biasSumGradient[i]<<std::endl;
-            b -= biasSumGradient[i] * (_learnRate / batch.size());
+            b -= l.getBiasSumGradient(i) * (_learnRate / batch.size());
             ++i;
         }
         std::cout<<"*"<<std::flush;;
-        auto& weightSumGradient = l.weightSumGradient();
         i = 0;
         for(auto& w: l.weight()){
             double learnRate = _learnRate;
-            if(i == 0) {learnRate *= 1000;}
+            if(ll == 0) {learnRate *= 1000;}
             //std::cout<<" weight "<<weightSumGradient[i]<<std::endl;
-            w = (_regularization * w) - weightSumGradient[i] * (learnRate / batch.size());
+            w = (_regularization * w) - l.getWeightSumGradient(i) * (learnRate / batch.size());
             ++i;
         }
         l.consolidateResult();

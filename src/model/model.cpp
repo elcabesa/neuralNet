@@ -64,14 +64,15 @@ void Model::calcLossGradient(const LabeledExample& le) {
         
         auto nextLayer = actualLayer + 1;
         if(nextLayer != _layers.rend()) {
-            const Input& PreviousOut = (*nextLayer)->output();
-            (*actualLayer)->backwardCalcWeight(PreviousOut);
+            const Input& input = (*nextLayer)->output();
+            (*actualLayer)->backwardCalcWeight(input);
+            (*actualLayer)->accumulateGradients(input);
         }
         else {
-            const Input& PreviousOut = le.features();
-            (*actualLayer)->backwardCalcWeight(PreviousOut);
+            const Input& input = le.features();
+            (*actualLayer)->backwardCalcWeight(input);
+            (*actualLayer)->accumulateGradients(input);
         }
-        (*actualLayer)->accumulateGradients();
         
     }
 }
