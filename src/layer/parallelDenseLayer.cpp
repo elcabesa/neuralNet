@@ -31,7 +31,7 @@ void ParallelDenseLayer::consolidateResult() {
     for(auto& l: _parallelLayers) {
         auto & b = l.bias();
         for(unsigned int o = 0; o<l.getOutputSize(); ++o) {
-            b[0] = _bias[_calcBiasIndex(n, o)];
+            b[o] = _bias[_calcBiasIndex(n, o)];
         }
         auto & w = l.weight();
         for(unsigned int i = 0; i<l.getInputSize(); ++i) {
