@@ -16,6 +16,7 @@ public:
     //todo return not a reference?
     const std::vector<std::shared_ptr<LabeledExample>>& validationSet() const;
     const std::vector<std::shared_ptr<LabeledExample>>& batch()const;
+    void printStatistics() const;
 
     
 private:
@@ -33,6 +34,8 @@ private:
     mutable std::vector<std::shared_ptr<LabeledExample>> _batch;
     
     unsigned int _inputSize;
+    
+    const std::vector<std::shared_ptr<LabeledExample>>& readFile(unsigned int index) const;
     
     
 };

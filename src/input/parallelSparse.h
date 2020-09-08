@@ -22,6 +22,7 @@ private:
     const unsigned int _number;
     mutable std::pair<unsigned int, double> tempReply;
     mutable unsigned int _elementNumber;
+    mutable std::vector<std::pair<unsigned int, double>> _elements;
 };
 
 #endif   

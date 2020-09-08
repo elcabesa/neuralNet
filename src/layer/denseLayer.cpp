@@ -33,6 +33,7 @@ void DenseLayer::calcNetOut(const Input& input) {
             _netOutput[o] += el.second * _weight[_calcWeightIndex(el.first,o)];
         }
     }
+    
 }
 
 void DenseLayer::calcOut() {
@@ -47,9 +48,8 @@ void DenseLayer::propagate(const Input& input) {
 }
 
 unsigned int DenseLayer::_calcWeightIndex(const unsigned int i, const unsigned int o) const {
-    // TODO invert order
-    // TODO return o + i * _outputSize;
-    return i + o * _inputSize;
+    return o + i * _outputSize;
+    //return i + o * _inputSize;
 }
 
 std::vector<double>& DenseLayer::bias() {return _bias;}

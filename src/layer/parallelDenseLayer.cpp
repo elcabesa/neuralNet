@@ -53,7 +53,7 @@ double ParallelDenseLayer::getWeightSumGradient(unsigned int index) const {
 }
 
 unsigned int ParallelDenseLayer::_calcWeightIndex(const unsigned int layer, const unsigned int i, const unsigned int o) const {
-    return i + (o * _inputSize / _number) + (layer * (_inputSize / _number) * (_outputSize / _number));
+    return o + i * (_outputSize/ _number) + (layer * (_inputSize / _number) * (_outputSize / _number));
 }
 
 unsigned int ParallelDenseLayer::_calcBiasIndex(const unsigned int layer, const unsigned int o) const {

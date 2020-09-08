@@ -101,3 +101,7 @@ const std::vector<std::shared_ptr<LabeledExample>>& MemoryInputSet::batch()const
     }
     return _batches[_n++];
 }
+
+void MemoryInputSet::printStatistics() const {
+    std::cout<<"statistics:"<<std::endl;
+}

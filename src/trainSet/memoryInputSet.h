@@ -12,6 +12,7 @@ public:
     
     const std::vector<std::shared_ptr<LabeledExample>>& validationSet() const;
     const std::vector<std::shared_ptr<LabeledExample>>& batch()const;
+    void printStatistics() const;
 
     
 private:

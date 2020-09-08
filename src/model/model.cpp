@@ -33,16 +33,17 @@ const Input& Model::forwardPass(const Input& input, bool verbose /* = false */) 
     return *in;
 }
 
-double Model::calcLoss(const LabeledExample& le) {
+double Model::calcLoss(const LabeledExample& le, bool verbose) {
     auto& out = forwardPass(le.features());
-    //std::cerr<<"out "<<out.get(0)<<" label "<<le.label()<<std::endl;
+    if(verbose) {std::cerr<<"out "<<out.get(0)<<" label "<<le.label()<<std::endl;}
     return cost.calc(out.get(0), le.label());
 }
 
 double Model::calcTotalLoss(const std::vector<std::shared_ptr<LabeledExample>>& input) {
     double error = 0.0;
     //std::cerr<<"------------------"<<std::endl;
-    for(auto& le: input) {error += calcLoss(*le);}
+    //unsigned int count = 0;
+    for(auto& le: input) {error += calcLoss(*le/*, (++count)<10*/);}
     return error / input.size();
 }
 
@@ -81,13 +82,13 @@ void Model::calcTotalLossGradient(const std::vector<std::shared_ptr<LabeledExamp
     for(auto& l :_layers) {
         (*l).resetSum();
     }
-    unsigned int count = 0;
+    //unsigned int count = 0;
     for(auto& ex: input) {
         calcLossGradient(*ex);
-        if((input.size() > 20) && (count % (input.size()/20)) ==0) {
+        /*if((input.size() > 20) && (count % (input.size()/20)) ==0) {
             std::cout<<"+"<<std::flush;
         }
-        ++count;
+        ++count;*/
     }
 }
 
