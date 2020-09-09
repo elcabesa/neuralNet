@@ -14,6 +14,7 @@ public:
     void set(unsigned int index, double v);
     unsigned int getElementNumber() const;
     const std::pair<unsigned int, double> getElementFromIndex(unsigned int index) const;
+    void clear();
 private:
     mutable std::pair<unsigned int, double> tempReply;
     std::vector<double> _in;

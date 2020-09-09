@@ -20,6 +20,7 @@ public:
     void set(unsigned int index, double v);
     unsigned int getElementNumber() const;
     const std::pair<unsigned int, double> getElementFromIndex(unsigned int index) const;
+    void clear();
 private:
     //TODO manage 
     double _zeroInput = 0.0;

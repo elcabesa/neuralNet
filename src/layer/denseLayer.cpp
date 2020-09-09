@@ -1,3 +1,4 @@
+#include <cassert>
 #include <iostream>
 #include <random>
 
@@ -25,6 +26,7 @@ DenseLayer::DenseLayer(const unsigned int inputSize, const unsigned int outputSi
 DenseLayer::~DenseLayer() {}
 
 void DenseLayer::calcNetOut(const Input& input) {
+    assert(input.size() == _inputSize);
     _netOutput = _bias;
     unsigned int num = input.getElementNumber();
     for(unsigned int idx = 0; idx < num; ++idx) {
@@ -48,6 +50,7 @@ void DenseLayer::propagate(const Input& input) {
 }
 
 unsigned int DenseLayer::_calcWeightIndex(const unsigned int i, const unsigned int o) const {
+    assert(o + i * _outputSize < _weight.size());
     return o + i * _outputSize;
     //return i + o * _inputSize;
 }
@@ -58,9 +61,11 @@ std::vector<double>& DenseLayer::weight() {return _weight;}
 void DenseLayer::consolidateResult() {}
 
 double DenseLayer::getBiasSumGradient(unsigned int index) const{
+    assert(index < _bias.size());
     return _biasSumGradient[index];
 }
 double DenseLayer::getWeightSumGradient(unsigned int index) const{
+    assert(index < _weight.size());
     return _weightSumGradient[index];
 }
 
@@ -112,8 +117,6 @@ void DenseLayer::accumulateGradients(const Input& input) {
         ++i;
     }
     
-    i= 0;
-    
     unsigned int num = input.getElementNumber();
     for(unsigned int idx = 0; idx < num; ++idx) {
         auto & el = input.getElementFromIndex(idx);
@@ -125,6 +128,7 @@ void DenseLayer::accumulateGradients(const Input& input) {
 }
 
 void DenseLayer::backwardCalcBias(const std::vector<double>& h) {
+    assert(h.size() == _outputSize);
     unsigned int i = 0;
     for(auto& b: _biasGradient) {
         double activationDerivate = _act->derivate(_netOutput[i]);
@@ -134,6 +138,7 @@ void DenseLayer::backwardCalcBias(const std::vector<double>& h) {
 }
 
 void DenseLayer::backwardCalcWeight(const Input& input) {
+    assert(input.size() == _inputSize);
     unsigned int num = input.getElementNumber();
     for(unsigned int idx = 0; idx < num; ++idx) {
         auto & el = input.getElementFromIndex(idx);

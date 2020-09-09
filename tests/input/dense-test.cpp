@@ -124,4 +124,17 @@ TEST(denseInputTest, inputRef) {
  
 }
 
+TEST(denseInputTest, clear) {
+    std::vector<double> in = {3.0, 12, -75, 544, 913, 0, 32, 1e-7, 7};
+    DenseInput input(in);
+    input.clear();
+    
+    ASSERT_EQ(input.size(), 9);
+    ASSERT_EQ(input.getElementNumber(), 9);
+    
+    for(unsigned int i = 0; i < 9; ++i) {
+        ASSERT_DOUBLE_EQ(input.get(i), 0.0);
+    }
+}
+
 

@@ -41,3 +41,8 @@ const std::pair<unsigned int, double> DenseInput::getElementFromIndex(unsigned i
     tempReply = std::make_pair(index, _in[index]);
     return tempReply;
 }
+
+void DenseInput::clear() {
+    _in.clear();
+    _in.resize(_size, 0.0);
+}

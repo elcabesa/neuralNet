@@ -67,3 +67,7 @@ const std::pair<unsigned int, double> SparseInput::getElementFromIndex(unsigned 
     std::advance(it, index);
     return (*it);
 }
+
+void SparseInput::clear() {
+    _in.clear();
+}

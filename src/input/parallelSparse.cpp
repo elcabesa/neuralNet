@@ -76,3 +76,8 @@ const std::pair<unsigned int, double> ParalledSparseInput::getElementFromIndex(u
     tempReply = std::make_pair(index, 0/0);
     return tempReply;
 }
+
+void ParalledSparseInput::clear() {
+    // this cannot be called for ParalledSparseInput
+    assert(false);
+}

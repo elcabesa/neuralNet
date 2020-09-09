@@ -21,6 +21,8 @@ public:
     virtual unsigned int getElementNumber() const = 0;
     
     virtual const std::pair<unsigned int, double> getElementFromIndex(unsigned int index) const = 0;
+    
+    virtual void clear() = 0;
 protected:
     unsigned int _size;
 };

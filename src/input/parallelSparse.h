@@ -17,6 +17,7 @@ public:
     unsigned int getElementNumber() const;
     
     const std::pair<unsigned int, double> getElementFromIndex(unsigned int index) const;
+    void clear();
 private:
     const Input& _si;
     const unsigned int _number;
