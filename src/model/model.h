@@ -19,7 +19,7 @@ public:
     void printParams();
     const Input& forwardPass(const Input& input, bool verbose = false);
     double calcLoss(const LabeledExample& le, bool verbose = false);
-    double calcTotalLoss(const std::vector<std::shared_ptr<LabeledExample>>& input);
+    double calcAvgLoss(const std::vector<std::shared_ptr<LabeledExample>>& input);
     void calcLossGradient(const LabeledExample& le);
     void calcTotalLossGradient(const std::vector<std::shared_ptr<LabeledExample>>& input);    
     void serialize(std::ofstream& ss) const;

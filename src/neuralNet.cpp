@@ -49,7 +49,7 @@ int main() {
     /*double maxValue = 1.e30;
     for( int i = 0; i< 100; ++i ) {
         m.randomizeParams();
-        double loss = m.calcTotalLoss(inSet.validationSet());
+        double loss = m.calcAvgLoss(inSet.validationSet());
         std::cout<<"final total loss: " <<loss<<std::endl;    
         if( loss < maxValue) {
             maxValue =loss;
@@ -80,7 +80,7 @@ int main() {
         nnFile.close();
     }
 
-    GradientDescend gd(m, inSet, 1000000, 1e-4, 1.0, 1);
+    GradientDescend gd(m, inSet, 1000000, 1e-4, 1.0, 10);
     
     gd.train();
     
@@ -97,7 +97,7 @@ int main() {
     }
     //std::cout<<"randomize Params"<<std::endl;
     //m.randomizeParams();*/
-    std::cout<<"final total loss: " <<m.calcTotalLoss(inSet.validationSet())<<std::endl;
+    std::cout<<"final total loss: " <<m.calcAvgLoss(inSet.validationSet())<<std::endl;
     std::cout<<"reload"<<std::endl;
     {
         std::cout<<"deserialize"<<std::endl;
@@ -110,7 +110,7 @@ int main() {
         }
         nnFile.close();
     }
-    std::cout<<"final total loss: " << m.calcTotalLoss(inSet.validationSet())<<std::endl;
+    std::cout<<"final total loss: " << m.calcAvgLoss(inSet.validationSet())<<std::endl;
     
 }
 
