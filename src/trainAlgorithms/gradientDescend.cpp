@@ -32,6 +32,7 @@ GradientDescend::~GradientDescend() {
 }
 
 double GradientDescend::train() {
+    std::cerr <<"TrainsetError,ValidationError"<<std::endl;
     //auto start = std::chrono::high_resolution_clock::now();
     _decimationCount = 0;
     std::cout<<"trainSet total loss: " << _model.calcAvgLoss(_inputSet.validationSet())<<std::endl;
@@ -74,7 +75,10 @@ void GradientDescend::_pass() {
     }
     //std::cout<<"*"<<std::endl;
     if(_decimationCount +1 >= _decimation) {
-        std::cout<<"intermediate loss "<< _model.calcAvgLoss(batch)<<std::endl;
+        double l = _model.calcAvgLoss(batch);
+        std::cout<<"intermediate loss "<< l <<std::endl;
+        std::cerr <<sqrt(l)<<",";
+        
     }
 
 }
@@ -84,7 +88,9 @@ void GradientDescend::_printTrainResult(const unsigned int pass) {
         //auto finish = std::chrono::high_resolution_clock::now();
         //std::chrono::duration<double> elapsed = finish - start;
         //std::cout << "Elapsed time: " << elapsed.count() << " s\n";
-        std::cout<<"pass: "<< pass + 1 <<"/"<<_passes<< " total loss: " <<_model.calcAvgLoss(_inputSet.validationSet())<<std::endl;
+        double l = _model.calcAvgLoss(_inputSet.validationSet());
+        std::cout<<"pass: "<< pass + 1 <<"/"<<_passes<< " total loss: " << l <<std::endl;
+        std::cerr <<sqrt(l)<<std::endl;
         _decimationCount = 0;
     }
 }
