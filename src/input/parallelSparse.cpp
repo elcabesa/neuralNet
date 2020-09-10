@@ -43,9 +43,11 @@ unsigned int ParalledSparseInput::getElementNumber() const {
     unsigned int count = 0;
     unsigned int  n = _si.getElementNumber();
     for (unsigned int i = 0; i < n; ++i) {
-        auto& el = _si.getElementFromIndex(i);
+        auto el = _si.getElementFromIndex(i);
         if(el.first >= _number * _size && el.first < (_number + 1) * _size) {
             ++count;
+            el.first -= _number * _size;
+            _elements.push_back(el);
         }
     }
     _elementNumber = count;
@@ -56,6 +58,11 @@ const std::pair<unsigned int, double> ParalledSparseInput::getElementFromIndex(u
     assert(index < getElementNumber());
     unsigned int count = 0;
     unsigned int  n = _si.getElementNumber();
+    
+    if(n) {
+        return _elements[index];
+    }
+    
     for (unsigned int i = 0; i<n; ++i) {
         auto el = _si.getElementFromIndex(i);
         if(el.first >= _number * _size && el.first < (_number + 1) * _size) {
@@ -68,4 +75,9 @@ const std::pair<unsigned int, double> ParalledSparseInput::getElementFromIndex(u
     }
     tempReply = std::make_pair(index, 0/0);
     return tempReply;
+}
+
+void ParalledSparseInput::clear() {
+    // this cannot be called for ParalledSparseInput
+    assert(false);
 }

@@ -80,3 +80,13 @@ TEST(parallelSparseInputTest, parallel) {
     ASSERT_EQ(ps4.getElementFromIndex(0).second, 1.0);
     ASSERT_DEATH(ps4.getElementFromIndex(1), "");
 }
+
+TEST(parallelSparseInputTest, clear) {
+    std::vector<unsigned int> in = {5,27,4,92,190};
+    SparseInput input(200, in);
+    
+    ParalledSparseInput ps1(input, 0, 50);
+    
+    ASSERT_DEATH(ps1.clear(), "");
+    
+}

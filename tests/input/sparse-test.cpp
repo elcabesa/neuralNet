@@ -194,3 +194,17 @@ TEST(sparseInputTest, constructor4) {
 
 }
 
+
+TEST(sparseInputTest, clear) {
+    std::map<unsigned int, double> in = {{50,12}, {12,0.7}, {70,-42.5}, {99,0.1}, {102,127.98}};
+
+    SparseInput input(150, in);
+    input.clear();
+    
+    ASSERT_EQ(input.size(), 150);
+    ASSERT_EQ(input.getElementNumber(), 0);
+    
+    for(unsigned int i = 0; i < 150; ++i) {
+        ASSERT_DOUBLE_EQ(input.get(i), 0.0);
+    }
+}

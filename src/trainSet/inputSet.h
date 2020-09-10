@@ -14,6 +14,7 @@ public:
     virtual void generate() = 0;
     virtual const std::vector<std::shared_ptr<LabeledExample>>& validationSet() const = 0;
     virtual const std::vector<std::shared_ptr<LabeledExample>>& batch()const = 0;
+    virtual void printStatistics() const = 0;
 };
 
 #endif 
