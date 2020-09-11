@@ -6,6 +6,8 @@
 #include "inputSet.h"
 #include "model.h"
 
+Model::Model():_totalLoss{0}, _avgLoss{0} {}
+
 void Model::addLayer(std::unique_ptr<Layer> l) {
     if(_layers.size() > 0 && _layers.back()->getOutputSize() != l->getInputSize()) {
         std::cerr<<"ERROR in SIZING"<< std::endl;
@@ -38,22 +40,24 @@ const Input& Model::forwardPass(const Input& input, bool verbose /* = false */) 
     return *in;
 }
 
-double Model::calcLoss(const LabeledExample& le, bool verbose) {
+double Model::calcLoss(const LabeledExample& le) {
     auto& out = forwardPass(le.features());
-    if(verbose) {std::cerr<<"out "<<out.get(0)<<" label "<<le.label()<<std::endl;}
     return cost.calc(out.get(0), le.label());
 }
 
 double Model::calcAvgLoss(const std::vector<std::shared_ptr<LabeledExample>>& input) {
     double error = 0.0;
-    //std::cerr<<"------------------"<<std::endl;
-    //unsigned int count = 0;
-    for(auto& le: input) {error += calcLoss(*le/*, (++count)<10*/);}
+    for(auto& le: input) {error += calcLoss(*le);}
     return error / input.size();
+}
+
+double Model::getAvgLoss() const {
+    return _avgLoss;
 }
 
 void Model::calcLossGradient(const LabeledExample& le) {
     auto& out = forwardPass(le.features());
+    _totalLoss += cost.calc(out.get(0), le.label());
     for (auto actualLayer = _layers.rbegin(); actualLayer!= _layers.rend(); ++actualLayer) {
         
         // todo uniformare
@@ -87,14 +91,11 @@ void Model::calcTotalLossGradient(const std::vector<std::shared_ptr<LabeledExamp
     for(auto& l :_layers) {
         (*l).resetSum();
     }
-    //unsigned int count = 0;
+    _totalLoss = 0.0;
     for(auto& ex: input) {
         calcLossGradient(*ex);
-        /*if((input.size() > 20) && (count % (input.size()/20)) ==0) {
-            std::cout<<"+"<<std::flush;
-        }
-        ++count;*/
     }
+    _avgLoss = _totalLoss / input.size();
 }
 
 

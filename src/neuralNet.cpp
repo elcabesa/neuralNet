@@ -80,7 +80,7 @@ int main() {
         nnFile.close();
     }
 
-    GradientDescend gd(m, inSet, 1000000, 1e-4, 1.0, 10);
+    GradientDescend gd(m, inSet, 30000, 1e-4, 1.0);
     
     gd.train();
     
