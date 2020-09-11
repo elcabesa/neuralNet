@@ -7,14 +7,13 @@
 #include "inputSet.h"
 #include "model.h"
 
-GradientDescend::GradientDescend(Model& model, const InputSet& inputSet, unsigned int passes, double learnRate,double regularization, const unsigned int decimation):
+GradientDescend::GradientDescend(Model& model, const InputSet& inputSet, unsigned int passes, double learnRate,double regularization):
     _model(model),
     _inputSet(inputSet),
     _passes(passes),
     _learnRate(learnRate),
     _regularization(regularization),
-    _decimation(decimation),
-    _decimationCount(0)
+    _min(1e20)
 {
     for(unsigned int ll = 0; ll< model.getLayerCount(); ++ll) {
         auto& l= model.getLayer(ll);
@@ -34,21 +33,21 @@ GradientDescend::~GradientDescend() {
 double GradientDescend::train() {
     std::cerr <<"TrainsetError,ValidationError"<<std::endl;
     //auto start = std::chrono::high_resolution_clock::now();
-    _decimationCount = 0;
-    std::cout<<"trainSet total loss: " << _model.calcAvgLoss(_inputSet.validationSet())<<std::endl;
+    
+    std::cout<<"initiali ValidationSet avg loss: " << _model.calcAvgLoss(_inputSet.validationSet())<<std::endl;
     
     for(unsigned int p = 0; p < _passes; ++p) {
         _pass();
         _printTrainResult(p);
     }
-    std::cout<<"final total loss: " <<_model.calcAvgLoss(_inputSet.validationSet())<<std::endl;
+    std::cout<<"final ValidationSet avg loss: " <<_model.calcAvgLoss(_inputSet.validationSet())<<std::endl;
     return _model.calcAvgLoss(_inputSet.validationSet());
 }
 
 void GradientDescend::_pass() {
     auto & batch = _inputSet.batch();
     _model.calcTotalLossGradient(batch);
-    //std::cout<<"*"<<std::flush;
+    
     for( unsigned int ll = 0; ll < _model.getLayerCount(); ++ll) {
         Layer& l = _model.getLayer(ll);
         auto& _v_b_l = _v_b[ll];
@@ -61,7 +60,7 @@ void GradientDescend::_pass() {
             b -= gradBias * (_learnRate / sqrt(_v_b_l[i] + 1e-8));
             ++i;
         }
-        //std::cout<<"*"<<std::flush;;
+        
         auto& _v_w_l = _v_w[ll];
         i = 0;
         for(auto& w: l.weight()){
@@ -71,26 +70,34 @@ void GradientDescend::_pass() {
             ++i;
         }
         l.consolidateResult();
-        //std::cout<<"*"<<std::flush;
-    }
-    //std::cout<<"*"<<std::endl;
-    if(_decimationCount +1 >= _decimation) {
-        double l = _model.calcAvgLoss(batch);
-        std::cout<<"intermediate loss "<< l <<std::endl;
-        std::cerr <<sqrt(l)<<",";
-        
-    }
 
+    }
+    std::cout<<"intermediate loss "<< _model.getAvgLoss() <<std::endl;
+    std::cerr <<sqrt(_model.getAvgLoss())<<",";
 }
 
 void GradientDescend::_printTrainResult(const unsigned int pass) {
-    if(++_decimationCount >= _decimation) {
-        //auto finish = std::chrono::high_resolution_clock::now();
-        //std::chrono::duration<double> elapsed = finish - start;
-        //std::cout << "Elapsed time: " << elapsed.count() << " s\n";
-        double l = _model.calcAvgLoss(_inputSet.validationSet());
-        std::cout<<"pass: "<< pass + 1 <<"/"<<_passes<< " total loss: " << l <<std::endl;
-        std::cerr <<sqrt(l)<<std::endl;
-        _decimationCount = 0;
+    //auto finish = std::chrono::high_resolution_clock::now();
+    //std::chrono::duration<double> elapsed = finish - start;
+    //std::cout << "Elapsed time: " << elapsed.count() << " s\n";
+    double l = _model.calcAvgLoss(_inputSet.validationSet());
+    if(l<_min) {
+        _min = l;
+        
+        std::ofstream nnFile;
+        std::string fileName;
+        fileName += "nn-";
+        fileName += std::to_string(pass);
+        fileName += "-";
+        fileName += std::to_string(sqrt(l));
+        fileName += ".txt";
+        nnFile.open (fileName);
+        _model.serialize(nnFile);
+        nnFile.close();
+        
     }
+    std::cout<<"pass: "<< pass + 1 <<"/"<<_passes<< " total loss: " << l << " minloss "<<_min<<std::endl;
+    std::cerr <<sqrt(l)<<std::endl;
+    
+    
 }

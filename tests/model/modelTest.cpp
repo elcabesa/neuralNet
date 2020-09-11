@@ -171,4 +171,3 @@ TEST(modelTest, calcTotalLoss) {
     
     ASSERT_DOUBLE_EQ(m.calcAvgLoss(examples), localTotalLoss/4.0);
 }
-
