@@ -11,11 +11,11 @@ reluActivation::~reluActivation() {
 }
 
 double reluActivation::propagate(double input) const {
-    return std::max(input, 0.0);
+    return std::max(input, alpha * input);
 }
 
 double reluActivation::derivate(double input) const {
-    return input >=0 ? 1 : 0;
+    return input >=0 ? 1 : alpha;
 }
 
 const std::string reluActivation::getType() const {
