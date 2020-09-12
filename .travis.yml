@@ -6,8 +6,6 @@ compiler:
   - clang
 addons:
   apt:
-    sources:
-      - llvm-toolchain-xenial-10
     packages:
       - clang-10
 
