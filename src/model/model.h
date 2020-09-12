@@ -18,6 +18,7 @@ public:
     void addLayer(std::unique_ptr<Layer> l);
     void randomizeParams();
     void printParams();
+    void printParamsStats();
     const Input& forwardPass(const Input& input, bool verbose = false);
     double calcLoss(const LabeledExample& le);
     double calcAvgLoss(const std::vector<std::shared_ptr<LabeledExample>>& input);
