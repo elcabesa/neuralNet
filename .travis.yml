@@ -1,0 +1,28 @@
+dist: xenial
+sudo: required
+language:
+  - cpp
+compiler:
+  - clang
+addons:
+  apt:
+    sources:
+      - llvm-toolchain-xenial-8
+    packages:
+      - clang-8
+
+before_install:
+  - pip install --user cpp-coveralls
+
+script:
+  - export CXX="clang++-8" 
+  - export CC="clang-8"
+  - mkdir build
+  - cd build
+  - cmake -DCMAKE_BUILD_TYPE=Debug ..
+  - make
+  - cd tests
+  - ./unit_tests
+  
+after_success:
+  - coveralls --gcov llvm-cov --root .. --gcov-options '\gcov -lp' -e tests -e build/CMakeFiles -e build/googletest-src
