@@ -1,0 +1,27 @@
+dist: focal
+sudo: required
+language:
+  - cpp
+compiler:
+  - clang
+addons:
+  apt:
+    packages:
+      - clang-10
+
+before_install:
+  - pip install --user cpp-coveralls
+
+script:
+  - export CXX="clang++-10" 
+  - export CC="clang-10"
+  - mkdir build
+  - cd build
+  - cmake -DCMAKE_BUILD_TYPE=Debug ..
+  - make
+  - cd tests
+  - ./unit_tests
+  - cd ..
+  
+after_success:
+  - coveralls --gcov llvm-cov --root .. --gcov-options '\gcov -lp' -e tests -e build/CMakeFiles -e build/googletest-src
