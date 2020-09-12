@@ -7,16 +7,16 @@ compiler:
 addons:
   apt:
     sources:
-      - llvm-toolchain-xenial-8
+      - llvm-toolchain-xenial-10
     packages:
-      - clang-8
+      - clang-10
 
 before_install:
   - pip install --user cpp-coveralls
 
 script:
-  - export CXX="clang++-8" 
-  - export CC="clang-8"
+  - export CXX="clang++-10" 
+  - export CC="clang-10"
   - mkdir build
   - cd build
   - cmake -DCMAKE_BUILD_TYPE=Debug ..
