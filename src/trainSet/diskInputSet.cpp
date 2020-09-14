@@ -1,6 +1,7 @@
 #include <algorithm>
 #include <cassert>
 #include <iostream>
+#include <mutex>
 #include <random>
 #include <filesystem>
 #include <fstream>
@@ -9,6 +10,9 @@
 #include "diskInputSet.h"
 #include "labeledExample.h"
 #include "dense.h"
+
+
+std::mutex DiskInputSet::_mutex;
 
 DiskInputSet::DiskInputSet(const std::string path, unsigned int inputSize): _path(path), _n(0), _inputSize(inputSize){}
 DiskInputSet::~DiskInputSet(){}
@@ -56,13 +60,18 @@ const std::vector<std::shared_ptr<LabeledExample>>& DiskInputSet::validationSet(
 }
 
 const std::vector<std::shared_ptr<LabeledExample>>& DiskInputSet::batch()const {
-    
-    if(_n >= _testSets.size()) {
-        _n = 0;
-        std::random_shuffle(_testSets.begin(), _testSets.end());
+    unsigned int n;
+    {
+        std::lock_guard<std::mutex> lockGuard(_mutex);
+        if(_n >= _testSets.size()) {
+            _n = 0;
+            std::random_shuffle(_testSets.begin(), _testSets.end());
+        }
+        n = _n;
+        ++_n;
     }
     
-    return readFile(_n++);
+    return readFile(n);
 }
 
 const std::vector<std::shared_ptr<LabeledExample>>& DiskInputSet::readFile(unsigned int index) const {
@@ -146,12 +155,24 @@ void DiskInputSet::printStatistics() const {
         std::cout<< in <<" ";
     }*/
     
+    double minV= 5e6;
+    double maxV= -5e6;
+    std::vector<unsigned long int> histogram(401, 0);
     std::vector<unsigned long int> featureCount(_inputSize, 0);
     for(unsigned int in = 0; in < _testSets.size(); ++in) {
-        //std::cout<<"read file "<<in<<std::endl;
+        std::cout<<"read file "<<in<<std::endl;
         auto & set = readFile(in);
         for(auto& features: set) {
             const auto& feat =features->features();
+            double label = features->label();
+            ++histogram[std::max(std::min(int(label),200),-200)+200];
+            
+            if( label < minV) {
+                minV =label;
+            }
+            if( label > maxV) {
+                maxV = label;
+            }
             unsigned int num = feat.getElementNumber();
             for(unsigned int o = 0; o < num; ++o){
                 auto el = feat.getElementFromIndex(o);
@@ -173,6 +194,16 @@ void DiskInputSet::printStatistics() const {
     std::cout<<"max at position "<<std::distance(featureCount.begin(), max)<<std::endl;
     std::cout<<std::endl;
     
+    std::cout<<"min val = "<<minV<<" max val = "<<maxV<<std::endl;
+    
+    std::cout<<"histogram"<<std::endl;
+    int k = -200;
+    for(auto v:histogram){
+        std::cout<<k<<":\t\t"<<v<<std::endl;
+        ++k;
+    }
+    
+    
     /*for(unsigned int i = 0; i< featureCount.size(); ++i) {
         std::cout<<i<<": "<<featureCount[i]<<std::endl;
     }*/
@@ -182,5 +213,24 @@ void DiskInputSet::printStatistics() const {
             std::cout<<"["<<n<<"]: "<<std::count_if(featureCount.begin(), featureCount.end(), [n](unsigned long int i){return i == n;})<<std::endl;
         }
         std::cout<<"[other]: "<<std::count_if(featureCount.begin(), featureCount.end(), [max](unsigned long int i){return i >=max ;})<<std::endl;
+    }*/
+    /*unsigned int index = 0;
+    for(auto& v: featureCount) {
+        if(v == 0) {
+            bool color = (index/40960);
+            unsigned int ksq = (index/640)%64;
+            unsigned int psq = (index/10)%64;
+            unsigned int piece = (index)%10;
+            if(
+                (ksq != psq) &&
+                !((piece == 4 || piece == 9) && (psq < 8 || psq > 55))
+            ) {
+                std::cout<< (color?"b ":"w ");
+                std::cout<< "ksq " << ksq<<" ";
+                std::cout<< "psq " << psq<<" ";
+                std::cout<< "piece " << piece <<std::endl;
+            }
+        }
+        ++index;
     }*/
 }

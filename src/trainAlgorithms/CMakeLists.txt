@@ -1,5 +1,6 @@
 target_sources(libNeuralNet PRIVATE 
     ${CMAKE_CURRENT_SOURCE_DIR}/gradientDescend.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/parallelGradientDescend.cpp
 )
 
 # Make sure the compiler can find include files for our libNeuralNet library

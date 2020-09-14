@@ -1,13 +1,13 @@
-#ifndef _GRADIENT_DESCEND_H
-#define _GRADIENT_DESCEND_H
+#ifndef _PARALLEL_GRADIENT_DESCEND_H
+#define _PARALLEL_GRADIENT_DESCEND_H
 
 class Model;
 class InputSet;
 
-class GradientDescend {
+class ParallelGradientDescend {
 public:
-    GradientDescend(Model& model, const InputSet& inputSet, unsigned int passes, double learnRate, double regularization = 1.0, double beta = 0.9);
-    ~GradientDescend();
+    ParallelGradientDescend(Model& model, const InputSet& inputSet, unsigned int passes, double learnRate, double regularization = 1.0, double beta = 0.9);
+    ~ParallelGradientDescend();
     
     double train();
 private:

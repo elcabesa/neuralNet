@@ -19,7 +19,7 @@
 int main() {
     std::cout << "NeuralNET" << std::endl;
     
-    /*std::cout<<"read testset"<<std::endl;
+    std::cout<<"read testset"<<std::endl;
     DiskInputSet inSet("./TESTSET", 81920);
     inSet.generate();
     std::cout<<"done"<<std::endl;
@@ -37,8 +37,8 @@ int main() {
         }
     }
     return 0;*/
-    //inSet.printStatistics();
-    //return 0;
+    inSet.printStatistics();
+    return 0;
     
     std::cout<<"creating model"<<std::endl;
     Model m;
@@ -79,11 +79,11 @@ int main() {
              std::cout<<"FAIL"<<std::endl;
         }
         nnFile.close();
-        m.printParamsStats();
+        //m.printParamsStats();
     }
-    exit(0);
+    // exit(0);
 
-   /* GradientDescend gd(m, inSet, 30000, 1e-4, 1.0);
+     GradientDescend gd(m, inSet, 30000, 1e-4, 1.0);
     
     gd.train();
     
@@ -97,7 +97,7 @@ int main() {
         m.serialize(nnFile);
         nnFile.close();
         std::cout<<"done"<<std::endl;
-    }*/
+    }
     //std::cout<<"randomize Params"<<std::endl;
     //m.randomizeParams();*/
     /*std::cout<<"final total loss: " <<m.calcAvgLoss(inSet.validationSet())<<std::endl;

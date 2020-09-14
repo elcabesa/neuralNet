@@ -3,11 +3,11 @@
 #include <iostream>
 #include <vector>
 
-#include "gradientDescend.h" 
+#include "parallelGradientDescend.h" 
 #include "inputSet.h"
 #include "model.h"
 
-GradientDescend::GradientDescend(Model& model, const InputSet& inputSet, unsigned int passes, double learnRate,double regularization, double beta):
+ParallelGradientDescend::ParallelGradientDescend(Model& model, const InputSet& inputSet, unsigned int passes, double learnRate,double regularization, double beta):
     _model(model),
     _inputSet(inputSet),
     _passes(passes),
@@ -28,11 +28,11 @@ GradientDescend::GradientDescend(Model& model, const InputSet& inputSet, unsigne
     
 }
 
-GradientDescend::~GradientDescend() {
+ParallelGradientDescend::~ParallelGradientDescend() {
     
 }
 
-double GradientDescend::train() {
+double ParallelGradientDescend::train() {
     std::cerr <<"TrainsetError,ValidationError"<<std::endl;
     //auto start = std::chrono::high_resolution_clock::now();
     
@@ -47,18 +47,18 @@ double GradientDescend::train() {
     return _model.calcAvgLoss(_inputSet.validationSet());
 }
 
-void GradientDescend::_pass() {
+void ParallelGradientDescend::_pass() {
     _calcLossGradient();
     _updateParams();
     std::cout<<"intermediate loss "<< _model.getAvgLoss() <<std::endl;
     std::cerr <<sqrt(_model.getAvgLoss())<<","<<std::endl;
 }
 
-void GradientDescend::_calcLossGradient() {
+void ParallelGradientDescend::_calcLossGradient() {
     _model.calcTotalLossGradient(_inputSet.batch());
 }
 
-void GradientDescend::_updateParams() {
+void ParallelGradientDescend::_updateParams() {
     for( unsigned int ll = 0; ll < _model.getLayerCount(); ++ll) {
         Layer& l = _model.getLayer(ll);
         auto& _v_b_l = _v_b[ll];
@@ -84,7 +84,7 @@ void GradientDescend::_updateParams() {
 }
 
 
-void GradientDescend::_printTrainResult(const unsigned int pass) {
+void ParallelGradientDescend::_printTrainResult(const unsigned int pass) {
     //auto finish = std::chrono::high_resolution_clock::now();
     //std::chrono::duration<double> elapsed = finish - start;
     //std::cout << "Elapsed time: " << elapsed.count() << " s\n";    
@@ -96,7 +96,7 @@ void GradientDescend::_printTrainResult(const unsigned int pass) {
 }
 
 
-void GradientDescend::_save(const unsigned int pass) {
+void ParallelGradientDescend::_save(const unsigned int pass) {
     bool save = false;
     _counter++;
     if(_counter>=1000) {

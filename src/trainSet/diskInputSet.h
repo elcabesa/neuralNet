@@ -1,7 +1,9 @@
 #ifndef _DISK_INPUT_SET_H
 #define _DISK_INPUT_SET_H
 
+
 #include <fstream>
+#include <mutex>
 #include <string>
 #include "inputSet.h"
 #include "sparse.h"
@@ -36,7 +38,7 @@ private:
     unsigned int _inputSize;
     
     const std::vector<std::shared_ptr<LabeledExample>>& readFile(unsigned int index) const;
-    
+    static std::mutex _mutex;  // protects g_i
     
 };
 
