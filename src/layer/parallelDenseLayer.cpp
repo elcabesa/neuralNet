@@ -107,7 +107,25 @@ void ParallelDenseLayer::propagate(const Input& input) {
         }
         ++n;
     }
-    
+}
+
+void ParallelDenseLayer::incrementalPropagate(const Input& input) {
+    unsigned int n= 0;
+    _output.clear();
+    for(auto& l: _parallelLayers) {
+        
+        const ParalledSparseInput psi(input, n, _layerInputSize);
+        l.incrementalPropagate(psi);
+        
+        // copy back output
+        auto& out = l.output();
+        unsigned int num = out.getElementNumber();
+        for(unsigned int o = 0; o < num; ++o){
+            auto el = out.getElementFromIndex(o);
+            _output.set(_calcBiasIndex(n, el.first), el.second); 
+        }
+        ++n;
+    }
 }
 
 void ParallelDenseLayer::printParams() const {

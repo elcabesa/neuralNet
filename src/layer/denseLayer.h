@@ -14,6 +14,7 @@ public:
     ~DenseLayer();
     
     void propagate(const Input& input);
+    void incrementalPropagate(const Input& input);
     void printParams() const;
     void randomizeParams();
     void backwardCalcBias(const std::vector<double>& h);
@@ -47,8 +48,8 @@ private:
     std::shared_ptr<Activation> _act;
     
     
-    void calcNetOut(const Input& input);
-    void calcOut();
+    void _calcNetOut(const Input& input, bool incremental = false);
+    void _calcOut();
 };
 
 #endif  

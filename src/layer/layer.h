@@ -17,6 +17,7 @@ public:
     void printOutput() const;
     
     virtual void propagate(const Input& input) = 0;
+    virtual void incrementalPropagate(const Input& input) = 0;
     virtual void printParams() const = 0;
     virtual void randomizeParams() = 0;
     virtual void backwardCalcBias(const std::vector<double>& h) = 0;
