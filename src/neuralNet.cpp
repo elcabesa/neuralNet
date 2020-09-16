@@ -16,10 +16,26 @@
 #include "gradientDescend.h"
 
 
-int main() {
+int main(int argc, char*argv[]) {
+    double learnRate = 1e-4;
+    double regularization = 1.0;
+    double beta = 0.9;
+    unsigned int passes = 30000;
+    
+    if(argc == 5) {
+        passes = atoi(argv[1]);
+        learnRate = atof(argv[2]);
+        regularization = atof(argv[3]);
+        beta = atof(argv[4]);
+        std::cout<<"passes "<<passes<<std::endl;
+        std::cout<<"learnRate "<<learnRate<<std::endl;
+        std::cout<<"regularization "<<regularization<<std::endl;
+        std::cout<<"beta "<<beta<<std::endl;
+    }
+    
     std::cout << "NeuralNET" << std::endl;
     
-    /*std::cout<<"read testset"<<std::endl;
+    std::cout<<"read testset"<<std::endl;
     DiskInputSet inSet("./TESTSET", 81920);
     inSet.generate();
     std::cout<<"done"<<std::endl;
@@ -52,7 +68,7 @@ int main() {
         m.randomizeParams();
         double loss = m.calcAvgLoss(inSet.validationSet());
         std::cout<<"final total loss: " <<loss<<std::endl;    
-        if( loss < maxValue) {
+        if( loss < maxValue) {testSet = generateTestSetList()
             maxValue =loss;
             std::cout<<"NEW MAX VALUE: " <<maxValue<<std::endl;  
             
@@ -79,11 +95,11 @@ int main() {
              std::cout<<"FAIL"<<std::endl;
         }
         nnFile.close();
-        m.printParamsStats();
+        //m.printParamsStats();
     }
-    exit(0);
+    //exit(0);
 
-   /* GradientDescend gd(m, inSet, 30000, 1e-4, 1.0);
+    GradientDescend gd(m, inSet, passes, learnRate, regularization, beta);
     
     gd.train();
     
@@ -93,11 +109,11 @@ int main() {
     {
         std::cout<<"serialize"<<std::endl;
         std::ofstream nnFile;
-        nnFile.open ("nn.txt");
+        nnFile.open ("nn-final.txt");
         m.serialize(nnFile);
         nnFile.close();
         std::cout<<"done"<<std::endl;
-    }*/
+    }
     //std::cout<<"randomize Params"<<std::endl;
     //m.randomizeParams();*/
     /*std::cout<<"final total loss: " <<m.calcAvgLoss(inSet.validationSet())<<std::endl;

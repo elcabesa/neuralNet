@@ -7,12 +7,13 @@
 #include "inputSet.h"
 #include "model.h"
 
-GradientDescend::GradientDescend(Model& model, const InputSet& inputSet, unsigned int passes, double learnRate,double regularization):
+GradientDescend::GradientDescend(Model& model, const InputSet& inputSet, unsigned int passes, double learnRate,double regularization, double beta):
     _model(model),
     _inputSet(inputSet),
     _passes(passes),
     _learnRate(learnRate),
     _regularization(regularization),
+    _beta(beta),
     _min(1e20)
 {
     for(unsigned int ll = 0; ll< model.getLayerCount(); ++ll) {
@@ -51,12 +52,11 @@ void GradientDescend::_pass() {
     for( unsigned int ll = 0; ll < _model.getLayerCount(); ++ll) {
         Layer& l = _model.getLayer(ll);
         auto& _v_b_l = _v_b[ll];
-        const double beta = 0.9;
         
         unsigned int i = 0;
         for(auto& b: l.bias()){
             double gradBias = l.getBiasSumGradient(i);
-            _v_b_l[i] = beta * _v_b_l[i] + (1-beta) * gradBias * gradBias;
+            _v_b_l[i] = _beta * _v_b_l[i] + (1-_beta) * gradBias * gradBias;
             b -= gradBias * (_learnRate / sqrt(_v_b_l[i] + 1e-8));
             ++i;
         }
@@ -65,7 +65,7 @@ void GradientDescend::_pass() {
         i = 0;
         for(auto& w: l.weight()){
             double gradWeight = l.getWeightSumGradient(i);
-            _v_w_l[i] = beta * _v_w_l[i] + (1-beta) * gradWeight * gradWeight;
+            _v_w_l[i] = _beta * _v_w_l[i] + (1-_beta) * gradWeight * gradWeight;
             w = (_regularization * w) - gradWeight * (_learnRate / sqrt(_v_w_l[i] + 1e-8));
             ++i;
         }
@@ -80,7 +80,7 @@ void GradientDescend::_printTrainResult(const unsigned int pass) {
     //auto finish = std::chrono::high_resolution_clock::now();
     //std::chrono::duration<double> elapsed = finish - start;
     //std::cout << "Elapsed time: " << elapsed.count() << " s\n";
-    double l = _model.calcAvgLoss(_inputSet.validationSet());
+    double l = _model.getAvgLoss();//_model.calcAvgLoss(_inputSet.validationSet());
     if(l<_min) {
         _min = l;
         
@@ -96,7 +96,7 @@ void GradientDescend::_printTrainResult(const unsigned int pass) {
         nnFile.close();
         
     }
-    std::cout<<"pass: "<< pass + 1 <<"/"<<_passes<< " total loss: " << l << " minloss "<<_min<<std::endl;
+    //std::cout<<"pass: "<< pass + 1 <<"/"<<_passes<< " total loss: " << l << " minloss "<<_min<<std::endl;
     std::cerr <<sqrt(l)<<std::endl;
     
     
