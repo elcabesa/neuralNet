@@ -72,7 +72,7 @@ void GradientDescend::_pass() {
         l.consolidateResult();
 
     }
-    std::cout<<"intermediate loss "<< _model.getAvgLoss() <<std::endl;
+    std::cout<<"intermediate loss "<< sqrt(_model.getAvgLoss()) <<std::endl;
     std::cerr <<sqrt(_model.getAvgLoss())<<",";
 }
 

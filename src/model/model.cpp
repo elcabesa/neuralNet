@@ -41,14 +41,16 @@ const Input& Model::forwardPass(const Input& input, bool verbose /* = false */) 
     return *in;
 }
 
-double Model::calcLoss(const LabeledExample& le) {
+double Model::calcLoss(const LabeledExample& le, bool verbose) {
     auto& out = forwardPass(le.features());
-    return cost.calc(out.get(0), le.label());
+    auto c = cost.calc(out.get(0), le.label());
+    if (verbose) { std::cerr<< out.get(0) <<","<<le.label()<<","<<c<<std::endl;}
+    return c;
 }
 
-double Model::calcAvgLoss(const std::vector<std::shared_ptr<LabeledExample>>& input) {
+double Model::calcAvgLoss(const std::vector<std::shared_ptr<LabeledExample>>& input, bool verbose) {
     double error = 0.0;
-    for(auto& le: input) {error += calcLoss(*le);}
+    for(auto& le: input) {error += calcLoss(*le, verbose);}
     return error / input.size();
 }
 

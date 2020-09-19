@@ -12,18 +12,22 @@
 #include "dense.h"
 #include "parallelDenseLayer.h"
 #include "diskInputSet.h"
+#include "diskInputSet2.h"
 #include "memoryInputSet.h"
 #include "gradientDescend.h"
 
-DiskInputSet getInputSet() {
+void getInputSet(DiskInputSet2& inSet) {
     std::cout<<"read testset"<<std::endl;
-    
-    DiskInputSet inSet("./TESTSET", 81920);
     inSet.generate();
     
-    std::cout<<"done"<<std::endl;
+    /*for( unsigned int i = 0; i<10; ++i){
+        for(auto x: inSet.batch()) {
+            std::cout<<x->label()<<std::endl;
+        }
+        std::cout<<"---------------"<<std::endl;
+    }*/
     
-    return inSet;
+    std::cout<<"done"<<std::endl;
 }
 
 Model createModel() {
@@ -53,6 +57,8 @@ int main(int argc, const char*argv[]) {
         ("b,beta", "rmsprop beta", cxxopts::value<double>()->default_value("0.9"))
         ("randomize", "randomize model parmeters", cxxopts::value<bool>()->default_value("false"))
         ("n,nPath", "weight file path", cxxopts::value<std::string>()->default_value("./nn-start.txt"))
+        ("s,batchSize", "batchSize", cxxopts::value<unsigned int>()->default_value("30"))
+        ("print", "print validation error")
     ;
     
     auto result = options.parse(argc, argv);
@@ -62,12 +68,10 @@ int main(int argc, const char*argv[]) {
       std::cout << options.help({"", "Group"}) << std::endl;
       exit(0);
     }
-    
-    
     std::cout << "NeuralNET" << std::endl;
     
-    
-    auto inSet = getInputSet();
+    DiskInputSet2 inSet("./TESTSET", 81920,result["batchSize"].as<unsigned int>());
+    getInputSet(inSet);
     
     auto m = createModel();
     
@@ -93,6 +97,12 @@ int main(int argc, const char*argv[]) {
              exit(-1);
         }
         nnFile.close();
+    }
+    
+    if (result.count("print"))
+    {
+        m.calcAvgLoss(inSet.validationSet(), true);
+        exit(0);
     }
 
     GradientDescend gd(m,
