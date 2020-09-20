@@ -36,6 +36,8 @@ public:
     
     void serialize(std::ofstream& ss) const;
     bool deserialize(std::ifstream& ss);
+    
+    void clear();
 
 private:
     std::vector<std::unique_ptr<Layer>> _layers;

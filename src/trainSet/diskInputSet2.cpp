@@ -10,7 +10,14 @@
 #include "labeledExample.h"
 #include "dense.h"
 
-DiskInputSet2::DiskInputSet2(const std::string path, unsigned int inputSize, unsigned int batchsize): _path(path), _n(0), _inputSize(inputSize), _batchsize{batchsize}{}
+DiskInputSet2::DiskInputSet2(const std::string path, unsigned int inputSize, unsigned int batchsize):
+    _path(path),
+    _n(0),
+    _inputSize(inputSize),
+    _batchsize{batchsize},
+    _inVec(),
+    _in(new SparseInput(_inputSize, _inVec)),
+    _empty(_in, 0) {}
 DiskInputSet2::~DiskInputSet2(){}
 
 void DiskInputSet2::generate() {
@@ -93,32 +100,33 @@ const std::vector<std::shared_ptr<LabeledExample>>& DiskInputSet2::_readFile(uns
 }
 
 LabeledExample DiskInputSet2::_parseLine(std::ifstream& ss, bool& finish) const {
-    std::vector<unsigned int> inVec = {};
-    std::shared_ptr<Input> in(new SparseInput(_inputSize, inVec));
-    LabeledExample empty(in,0);
-    char temp = ss.get();
-    if(ss.eof()) {finish = true; return empty;} 
-    if(temp != '{') {std::cout<<"missing {"<<std::endl;finish = true; return empty;}
-    auto features = _getFeatures(ss);
-    if(ss.get() != '{') {std::cout<<"missing {"<<std::endl;finish = true; return empty;}
-    double label = _getLabel(ss);
-    if(ss.get() != '\n') {std::cout<<"missing CR"<<std::endl;finish = true; return empty;}
+    char line[500];
+    ss.getline(line, sizeof(line)); 
+    unsigned int index = 0;
+    
+    if(ss.eof()) {finish = true; return _empty;} // TODO check that we don't lose the last line 
+    if(line[index++] != '{') {std::cout<<"missing {"<<std::endl;finish = true; return _empty;}
+    auto features = _getFeatures(line, index);
+    if(line[index++] != '{') {std::cout<<"missing {"<<std::endl;finish = true; return _empty;}
+    double label = _getLabel(line, index);
+    if(line[index++] != '\0') {std::cout<<"missing CR"<<std::endl;finish = true; return _empty;}
     
     return LabeledExample(features, label);
 }
 
-std::shared_ptr<Input> DiskInputSet2::_getFeatures(std::ifstream& ss) const {
+std::shared_ptr<Input> DiskInputSet2::_getFeatures(const char * const buf, unsigned int& index) const {
     std::string x = "";
     std::vector<unsigned int> inVec = {};
     char temp;
     do {
-        temp = ss.get();
+        temp = buf[index++];
         while(temp != ',' && temp != '}') {
             x += temp;
-            temp = ss.get();
+            temp = buf[index++];
         }
         if(x != "") {
             assert((unsigned int)std::stoi(x)<_inputSize);
+            //std::cout<<x<<std::endl;
             inVec.push_back(std::stoi(x));
             
         }
@@ -128,12 +136,12 @@ std::shared_ptr<Input> DiskInputSet2::_getFeatures(std::ifstream& ss) const {
     return feature;
 }
 
-double DiskInputSet2::_getLabel(std::ifstream& ss) const {
+double DiskInputSet2::_getLabel(const char * const buf, unsigned int& index) const {
     std::string x;
-    char temp = ss.get();
+    char temp = buf[index++];
     while(temp != '}') {
         x += temp;
-        temp = ss.get();
+        temp = buf[index++];
     }
     return std::stod(x);
 }

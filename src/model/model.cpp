@@ -157,3 +157,7 @@ void Model::printParamsStats() {
         std::cout<<"weight max "<< weightMax<<std::endl;
     }
 }
+
+void Model::clear() {
+    _layers.clear();
+}

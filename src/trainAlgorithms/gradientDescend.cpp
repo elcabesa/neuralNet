@@ -73,17 +73,17 @@ void GradientDescend::_pass() {
 
     }
     std::cout<<"intermediate loss "<< sqrt(_model.getAvgLoss()) <<std::endl;
-    std::cerr <<sqrt(_model.getAvgLoss())<<",";
+    //std::cerr <<sqrt(_model.getAvgLoss())<<",";
 }
 
 void GradientDescend::_printTrainResult(const unsigned int pass) {
     //auto finish = std::chrono::high_resolution_clock::now();
     //std::chrono::duration<double> elapsed = finish - start;
     //std::cout << "Elapsed time: " << elapsed.count() << " s\n";
-    double l = _model.getAvgLoss();//_model.calcAvgLoss(_inputSet.validationSet());
-    if(l<_min) {
-        _min = l;
-        
+    
+    if(/*l<_min*/(pass%5000)==0) {
+       // _min = l;
+        double l = /*_model.getAvgLoss();*/_model.calcAvgLoss(_inputSet.validationSet());
         std::ofstream nnFile;
         std::string fileName;
         fileName += "nn-";
@@ -94,10 +94,10 @@ void GradientDescend::_printTrainResult(const unsigned int pass) {
         nnFile.open (fileName);
         _model.serialize(nnFile);
         nnFile.close();
-        
+        std::cerr <<sqrt(l)<<std::endl;
     }
     //std::cout<<"pass: "<< pass + 1 <<"/"<<_passes<< " total loss: " << l << " minloss "<<_min<<std::endl;
-    std::cerr <<sqrt(l)<<std::endl;
+    
     
     
 }
