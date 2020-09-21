@@ -1,9 +1,11 @@
 #include <chrono>
 #include <cmath>
 #include <iostream>
+#include <set>
 #include <vector>
 
 #include "gradientDescend.h" 
+#include "labeledExample.h"
 #include "inputSet.h"
 #include "model.h"
 
@@ -52,22 +54,60 @@ void GradientDescend::_pass() {
     for( unsigned int ll = 0; ll < _model.getLayerCount(); ++ll) {
         Layer& l = _model.getLayer(ll);
         auto& _v_b_l = _v_b[ll];
-        
+        double beta2 = (1.0 - _beta);
         unsigned int i = 0;
+        for(auto& _v_b_l_i: _v_b_l){
+            double gradBias = l.getBiasSumGradient(i);
+            _v_b_l_i = _beta * _v_b_l_i + beta2 * gradBias * gradBias;
+            ++i;
+        }
+
+        i = 0;
         for(auto& b: l.bias()){
             double gradBias = l.getBiasSumGradient(i);
-            _v_b_l[i] = _beta * _v_b_l[i] + (1-_beta) * gradBias * gradBias;
             b -= gradBias * (_learnRate / sqrt(_v_b_l[i] + 1e-8));
             ++i;
         }
         
-        auto& _v_w_l = _v_w[ll];
-        i = 0;
-        for(auto& w: l.weight()){
-            double gradWeight = l.getWeightSumGradient(i);
-            _v_w_l[i] = _beta * _v_w_l[i] + (1-_beta) * gradWeight * gradWeight;
-            w = (_regularization * w) - gradWeight * (_learnRate / sqrt(_v_w_l[i] + 1e-8));
-            ++i;
+        if(ll == 0) {
+            std::set<unsigned int> activeFeature;
+            for(auto& input: batch){
+                auto & f = input->features();
+                unsigned int num = f.getElementNumber();
+                for(unsigned int idx = 0; idx < num; ++idx) {
+                    auto & el = f.getElementFromIndex(idx);
+                    activeFeature.insert(el.first);
+                }
+            }
+            // since the input is sparse..... only update weight with gradient != 0
+            auto& _v_w_l = _v_w[ll];
+            i = 0;
+            for(auto& _v_w_l_i: _v_w_l){
+                double gradWeight = l.getWeightSumGradient(i);
+                _v_w_l_i = _beta * _v_w_l_i + beta2 * gradWeight * gradWeight;
+                ++i;
+            }
+            i = 0;
+            for(auto& w: l.weight()){
+                double gradWeight = l.getWeightSumGradient(i);
+                w = (_regularization * w) - gradWeight * (_learnRate / sqrt(_v_w_l[i] + 1e-8));
+                ++i;
+            }
+            
+        } else {
+            auto& _v_w_l = _v_w[ll];
+            i = 0;
+            for(auto& _v_w_l_i: _v_w_l){
+                double gradWeight = l.getWeightSumGradient(i);
+                _v_w_l_i = _beta * _v_w_l_i + beta2 * gradWeight * gradWeight;
+                ++i;
+            }
+            i = 0;
+            for(auto& w: l.weight()){
+                double gradWeight = l.getWeightSumGradient(i);
+                w = (_regularization * w) - gradWeight * (_learnRate / sqrt(_v_w_l[i] + 1e-8));
+                ++i;
+            }
         }
         l.consolidateResult();
 

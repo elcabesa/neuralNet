@@ -45,7 +45,7 @@ void ParallelDenseLayer::consolidateResult() {
     }
 }
 
-double ParallelDenseLayer::getBiasSumGradient(unsigned int index) const{
+/*double ParallelDenseLayer::getBiasSumGradient(unsigned int index) const {
     unsigned int layerNum = index / _layerOutputSize;
     assert(layerNum<_number);
     return _parallelLayers[layerNum].getBiasSumGradient(index % _layerOutputSize);
@@ -54,7 +54,7 @@ double ParallelDenseLayer::getWeightSumGradient(unsigned int index) const {
     unsigned int layerNum = index / _layerWeightNumber;
     assert(layerNum<_number);
     return _parallelLayers[layerNum].getWeightSumGradient(index % _layerWeightNumber);
-}
+}*/
 
 unsigned int ParallelDenseLayer::_calcWeightIndex(const unsigned int layer, const unsigned int offset) const {
     assert(offset < _layerWeightNumber);

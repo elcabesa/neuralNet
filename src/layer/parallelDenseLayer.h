@@ -29,8 +29,16 @@ public:
     
     void consolidateResult();
     
-    double getBiasSumGradient(unsigned int index) const;
-    double getWeightSumGradient(unsigned int index) const;
+    double getBiasSumGradient(unsigned int index) const {
+        unsigned int layerNum = index / _layerOutputSize;
+        assert(layerNum<_number);
+        return _parallelLayers[layerNum].getBiasSumGradient(index % _layerOutputSize);
+    }
+    double getWeightSumGradient(unsigned int index) const {
+        unsigned int layerNum = index / _layerWeightNumber;
+        assert(layerNum<_number);
+        return _parallelLayers[layerNum].getWeightSumGradient(index % _layerWeightNumber);
+    }
     
     unsigned int _calcWeightIndex(const unsigned int layer, const unsigned int offset) const;
     unsigned int _calcBiasIndex(const unsigned int layer, const unsigned int offset) const;

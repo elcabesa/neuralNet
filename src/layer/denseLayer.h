@@ -1,6 +1,7 @@
 #ifndef _DENSE_LAYER_H
 #define _DENSE_LAYER_H
 
+#include <cassert>
 #include <memory>
 #include <vector>
 
@@ -28,8 +29,15 @@ public:
     
     void consolidateResult();
     
-    double getBiasSumGradient(unsigned int index) const;
-    double getWeightSumGradient(unsigned int index) const;
+    double getBiasSumGradient(unsigned int index) const {
+        assert(index < _bias.size());
+        return _biasSumGradient[index];
+    }
+
+    double getWeightSumGradient(unsigned int index) const {
+        assert(index < _weight.size());
+        return _weightSumGradient[index];
+    }
     
     unsigned int _calcWeightIndex(const unsigned int i, const unsigned int o) const;
     

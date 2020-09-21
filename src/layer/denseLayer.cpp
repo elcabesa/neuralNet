@@ -60,14 +60,14 @@ std::vector<double>& DenseLayer::weight() {return _weight;}
 
 void DenseLayer::consolidateResult() {}
 
-double DenseLayer::getBiasSumGradient(unsigned int index) const{
+/*double DenseLayer::getBiasSumGradient(unsigned int index) const{
     assert(index < _bias.size());
     return _biasSumGradient[index];
 }
 double DenseLayer::getWeightSumGradient(unsigned int index) const{
     assert(index < _weight.size());
     return _weightSumGradient[index];
-}
+}*/
 
 void DenseLayer::randomizeParams() {
     double stdDev = _stdDev;
@@ -157,17 +157,13 @@ void DenseLayer::serialize(std::ofstream& ss) const{
     ss << "{";
     for( auto & b: _bias) {
         u.d = b; 
-        for(unsigned int i = 0; i<8;++i) {
-            ss<<u.c[i];
-        }
+        ss.write(u.c, 8);
         ss<<", ";
     }
     ss <<std::endl;
     for( auto & w: _weight) {
         u.d = w; 
-        for(unsigned int i = 0; i<8;++i) {
-            ss<<u.c[i];
-        }
+        ss.write(u.c, 8);
         ss<<", ";
     }
     
@@ -182,18 +178,14 @@ bool DenseLayer::deserialize(std::ifstream& ss) {
     }u;
     if(ss.get() != '{') {std::cout<<"DenseLayer missing {"<<std::endl;return false;}
     for( auto & b: _bias) {
-        for(unsigned int i = 0; i<8;++i) {
-            u.c[i] = ss.get();
-        }
+        ss.read(u.c, 8);
         b = u.d;
         if(ss.get() != ',') {std::cout<<"DenseLayer missing ,"<<std::endl;return false;} 
         if(ss.get() != ' ') {std::cout<<"DenseLayer missing space"<<std::endl;return false;}
     }
     if(ss.get() != '\n') {std::cout<<"DenseLayer missing line feed"<<std::endl;return false;}
     for( auto & w: _weight) {
-        for(unsigned int i = 0; i<8;++i) {
-            u.c[i] = ss.get();
-        }
+        ss.read(u.c, 8);
         w = u.d;
         if(ss.get() != ',') {std::cout<<"DenseLayer missing ,"<<std::endl;return false;} 
         if(ss.get() != ' ') {std::cout<<"DenseLayer missing space"<<std::endl;return false;}
