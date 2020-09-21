@@ -4,6 +4,7 @@
 #include <cassert>
 #include <memory>
 #include <vector>
+#include <set>
 
 #include "layer.h"
 
@@ -29,15 +30,11 @@ public:
     
     void consolidateResult();
     
-    double getBiasSumGradient(unsigned int index) const {
-        assert(index < _bias.size());
-        return _biasSumGradient[index];
-    }
-
-    double getWeightSumGradient(unsigned int index) const {
-        assert(index < _weight.size());
-        return _weightSumGradient[index];
-    }
+    double getBiasSumGradient(unsigned int index) const;
+    double getWeightSumGradient(unsigned int index) const;
+    
+    void upgradeBias(double beta, double learnRate);
+    void upgradeWeight(double beta, double learnRate, double regularization);
     
     unsigned int _calcWeightIndex(const unsigned int i, const unsigned int o) const;
     
@@ -52,7 +49,11 @@ private:
     std::vector<double> _biasSumGradient;
     std::vector<double> _weightSumGradient;
     std::vector<double> _netOutput;
+    std::vector<double> _biasMovAvg;
+    std::vector<double> _weightMovAvg;
     std::shared_ptr<Activation> _act;
+    
+    std::set<unsigned int> _activeFeature;
     
     
     void calcNetOut(const Input& input);

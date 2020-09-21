@@ -21,6 +21,9 @@ DenseLayer::DenseLayer(const unsigned int inputSize, const unsigned int outputSi
     _weightSumGradient.resize(outputSize * inputSize, 0.0);
     
     _netOutput.resize(outputSize, 0.0);
+    
+    _biasMovAvg.resize(outputSize, 0.0);
+    _weightMovAvg.resize(outputSize * inputSize, 0.0);
 }
 
 DenseLayer::~DenseLayer() {}
@@ -31,6 +34,7 @@ void DenseLayer::calcNetOut(const Input& input) {
     unsigned int num = input.getElementNumber();
     for(unsigned int idx = 0; idx < num; ++idx) {
         auto& el = input.getElementFromIndex(idx);
+        _activeFeature.insert(el.first);
         for(unsigned int o = 0; o < _outputSize; ++o) {
             _netOutput[o] += el.second * _weight[_calcWeightIndex(el.first,o)];
         }
@@ -60,14 +64,14 @@ std::vector<double>& DenseLayer::weight() {return _weight;}
 
 void DenseLayer::consolidateResult() {}
 
-/*double DenseLayer::getBiasSumGradient(unsigned int index) const{
+double DenseLayer::getBiasSumGradient(unsigned int index) const{
     assert(index < _bias.size());
     return _biasSumGradient[index];
 }
 double DenseLayer::getWeightSumGradient(unsigned int index) const{
     assert(index < _weight.size());
     return _weightSumGradient[index];
-}*/
+}
 
 void DenseLayer::randomizeParams() {
     double stdDev = _stdDev;
@@ -104,6 +108,7 @@ std::vector<double> DenseLayer::backPropHelper() const {
 }
 
 void DenseLayer::resetSum() {
+    _activeFeature.clear();
     _biasSumGradient.clear();
     _weightSumGradient.clear();
     _biasSumGradient.resize(_outputSize, 0.0);
@@ -146,6 +151,39 @@ void DenseLayer::backwardCalcWeight(const Input& input) {
             double w = _biasGradient[o] * el.second;
             _weightGradient[_calcWeightIndex(el.first,o)] = w;
         }
+    }
+}
+
+void DenseLayer::upgradeBias(double beta, double learnRate) {
+    double beta2 = (1.0 - beta);
+    
+    for(auto& bma: _biasMovAvg){
+        bma = beta * bma;
+    }
+
+    unsigned int i = 0;
+    for(auto& b: _bias){
+        double gradBias = getBiasSumGradient(i);
+        _biasMovAvg[i] += beta2 * gradBias * gradBias;
+        b -= gradBias * (learnRate / sqrt(_biasMovAvg[i] + 1e-8));
+        ++i;
+    }
+    
+}
+
+void DenseLayer::upgradeWeight(double beta, double learnRate, double regularization) {
+    double beta2 = (1.0 - beta);
+    
+    for(auto& wma: _weightMovAvg){
+        wma = beta * wma;
+    }
+    
+    unsigned int i = 0;
+    for(auto& w: _weight){
+        double gradWeight = getWeightSumGradient(i);
+        _weightMovAvg[i] += beta2 * gradWeight * gradWeight;
+        w = (regularization * w) - gradWeight * (learnRate / sqrt(_weightMovAvg[i] + 1e-8));
+        ++i;
     }
 }
 

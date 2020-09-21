@@ -201,7 +201,6 @@ TEST(modelTest, calcLossGradient) {
             auto lminus = m.calcLoss(*(examples[0]));
             b = originalB;
             double grad = (lplus - lminus)/(0.02);
-            std::cout<<"layer "<<l<<" bias "<<i<<std::endl;
             ASSERT_NEAR(actualLayer.getBiasSumGradient(i), grad, 1e-5);
             ++i;
         }
@@ -214,7 +213,6 @@ TEST(modelTest, calcLossGradient) {
             auto lminus = m.calcLoss(*(examples[0]));
             w = originalW;
             double grad = (lplus - lminus)/(0.02);
-            std::cout<<"layer "<<l<<" weight "<<i<<std::endl;
             ASSERT_NEAR(actualLayer.getWeightSumGradient(i), grad, 1e-5);
             ++i;
         }

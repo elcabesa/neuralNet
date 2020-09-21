@@ -27,28 +27,22 @@ public:
     std::vector<double>& bias();
     std::vector<double>& weight();
     
-    void consolidateResult();
+    DenseLayer& getLayer(unsigned int);
     
-    double getBiasSumGradient(unsigned int index) const {
-        unsigned int layerNum = index / _layerOutputSize;
-        assert(layerNum<_number);
-        return _parallelLayers[layerNum].getBiasSumGradient(index % _layerOutputSize);
-    }
-    double getWeightSumGradient(unsigned int index) const {
-        unsigned int layerNum = index / _layerWeightNumber;
-        assert(layerNum<_number);
-        return _parallelLayers[layerNum].getWeightSumGradient(index % _layerWeightNumber);
-    }
-    
-    unsigned int _calcWeightIndex(const unsigned int layer, const unsigned int offset) const;
+    double getBiasSumGradient(unsigned int index) const;
+    double getWeightSumGradient(unsigned int index) const;
+
+
     unsigned int _calcBiasIndex(const unsigned int layer, const unsigned int offset) const;
+    
+    void upgradeBias(double beta, double learnRate);
+    void upgradeWeight(double beta, double learnRate, double regularization);
+
     
     void serialize(std::ofstream& ss) const;
     bool deserialize(std::ifstream& ss);
     
 private:
-    std::vector<double> _bias;
-    std::vector<double> _weight;
     std::vector<DenseLayer> _parallelLayers;
     const unsigned int _number;
     const unsigned int _layerInputSize;
