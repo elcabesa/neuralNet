@@ -58,7 +58,7 @@ int main(int argc, const char*argv[]) {
         ("randomize", "randomize model parmeters", cxxopts::value<bool>()->default_value("false"))
         ("n,nPath", "weight file path", cxxopts::value<std::string>()->default_value("./nn-start.txt"))
         ("s,batchSize", "batchSize", cxxopts::value<unsigned int>()->default_value("30"))
-        ("print", "print validation error")
+        ("print", "print validation error", cxxopts::value<unsigned int>()->default_value("30"))
     ;
     
     auto result = options.parse(argc, argv);
@@ -101,7 +101,7 @@ int main(int argc, const char*argv[]) {
     
     if (result.count("print"))
     {
-        m.calcAvgLoss(inSet.validationSet(), true);
+        m.calcAvgLoss(inSet.validationSet(), true, result["batchSize"].as<unsigned int>());
         exit(0);
     }
 

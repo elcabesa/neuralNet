@@ -48,9 +48,15 @@ double Model::calcLoss(const LabeledExample& le, bool verbose) {
     return c;
 }
 
-double Model::calcAvgLoss(const std::vector<std::shared_ptr<LabeledExample>>& input, bool verbose) {
+double Model::calcAvgLoss(const std::vector<std::shared_ptr<LabeledExample>>& input, bool verbose, unsigned int count/* = 30*/) {
     double error = 0.0;
-    for(auto& le: input) {error += calcLoss(*le, verbose);}
+    unsigned int n = 0;
+    for(auto& le: input) {
+        error += calcLoss(*le, verbose);
+        if(verbose && ++n >= count) {
+            break;
+        }
+    }
     return error / input.size();
 }
 

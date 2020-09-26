@@ -108,11 +108,15 @@ std::vector<double> DenseLayer::backPropHelper() const {
 }
 
 void DenseLayer::resetSum() {
+    for(auto f: _activeFeature) {
+        for(unsigned int o = 0; o < _outputSize; ++o) {
+            unsigned int idx = _calcWeightIndex(f, o);
+            _weightSumGradient[idx] = 0.0;
+        }
+    }
     _activeFeature.clear();
     _biasSumGradient.clear();
-    _weightSumGradient.clear();
     _biasSumGradient.resize(_outputSize, 0.0);
-    _weightSumGradient.resize(_outputSize * _inputSize, 0.0);
 }
 
 void DenseLayer::accumulateGradients(const Input& input) {
@@ -174,16 +178,22 @@ void DenseLayer::upgradeBias(double beta, double learnRate) {
 void DenseLayer::upgradeWeight(double beta, double learnRate, double regularization) {
     double beta2 = (1.0 - beta);
     
-    for(auto& wma: _weightMovAvg){
+    /*for(auto& wma: _weightMovAvg){
         wma = beta * wma;
-    }
+    }*/
     
-    unsigned int i = 0;
-    for(auto& w: _weight){
-        double gradWeight = getWeightSumGradient(i);
-        _weightMovAvg[i] += beta2 * gradWeight * gradWeight;
-        w = (regularization * w) - gradWeight * (learnRate / sqrt(_weightMovAvg[i] + 1e-8));
-        ++i;
+    //std::cout<<"ACTIVE FEATURE SIZE: "<<_activeFeature.size()<<std::endl;
+    for(auto f: _activeFeature) {
+        for(unsigned int o = 0; o < _outputSize; ++o) {
+            unsigned int idx = _calcWeightIndex(f, o);
+            double gradWeight = getWeightSumGradient(idx);
+            //-----------------------------
+            // this should be done for every element, but I did it only for active features to speedup
+            _weightMovAvg[idx] *= beta;
+            //-----------------------------
+            _weightMovAvg[idx] += beta2 * gradWeight * gradWeight;
+            _weight[idx] = (regularization * _weight[idx] ) - gradWeight * (learnRate / sqrt(_weightMovAvg[idx] + 1e-8));
+        }
     }
 }
 

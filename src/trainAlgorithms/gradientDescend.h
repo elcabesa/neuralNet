@@ -22,6 +22,8 @@ private:
     void _printTrainResult(const unsigned int pass);
     
     double _min;
+    double _accumulatorLoss;
+    unsigned int _count;
     
 };
 
