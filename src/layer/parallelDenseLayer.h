@@ -28,6 +28,7 @@ public:
     std::vector<double>& weight();
     
     DenseLayer& getLayer(unsigned int);
+    unsigned int getLayerNumber();
     
     double getBiasSumGradient(unsigned int index) const;
     double getWeightSumGradient(unsigned int index) const;

@@ -232,38 +232,155 @@ TEST(modelTest, calcLossGradientRelu) {
     m.getLayer(1).weight() = {1.02, -0.2};
     
     std::vector<std::shared_ptr<LabeledExample>> examples;
-    std::vector<double> inVec = {2.5, 1.7};
-    std::shared_ptr<Input> in(new DenseInput(inVec));
-    std::shared_ptr<LabeledExample> le(new LabeledExample(std::move(in),250));
-    examples.push_back(std::move(le));
+    {
+        std::vector<double> inVec = {2.5, 1.7};
+        std::shared_ptr<Input> in(new DenseInput(inVec));
+        std::shared_ptr<LabeledExample> le(new LabeledExample(std::move(in),250));
+        examples.push_back(std::move(le));
+    }
+    {
+        std::vector<double> inVec = {3.2, -2.0};
+        std::shared_ptr<Input> in(new DenseInput(inVec));
+        std::shared_ptr<LabeledExample> le(new LabeledExample(std::move(in),100));
+        examples.push_back(std::move(le));
+    }
     
     m.calcTotalLossGradient(examples);
     
     for(unsigned int l = 0; l < m.getLayerCount(); ++l) {
         auto& actualLayer = m.getLayer(l);
         for(unsigned int i = 0; auto& b : actualLayer.bias()) {
-            auto originalB = b;
-            b = originalB + 0.01;
-            auto lplus = m.calcLoss(*(examples[0]));
-            b = originalB - 0.01;
-            auto lminus = m.calcLoss(*(examples[0]));
-            b = originalB;
-            double grad = (lplus - lminus)/(0.02);
+            double grad = 0.0;
+            for(auto& e :examples) {
+                auto originalB = b;
+                b = originalB + 0.01;
+                auto lplus = m.calcLoss(*(e));
+                b = originalB - 0.01;
+                auto lminus = m.calcLoss(*(e));
+                b = originalB;
+                grad += (lplus - lminus)/(0.02);
+            }
             ASSERT_NEAR(actualLayer.getBiasSumGradient(i), grad, 1e-5);
             ++i;
         }
 
         for(unsigned int i = 0; auto& w : actualLayer.weight()) {
-            auto originalW = w;
-            w = originalW + 0.01;
-            auto lplus = m.calcLoss(*(examples[0]));
-            w = originalW - 0.01;
-            auto lminus = m.calcLoss(*(examples[0]));
-            w = originalW;
-            double grad = (lplus - lminus)/(0.02);
+            double grad = 0;
+            for(auto& e :examples) {
+                auto originalW = w;
+                w = originalW + 0.01;
+                auto lplus = m.calcLoss(*(e));
+                w = originalW - 0.01;
+                auto lminus = m.calcLoss(*(e));
+                w = originalW;
+                grad += (lplus - lminus)/(0.02);
+            }
             ASSERT_NEAR(actualLayer.getWeightSumGradient(i), grad, 1e-5);
             ++i;
         }
+    }  
+}
+
+TEST(modelTest, calcLossGradientComplex) {
+    Model m;
+
+    m.addLayer(std::make_unique<ParallelDenseLayer>(2, 2, 2, ActivationFactory::create(ActivationFactory::type::linear)));
+    m.addLayer(std::make_unique<DenseLayer>(4, 2, ActivationFactory::create(ActivationFactory::type::relu)));
+    m.addLayer(std::make_unique<DenseLayer>(2, 2, ActivationFactory::create(ActivationFactory::type::relu)));
+    m.addLayer(std::make_unique<DenseLayer>(2, 1, ActivationFactory::create(ActivationFactory::type::linear)));
+    
+    m.randomizeParams();
+    
+    std::vector<std::shared_ptr<LabeledExample>> examples;
+    {
+        std::vector<double> inVec = {2.5, 1.7, 0, -1.7};
+        std::shared_ptr<Input> in(new DenseInput(inVec));
+        std::shared_ptr<LabeledExample> le(new LabeledExample(std::move(in),-20));
+        examples.push_back(std::move(le));
+    }
+    {
+        std::vector<double> inVec = {3.2, -2.0, 0.1, 0.1};
+        std::shared_ptr<Input> in(new DenseInput(inVec));
+        std::shared_ptr<LabeledExample> le(new LabeledExample(std::move(in),10));
+        examples.push_back(std::move(le));
     }
     
+    m.calcTotalLossGradient(examples);
+    
+    const double delta = 0.00001;
+    //std::cout<<"eccomi"<<std::endl;
+    for(unsigned int l = 0; l < m.getLayerCount(); ++l) {
+        auto& actualLayer = m.getLayer(l);
+        std::cout<<"layer "<<l<<std::endl;
+        ParallelDenseLayer*  pdl = dynamic_cast<ParallelDenseLayer*>(&actualLayer);
+        if(!pdl) {
+            for(unsigned int i = 0; auto& b : actualLayer.bias()) {
+                std::cout<<"\tbias "<<i<<std::endl;
+                double grad = 0.0;
+                for(auto& e :examples) {
+                    auto originalB = b;
+                    b = originalB + delta;
+                    auto lplus = m.calcLoss(*(e));
+                    b = originalB - delta;
+                    auto lminus = m.calcLoss(*(e));
+                    b = originalB;
+                    grad += (lplus - lminus)/(2.0 * delta);
+                }
+                ASSERT_NEAR(actualLayer.getBiasSumGradient(i), grad, 1e-6);
+                ++i;
+            }
+
+            for(unsigned int i = 0; auto& w : actualLayer.weight()) {
+                std::cout<<"\tweight "<<i<<std::endl;
+                double grad = 0;
+                for(auto& e :examples) {
+                    auto originalW = w;
+                    w = originalW + delta;
+                    auto lplus = m.calcLoss(*(e));
+                    w = originalW - delta;
+                    auto lminus = m.calcLoss(*(e));
+                    w = originalW;
+                    grad += (lplus - lminus)/(2.0 * delta);
+                }
+                ASSERT_NEAR(actualLayer.getWeightSumGradient(i), grad, 1e-6);
+                ++i;
+            }
+        } else {
+            for(unsigned int n = 0; n < pdl->getLayerNumber(); ++n) {
+                std::cout<<"\tparallel layer "<<n<<std::endl;
+                auto & layer = pdl->getLayer(n);
+                for(unsigned int i = 0; auto& b : layer.bias()) {
+                    std::cout<<"\t\tbias "<<i<<std::endl;
+                    double grad = 0.0;
+                    for(auto& e :examples) {
+                        auto originalB = b;
+                        b = originalB + delta;
+                        auto lplus = m.calcLoss(*(e));
+                        b = originalB - delta;
+                        auto lminus = m.calcLoss(*(e));
+                        b = originalB;
+                        grad += (lplus - lminus)/(2.0 * delta);
+                    }
+                    ASSERT_NEAR(layer.getBiasSumGradient(i), grad, 1e-6);
+                    ++i;
+                }
+
+                for(unsigned int i = 0; auto& w : layer.weight()) {
+                    std::cout<<"\t\tweight "<<i<<std::endl;
+                    double grad = 0;
+                    for(auto& e :examples) {
+                        auto originalW = w;
+                        w = originalW + delta;
+                        auto lplus = m.calcLoss(*(e));
+                        w = originalW - delta;
+                        auto lminus = m.calcLoss(*(e));
+                        w = originalW;
+                        grad += (lplus - lminus)/(2.0 * delta);
+                    }
+                    ASSERT_NEAR(layer.getWeightSumGradient(i), grad, 1e-6);
+                    ++i;
+                }
+            }
+        }
+    }  
 }

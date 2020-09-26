@@ -27,6 +27,10 @@ DenseLayer& ParallelDenseLayer::getLayer(unsigned int i) {
     return _parallelLayers[i];
 }
 
+unsigned int ParallelDenseLayer::getLayerNumber() {
+    return _number;
+}
+
 double ParallelDenseLayer::getBiasSumGradient(unsigned int index) const {
     unsigned int layerNum = index / _layerOutputSize;
     assert(layerNum<_number);
