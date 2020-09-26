@@ -28,7 +28,7 @@ public:
     
     // for reference, avg loss is also calculated by calcTotalLossGradient
     double calcLoss(const LabeledExample& le, bool verbose = false);
-    double calcAvgLoss(const std::vector<std::shared_ptr<LabeledExample>>& input, bool verbose = false);
+    double calcAvgLoss(const std::vector<std::shared_ptr<LabeledExample>>& input, bool verbose = false, unsigned int count = 30);
     
     void calcLossGradient(const LabeledExample& le);
     void calcTotalLossGradient(const std::vector<std::shared_ptr<LabeledExample>>& input);  
@@ -36,6 +36,8 @@ public:
     
     void serialize(std::ofstream& ss) const;
     bool deserialize(std::ifstream& ss);
+    
+    void clear();
 
 private:
     std::vector<std::unique_ptr<Layer>> _layers;

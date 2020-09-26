@@ -29,13 +29,15 @@ public:
     virtual std::vector<double>& bias() = 0;
     virtual std::vector<double>& weight() = 0;
     
-    virtual void consolidateResult() = 0;
     
     virtual double getBiasSumGradient(unsigned int index) const = 0;
     virtual double getWeightSumGradient(unsigned int index) const = 0;
     
     virtual void serialize(std::ofstream& ss) const = 0;
     virtual bool deserialize(std::ifstream& ss) = 0;
+    
+    virtual void upgradeBias(double beta, double learnRate) = 0;
+    virtual void upgradeWeight(double beta, double learnRate, double regularization) = 0;
 
 protected:
     unsigned int _inputSize;

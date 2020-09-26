@@ -21,6 +21,9 @@ DenseLayer::DenseLayer(const unsigned int inputSize, const unsigned int outputSi
     _weightSumGradient.resize(outputSize * inputSize, 0.0);
     
     _netOutput.resize(outputSize, 0.0);
+    
+    _biasMovAvg.resize(outputSize, 0.0);
+    _weightMovAvg.resize(outputSize * inputSize, 0.0);
 }
 
 DenseLayer::~DenseLayer() {}
@@ -31,6 +34,7 @@ void DenseLayer::calcNetOut(const Input& input) {
     unsigned int num = input.getElementNumber();
     for(unsigned int idx = 0; idx < num; ++idx) {
         auto& el = input.getElementFromIndex(idx);
+        _activeFeature.insert(el.first);
         for(unsigned int o = 0; o < _outputSize; ++o) {
             _netOutput[o] += el.second * _weight[_calcWeightIndex(el.first,o)];
         }
@@ -104,10 +108,15 @@ std::vector<double> DenseLayer::backPropHelper() const {
 }
 
 void DenseLayer::resetSum() {
+    for(auto f: _activeFeature) {
+        for(unsigned int o = 0; o < _outputSize; ++o) {
+            unsigned int idx = _calcWeightIndex(f, o);
+            _weightSumGradient[idx] = 0.0;
+        }
+    }
+    _activeFeature.clear();
     _biasSumGradient.clear();
-    _weightSumGradient.clear();
     _biasSumGradient.resize(_outputSize, 0.0);
-    _weightSumGradient.resize(_outputSize * _inputSize, 0.0);
 }
 
 void DenseLayer::accumulateGradients(const Input& input) {
@@ -149,6 +158,45 @@ void DenseLayer::backwardCalcWeight(const Input& input) {
     }
 }
 
+void DenseLayer::upgradeBias(double beta, double learnRate) {
+    double beta2 = (1.0 - beta);
+    
+    for(auto& bma: _biasMovAvg){
+        bma = beta * bma;
+    }
+
+    unsigned int i = 0;
+    for(auto& b: _bias){
+        double gradBias = getBiasSumGradient(i);
+        _biasMovAvg[i] += beta2 * gradBias * gradBias;
+        b -= gradBias * (learnRate / sqrt(_biasMovAvg[i] + 1e-8));
+        ++i;
+    }
+    
+}
+
+void DenseLayer::upgradeWeight(double beta, double learnRate, double regularization) {
+    double beta2 = (1.0 - beta);
+    
+    /*for(auto& wma: _weightMovAvg){
+        wma = beta * wma;
+    }*/
+    
+    //std::cout<<"ACTIVE FEATURE SIZE: "<<_activeFeature.size()<<std::endl;
+    for(auto f: _activeFeature) {
+        for(unsigned int o = 0; o < _outputSize; ++o) {
+            unsigned int idx = _calcWeightIndex(f, o);
+            double gradWeight = getWeightSumGradient(idx);
+            //-----------------------------
+            // this should be done for every element, but I did it only for active features to speedup
+            _weightMovAvg[idx] *= beta;
+            //-----------------------------
+            _weightMovAvg[idx] += beta2 * gradWeight * gradWeight;
+            _weight[idx] = (regularization * _weight[idx] ) - gradWeight * (learnRate / sqrt(_weightMovAvg[idx] + 1e-8));
+        }
+    }
+}
+
 void DenseLayer::serialize(std::ofstream& ss) const{
     union un{
         double d;
@@ -157,17 +205,13 @@ void DenseLayer::serialize(std::ofstream& ss) const{
     ss << "{";
     for( auto & b: _bias) {
         u.d = b; 
-        for(unsigned int i = 0; i<8;++i) {
-            ss<<u.c[i];
-        }
+        ss.write(u.c, 8);
         ss<<", ";
     }
     ss <<std::endl;
     for( auto & w: _weight) {
         u.d = w; 
-        for(unsigned int i = 0; i<8;++i) {
-            ss<<u.c[i];
-        }
+        ss.write(u.c, 8);
         ss<<", ";
     }
     
@@ -182,18 +226,14 @@ bool DenseLayer::deserialize(std::ifstream& ss) {
     }u;
     if(ss.get() != '{') {std::cout<<"DenseLayer missing {"<<std::endl;return false;}
     for( auto & b: _bias) {
-        for(unsigned int i = 0; i<8;++i) {
-            u.c[i] = ss.get();
-        }
+        ss.read(u.c, 8);
         b = u.d;
         if(ss.get() != ',') {std::cout<<"DenseLayer missing ,"<<std::endl;return false;} 
         if(ss.get() != ' ') {std::cout<<"DenseLayer missing space"<<std::endl;return false;}
     }
     if(ss.get() != '\n') {std::cout<<"DenseLayer missing line feed"<<std::endl;return false;}
     for( auto & w: _weight) {
-        for(unsigned int i = 0; i<8;++i) {
-            u.c[i] = ss.get();
-        }
+        ss.read(u.c, 8);
         w = u.d;
         if(ss.get() != ',') {std::cout<<"DenseLayer missing ,"<<std::endl;return false;} 
         if(ss.get() != ' ') {std::cout<<"DenseLayer missing space"<<std::endl;return false;}

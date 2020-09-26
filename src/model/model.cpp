@@ -48,9 +48,15 @@ double Model::calcLoss(const LabeledExample& le, bool verbose) {
     return c;
 }
 
-double Model::calcAvgLoss(const std::vector<std::shared_ptr<LabeledExample>>& input, bool verbose) {
+double Model::calcAvgLoss(const std::vector<std::shared_ptr<LabeledExample>>& input, bool verbose, unsigned int count/* = 30*/) {
     double error = 0.0;
-    for(auto& le: input) {error += calcLoss(*le, verbose);}
+    unsigned int n = 0;
+    for(auto& le: input) {
+        error += calcLoss(*le, verbose);
+        if(verbose && ++n >= count) {
+            break;
+        }
+    }
     return error / input.size();
 }
 
@@ -129,7 +135,7 @@ unsigned int Model::getLayerCount() {
 }
 
 void Model::printParamsStats() {
-    std::cout<<"layer count = " << _layers.size()<<std::endl;
+/*    std::cout<<"layer count = " << _layers.size()<<std::endl;
     std::cout<<"---------------------------------"<<std::endl;
     for(auto &l: _layers) {
         std::cout<<(*l).getInputSize() <<" x "<<(*l).getOutputSize()<<std::endl;
@@ -155,5 +161,9 @@ void Model::printParamsStats() {
         std::cout<<"weight min "<< weightMin<<std::endl;
         double weightMax = *std::max_element( (*l).weight().begin(), (*l).weight().end()); 
         std::cout<<"weight max "<< weightMax<<std::endl;
-    }
+    }*/
+}
+
+void Model::clear() {
+    _layers.clear();
 }

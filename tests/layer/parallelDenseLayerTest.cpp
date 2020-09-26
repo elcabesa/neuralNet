@@ -17,9 +17,11 @@ TEST(parallelDenseLayerTest, testPropagate1) {
 
 TEST(parallelDenseLayerTest, testPropagate2) {
     ParallelDenseLayer layer(2, 2, 1, ActivationFactory::create(ActivationFactory::type::linear));
-    layer.bias() = {3.0, -2.1};
-    layer.weight() = {1.0, 1.0, 1.0, 1.0 };
-    layer.consolidateResult();
+    layer.getLayer(0).bias() = {3.0};
+    layer.getLayer(0).weight() = {1.0, 1.0};
+    
+    layer.getLayer(1).bias() = {-2.1};
+    layer.getLayer(1).weight() = {1.0, 1.0};
 
     layer.propagate(DenseInput({0.0, 0.0, 0.0, 0.0}));
     ASSERT_DOUBLE_EQ(layer.output().get(0), 3.0);
@@ -34,13 +36,11 @@ TEST(parallelDenseLayerTest, testPropagate2) {
 TEST(parallelDenseLayerTest, testPropagate3) {
     ParallelDenseLayer layer(2, 4, 2, ActivationFactory::create(ActivationFactory::type::linear));
     
-    layer.bias() = {3.0, 1.1, -2.0, 1.5};
-    layer.weight() = {0.5, 0.7, -1.0, 0.2,
-                      1.1,-1.0, 3.0,-0.9,
-                      0.6, 0.4, -1.2, 0.3,
-                      1.0,-1.1, 3.1,-0.7
-    };
-    layer.consolidateResult();
+    layer.getLayer(0).bias() = {3.0, 1.1};
+    layer.getLayer(0).weight() = {0.5, 0.7, -1.0, 0.2, 1.1,-1.0, 3.0,-0.9,};
+    
+    layer.getLayer(1).bias() = {-2.0, 1.5};
+    layer.getLayer(1).weight() = {0.6, 0.4, -1.2, 0.3, 1.0,-1.1, 3.1,-0.7};
 
     layer.propagate(DenseInput({0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0}));
     ASSERT_DOUBLE_EQ(layer.output().get(0), 3.0);
@@ -70,14 +70,12 @@ TEST(parallelDenseLayerTest, testPropagate3) {
 TEST(parallelDenseLayerTest, testPropagateRelu) {
     ParallelDenseLayer layer(2, 4, 2, ActivationFactory::create(ActivationFactory::type::relu));
     
-    layer.bias() = {3.0, 1.1, -2.0, 1.5};
-    layer.weight() = {0.5, 0.7, -1.0, 0.2,
-                      1.1,-1.0, 3.0,-0.9,
-                      0.6, 0.4, -1.2, 0.3,
-                      1.0,-1.1, 3.1,-0.7
-    };
-    layer.consolidateResult();
-
+    layer.getLayer(0).bias() = {3.0, 1.1};
+    layer.getLayer(0).weight() = {0.5, 0.7, -1.0, 0.2, 1.1,-1.0, 3.0,-0.9,};
+    
+    layer.getLayer(1).bias() = {-2.0, 1.5};
+    layer.getLayer(1).weight() = {0.6, 0.4, -1.2, 0.3, 1.0,-1.1, 3.1,-0.7};
+    
     layer.propagate(DenseInput({0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0}));
     ASSERT_DOUBLE_EQ(layer.output().get(0), 3.0);
     ASSERT_DOUBLE_EQ(layer.output().get(1), 1.1);

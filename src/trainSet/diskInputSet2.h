@@ -3,6 +3,7 @@
 
 #include <fstream>
 #include <string>
+#include "labeledExample.h"
 #include "inputSet.h"
 #include "sparse.h"
 
@@ -33,10 +34,14 @@ private:
     
     mutable std::ifstream _ss;
     
+    std::vector<unsigned int> _inVec;
+    std::shared_ptr<Input> _in;
+    LabeledExample _empty;
+    
     const std::vector<std::shared_ptr<LabeledExample>>& _readFile(unsigned int index) const;
     LabeledExample _parseLine(std::ifstream& ss, bool& finish) const;
-    std::shared_ptr<Input> _getFeatures(std::ifstream& ss) const;
-    double _getLabel(std::ifstream& ss) const;
+    std::shared_ptr<Input> _getFeatures(const char * const buf, unsigned int& index) const;
+    double _getLabel(const char * const buf, unsigned int& index) const;
 
 };
 

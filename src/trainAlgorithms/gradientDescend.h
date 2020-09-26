@@ -21,10 +21,9 @@ private:
     void _pass();
     void _printTrainResult(const unsigned int pass);
     
-    std::vector<std::vector<double>> _v_b;
-    std::vector<std::vector<double>> _v_w;
-    
     double _min;
+    double _accumulatorLoss;
+    unsigned int _count;
     
 };
 
