@@ -73,7 +73,7 @@ TEST(denseTest, testPropagateRelu) {
 
     layer.propagate(DenseInput({-2.0, 5.0, 7.0, 0.1}));
     ASSERT_DOUBLE_EQ(layer.output().get(0), 5.0);
-    ASSERT_DOUBLE_EQ(layer.output().get(1), -6.39e-5);
+    ASSERT_DOUBLE_EQ(layer.output().get(1), -0.639);
     
 }
 

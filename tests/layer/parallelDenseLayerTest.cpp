@@ -79,25 +79,25 @@ TEST(parallelDenseLayerTest, testPropagateRelu) {
     layer.propagate(DenseInput({0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0}));
     ASSERT_DOUBLE_EQ(layer.output().get(0), 3.0);
     ASSERT_DOUBLE_EQ(layer.output().get(1), 1.1);
-    ASSERT_DOUBLE_EQ(layer.output().get(2), -2e-5);
+    ASSERT_DOUBLE_EQ(layer.output().get(2), -0.2);
     ASSERT_DOUBLE_EQ(layer.output().get(3), 1.5);
     
     ASSERT_DOUBLE_EQ(layer.getOutput(0), 3.0);
     ASSERT_DOUBLE_EQ(layer.getOutput(1), 1.1);
-    ASSERT_DOUBLE_EQ(layer.getOutput(2), -2e-5);
+    ASSERT_DOUBLE_EQ(layer.getOutput(2), -0.2);
     ASSERT_DOUBLE_EQ(layer.getOutput(3), 1.5);
     
     layer.propagate(DenseInput({2.0, 5.0, 1.0, 1.0, 3.0,-2.0, 4.0, 1.0}));
     ASSERT_DOUBLE_EQ(layer.output().get(0), 3.1);
     ASSERT_DOUBLE_EQ(layer.output().get(1), 1.6);
     ASSERT_DOUBLE_EQ(layer.output().get(2), 9.3);
-    ASSERT_DOUBLE_EQ(layer.output().get(3), -3.0e-5);
+    ASSERT_DOUBLE_EQ(layer.output().get(3), -0.30);
 
     layer.propagate(DenseInput({2.0, -5.0, 1.0, 1.0, -3.0,-2.0, 4.0, 1.0}));
     ASSERT_DOUBLE_EQ(layer.output().get(0), 13.1);
-    ASSERT_DOUBLE_EQ(layer.output().get(1), -0.4e-5);
+    ASSERT_DOUBLE_EQ(layer.output().get(1), -0.04);
     ASSERT_DOUBLE_EQ(layer.output().get(2), 5.7);
-    ASSERT_DOUBLE_EQ(layer.output().get(3), -5.4e-5);
+    ASSERT_DOUBLE_EQ(layer.output().get(3), -0.54);
     
 }
 

@@ -19,7 +19,7 @@ TEST(ActivationFactory, createRelu) {
     
     ASSERT_EQ(ac->getType(), "Relu");
     
-    ASSERT_DOUBLE_EQ(ac->propagate(-2000), -2000 * 1e-5);
+    ASSERT_DOUBLE_EQ(ac->propagate(-2000), -2000 * 0.1);
     ASSERT_DOUBLE_EQ(ac->propagate(0), 0);
     ASSERT_DOUBLE_EQ(ac->propagate(587), 587);
 }

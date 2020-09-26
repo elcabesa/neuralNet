@@ -106,7 +106,7 @@ TEST(modelTest, forwardPassRelu) {
     {
         auto& out = m.forwardPass(in);
         ASSERT_EQ(out.size(), 1);
-        ASSERT_DOUBLE_EQ(out.get(0), -0.2098e-5);
+        ASSERT_DOUBLE_EQ(out.get(0), -0.02098);
     }
 }
 
