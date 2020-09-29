@@ -32,6 +32,7 @@ public:
     
     void calcLossGradient(const LabeledExample& le);
     void calcTotalLossGradient(const std::vector<std::shared_ptr<LabeledExample>>& input);  
+    void VerifyTotalLossGradient(const std::vector<std::shared_ptr<LabeledExample>>& input);  
     double getAvgLoss() const;
     
     void serialize(std::ofstream& ss) const;

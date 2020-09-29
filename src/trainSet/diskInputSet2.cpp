@@ -75,6 +75,10 @@ const std::vector<std::shared_ptr<LabeledExample>>& DiskInputSet2::batch()const 
         _batch.push_back(std::make_shared<LabeledExample>(ex));
         ++count;
     }
+    /*std::cout<<"BATCH"<<std::endl;
+    for(auto b: _batch) {
+        (*b).features().print();
+    }*/
 
     return _batch;
     

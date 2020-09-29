@@ -44,17 +44,20 @@ public:
 private:
     std::vector<double> _bias;
     std::vector<double> _weight;
+
+    std::vector<double> _netOutput;
+    std::shared_ptr<Activation> _act;
+
     std::vector<double> _biasGradient;
     std::vector<double> _weightGradient;
+
     std::vector<double> _biasSumGradient;
     std::vector<double> _weightSumGradient;
-    std::vector<double> _netOutput;
+
     std::vector<double> _biasMovAvg;
     std::vector<double> _weightMovAvg;
-    std::shared_ptr<Activation> _act;
     
     std::set<unsigned int> _activeFeature;
-    
     
     void calcNetOut(const Input& input);
     void calcOut();

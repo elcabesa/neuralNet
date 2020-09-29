@@ -78,7 +78,7 @@ void DenseLayer::randomizeParams() {
     if( stdDev == 0.0) {
         stdDev = 1.0 / sqrt(0.5 * _inputSize);
     }
-    std::cout<<"std dev "<<stdDev<<std::endl;
+    //std::cout<<"std dev "<<stdDev<<std::endl;
     std::random_device rnd;
     std::normal_distribution<double> dist(0.0, 1.0);
     std::normal_distribution<double> dist2(0.0, stdDev);
@@ -114,6 +114,7 @@ void DenseLayer::resetSum() {
             _weightSumGradient[idx] = 0.0;
         }
     }
+    //for(auto& w:_weightSumGradient) { if(w!= 0.0) {std::cout<<"ERRRRRORE"<<std::endl;exit(0);}}
     _activeFeature.clear();
     _biasSumGradient.clear();
     _biasSumGradient.resize(_outputSize, 0.0);
@@ -159,24 +160,25 @@ void DenseLayer::backwardCalcWeight(const Input& input) {
 }
 
 void DenseLayer::upgradeBias(double beta, double learnRate) {
-    double beta2 = (1.0 - beta);
+    //double beta2 = (1.0 - beta);
     
-    for(auto& bma: _biasMovAvg){
+    /*for(auto& bma: _biasMovAvg){
         bma = beta * bma;
-    }
+    }*/
 
     unsigned int i = 0;
     for(auto& b: _bias){
         double gradBias = getBiasSumGradient(i);
-        _biasMovAvg[i] += beta2 * gradBias * gradBias;
-        b -= gradBias * (learnRate / sqrt(_biasMovAvg[i] + 1e-8));
+        //_biasMovAvg[i] += beta2 * gradBias * gradBias;
+        //b -= gradBias * (learnRate / sqrt(_biasMovAvg[i] + 1e-8));
+        b -=gradBias * (learnRate);
         ++i;
     }
     
 }
 
 void DenseLayer::upgradeWeight(double beta, double learnRate, double regularization) {
-    double beta2 = (1.0 - beta);
+    //double beta2 = (1.0 - beta);
     
     /*for(auto& wma: _weightMovAvg){
         wma = beta * wma;
@@ -187,12 +189,16 @@ void DenseLayer::upgradeWeight(double beta, double learnRate, double regularizat
         for(unsigned int o = 0; o < _outputSize; ++o) {
             unsigned int idx = _calcWeightIndex(f, o);
             double gradWeight = getWeightSumGradient(idx);
+            /*if(gradWeight == 0.0) {
+                std::cout<<"GRAD ERROR"<<std::endl;
+            }*/
             //-----------------------------
             // this should be done for every element, but I did it only for active features to speedup
-            _weightMovAvg[idx] *= beta;
+            //_weightMovAvg[idx] *= beta;
             //-----------------------------
-            _weightMovAvg[idx] += beta2 * gradWeight * gradWeight;
-            _weight[idx] = (regularization * _weight[idx] ) - gradWeight * (learnRate / sqrt(_weightMovAvg[idx] + 1e-8));
+            //_weightMovAvg[idx] += beta2 * gradWeight * gradWeight;
+            //_weight[idx] = (regularization * _weight[idx] ) - gradWeight * (learnRate / sqrt(_weightMovAvg[idx] + 1e-8));
+            _weight[idx] -= gradWeight * (learnRate);
         }
     }
 }

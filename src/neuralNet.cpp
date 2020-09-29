@@ -101,7 +101,7 @@ int main(int argc, const char*argv[]) {
     
     if (result.count("print"))
     {
-        m.calcAvgLoss(inSet.validationSet(), true, result["batchSize"].as<unsigned int>());
+        m.calcAvgLoss(inSet.validationSet(), true, result["print"].as<unsigned int>());
         exit(0);
     }
 

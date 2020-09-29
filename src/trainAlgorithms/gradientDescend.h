@@ -18,7 +18,7 @@ private:
     double _regularization;
     double _beta;
     
-    void _pass();
+    void _pass(const unsigned int pass);
     void _printTrainResult(const unsigned int pass);
     
     double _min;

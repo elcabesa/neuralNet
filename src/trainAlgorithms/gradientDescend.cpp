@@ -29,26 +29,34 @@ double GradientDescend::train() {
     std::cerr <<"TrainsetError,ValidationError"<<std::endl;
     //auto start = std::chrono::high_resolution_clock::now();
     bool infinite = (0 == _passes);
-    std::cout<<"initiali ValidationSet avg loss: " << sqrt(_model.calcAvgLoss(_inputSet.validationSet()))<<std::endl;
+    std::cout<<"initial ValidationSet avg loss: " << sqrt(_model.calcAvgLoss(_inputSet.validationSet()))<<std::endl;
     
     for(unsigned int p = 0; infinite || p < _passes; ++p) {
-        _pass();
+        _pass(p);
         _printTrainResult(p);
     }
     std::cout<<"final ValidationSet avg loss: " <<sqrt(_model.calcAvgLoss(_inputSet.validationSet()))<<std::endl;
     return _model.calcAvgLoss(_inputSet.validationSet());
 }
 
-void GradientDescend::_pass() {
+void GradientDescend::_pass(const unsigned int pass) {
+    //std::cout<<"GRADIENT DESCENT PASS"<<std::endl;
     auto & batch = _inputSet.batch();
     _model.calcTotalLossGradient(batch);
+    //_model.VerifyTotalLossGradient(batch);
+    
     //std::cout<<"-----------------"<<std::endl;
     for( unsigned int ll = 0; ll < _model.getLayerCount(); ++ll) {
         Layer& l = _model.getLayer(ll);
         l.upgradeBias(_beta, _learnRate);
         l.upgradeWeight(_beta, _learnRate, _regularization);
     }
+    //double avgLoss = _model.calcAvgLoss(batch);
+    //std::cout<<sqrt(_model.getAvgLoss())<<" "<< sqrt(avgLoss) <<std::endl;
     //std::cout<<"intermediate loss "<< sqrt(_model.getAvgLoss()) <<std::endl;
+    if(_model.getAvgLoss() > 400 ){
+        std::cout<<"WARNING AVG LOSS "<<_model.getAvgLoss()<<std::endl;
+    }
     _accumulatorLoss += _model.getAvgLoss();
     ++_count;
 }
@@ -58,10 +66,11 @@ void GradientDescend::_printTrainResult(const unsigned int pass) {
     //std::chrono::duration<double> elapsed = finish - start;
     //std::cout << "Elapsed time: " << elapsed.count() << " s\n";
     
-    if(/*l<_min*/(pass%50000)==0) {
+    if(/*l<_min*/(pass%1000000)==0) 
+    {
        // _min = l;
         double l = /*_model.getAvgLoss();*/_model.calcAvgLoss(_inputSet.validationSet());
-        unsigned int p = pass /50000;
+        unsigned int p = pass /1000000;
         std::cout<<"pass: "<< p<<" loss "<<sqrt(l) <<std::endl;
         std::ofstream nnFile;
         std::string fileName;
