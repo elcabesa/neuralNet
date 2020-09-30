@@ -58,6 +58,7 @@ int main(int argc, const char*argv[]) {
         ("randomize", "randomize model parmeters", cxxopts::value<bool>()->default_value("false"))
         ("n,nPath", "weight file path", cxxopts::value<std::string>()->default_value("./nn-start.txt"))
         ("s,batchSize", "batchSize", cxxopts::value<unsigned int>()->default_value("30"))
+        ("d,stdDev", "std dev", cxxopts::value<double>()->default_value("0.0"))
         ("print", "print validation error", cxxopts::value<unsigned int>()->default_value("30"))
     ;
     
@@ -76,6 +77,9 @@ int main(int argc, const char*argv[]) {
     // for the first layer let's use a std dev of sqrt(2/active_input)
     // we assume an average of 20 pieces on the board
     double stdDev = sqrt(2.0 /(20 * (result["batchSize"].as<unsigned int>())));
+    if (result.count("stdDev")) {
+        stdDev = result["stdDev"].as<double>();
+    }
     auto m = createModel(stdDev);
     
     if (result["randomize"].as<bool>()) {
