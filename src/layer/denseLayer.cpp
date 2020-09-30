@@ -43,9 +43,19 @@ void DenseLayer::calcNetOut(const Input& input) {
 }
 
 void DenseLayer::calcOut() {
+    //unsigned int zeros = 0;
+    //unsigned int negative = 0;
     for(unsigned int o=0; o < _outputSize; ++o) {
         _output.set(o, _act->propagate(_netOutput[o]));
+        /*if(_netOutput[o]<0 ){
+            ++negative;
+        }*/
+        /*if (_output.get(o) != _netOutput[o]) {
+            ++zeros;
+        }*/
     }
+    //if(zeros*100 /_outputSize >75) {std::cout<<"WARNING high death neurons ("<<zeros<<"/"<<_outputSize<<")"<<std::endl;}
+    //std::cout<<"NEGATIVE/TOTAL:"<<negative<<" "<<_outputSize<<std::endl;
 }
 
 void DenseLayer::propagate(const Input& input) {
@@ -160,29 +170,32 @@ void DenseLayer::backwardCalcWeight(const Input& input) {
 }
 
 void DenseLayer::upgradeBias(double beta, double learnRate) {
-    //double beta2 = (1.0 - beta);
+    double beta2 = (1.0 - beta);
     
-    /*for(auto& bma: _biasMovAvg){
+    for(auto& bma: _biasMovAvg){
         bma = beta * bma;
-    }*/
+    }
 
+    
     unsigned int i = 0;
+    //std::cout<<"--------------"<<std::endl;
     for(auto& b: _bias){
         double gradBias = getBiasSumGradient(i);
-        //_biasMovAvg[i] += beta2 * gradBias * gradBias;
-        //b -= gradBias * (learnRate / sqrt(_biasMovAvg[i] + 1e-8));
-        b -=gradBias * (learnRate);
+        _biasMovAvg[i] += beta2 * gradBias * gradBias;
+        b -= gradBias * (learnRate / sqrt(_biasMovAvg[i] /*+ 1e-8*/));
+        //std::cout<<(i+1)<<": "<<b<<" "<<gradBias<<" "<<(gradBias / b * 100)<<"%"<<std::endl;
+        //b -= gradBias * (learnRate);
         ++i;
     }
     
 }
 
 void DenseLayer::upgradeWeight(double beta, double learnRate, double regularization) {
-    //double beta2 = (1.0 - beta);
+    double beta2 = (1.0 - beta);
     
-    /*for(auto& wma: _weightMovAvg){
+    for(auto& wma: _weightMovAvg){
         wma = beta * wma;
-    }*/
+    }
     
     //std::cout<<"ACTIVE FEATURE SIZE: "<<_activeFeature.size()<<std::endl;
     for(auto f: _activeFeature) {
@@ -196,9 +209,9 @@ void DenseLayer::upgradeWeight(double beta, double learnRate, double regularizat
             // this should be done for every element, but I did it only for active features to speedup
             //_weightMovAvg[idx] *= beta;
             //-----------------------------
-            //_weightMovAvg[idx] += beta2 * gradWeight * gradWeight;
-            //_weight[idx] = (regularization * _weight[idx] ) - gradWeight * (learnRate / sqrt(_weightMovAvg[idx] + 1e-8));
-            _weight[idx] -= gradWeight * (learnRate);
+            _weightMovAvg[idx] += beta2 * gradWeight * gradWeight;
+            _weight[idx] = (regularization * _weight[idx] ) - gradWeight * (learnRate / sqrt(_weightMovAvg[idx] /*+ 1e-8*/));
+            //_weight[idx] -= gradWeight * (learnRate);
         }
     }
 }

@@ -28,6 +28,7 @@ void Model::printParams() {
 }
 
 const Input& Model::forwardPass(const Input& input, bool verbose /* = false */) {
+    //std::cout<<"forward pass"<<std::endl;
     const Input* in = &input;
     for(auto& p: _layers) {
         p->propagate(*in);
@@ -43,6 +44,7 @@ const Input& Model::forwardPass(const Input& input, bool verbose /* = false */) 
 }
 
 double Model::calcLoss(const LabeledExample& le, bool verbose) {
+    //std::cout<<"calcLoss"<<std::endl;
     auto& out = forwardPass(le.features());
     auto c = cost.calc(out.get(0), le.label());
     if (verbose) { std::cerr<< out.get(0) <<","<<le.label()<<","<<c<<std::endl;}
@@ -50,6 +52,7 @@ double Model::calcLoss(const LabeledExample& le, bool verbose) {
 }
 
 double Model::calcAvgLoss(const std::vector<std::shared_ptr<LabeledExample>>& input, bool verbose, unsigned int count/* = 30*/) {
+    //std::cout<<"calcAvgLoss"<<std::endl;
     double error = 0.0;
     unsigned int n = 0;
     for(auto& le: input) {
@@ -66,6 +69,7 @@ double Model::getAvgLoss() const {
 }
 
 void Model::calcLossGradient(const LabeledExample& le) {
+    //std::cout<<"calcLossGradient"<<std::endl;
     auto& out = forwardPass(le.features());
     _totalLoss += cost.calc(out.get(0), le.label());
     for (auto actualLayer = _layers.rbegin(); actualLayer!= _layers.rend(); ++actualLayer) {
@@ -103,6 +107,7 @@ void Model::calcTotalLossGradient(const std::vector<std::shared_ptr<LabeledExamp
     }
     _totalLoss = 0.0;
     for(auto& ex: input) {
+        //std::cout<<"batch size "<<ex->features().getElementNumber()<<std::endl;
         calcLossGradient(*ex);
     }
     _avgLoss = _totalLoss / input.size();

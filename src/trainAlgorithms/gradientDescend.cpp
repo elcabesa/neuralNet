@@ -42,6 +42,7 @@ double GradientDescend::train() {
 void GradientDescend::_pass(const unsigned int pass) {
     //std::cout<<"GRADIENT DESCENT PASS"<<std::endl;
     auto & batch = _inputSet.batch();
+    //std::cout<<"batchsize "<<batch.size()<<std::endl;
     _model.calcTotalLossGradient(batch);
     //_model.VerifyTotalLossGradient(batch);
     
@@ -54,9 +55,9 @@ void GradientDescend::_pass(const unsigned int pass) {
     //double avgLoss = _model.calcAvgLoss(batch);
     //std::cout<<sqrt(_model.getAvgLoss())<<" "<< sqrt(avgLoss) <<std::endl;
     //std::cout<<"intermediate loss "<< sqrt(_model.getAvgLoss()) <<std::endl;
-    if(_model.getAvgLoss() > 400 ){
+    /*if(_model.getAvgLoss() > 400 ){
         std::cout<<"WARNING AVG LOSS "<<_model.getAvgLoss()<<std::endl;
-    }
+    }*/
     _accumulatorLoss += _model.getAvgLoss();
     ++_count;
 }
@@ -65,12 +66,12 @@ void GradientDescend::_printTrainResult(const unsigned int pass) {
     //auto finish = std::chrono::high_resolution_clock::now();
     //std::chrono::duration<double> elapsed = finish - start;
     //std::cout << "Elapsed time: " << elapsed.count() << " s\n";
-    
-    if(/*l<_min*/(pass%1000000)==0) 
+    const unsigned int decimation = 10000;
+    if(/*l<_min*/(pass%decimation)==0) 
     {
        // _min = l;
         double l = /*_model.getAvgLoss();*/_model.calcAvgLoss(_inputSet.validationSet());
-        unsigned int p = pass /1000000;
+        unsigned int p = pass /decimation;
         std::cout<<"pass: "<< p<<" loss "<<sqrt(l) <<std::endl;
         std::ofstream nnFile;
         std::string fileName;

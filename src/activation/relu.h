@@ -11,7 +11,7 @@ public:
     double propagate(double input) const;
     double derivate(double input) const;
     const std::string getType() const;
-    static constexpr double alpha = 0.1;
+    static constexpr double alpha = 0.01;
 }; 
 
 
