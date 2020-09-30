@@ -30,11 +30,11 @@ void getInputSet(DiskInputSet2& inSet) {
     std::cout<<"done"<<std::endl;
 }
 
-Model createModel() {
+Model createModel(double stdDev) {
     std::cout<<"creating model"<<std::endl;
     
     Model m;
-    m.addLayer(std::make_unique<ParallelDenseLayer>(2, 40960, 256, ActivationFactory::create(ActivationFactory::type::linear),1.0/sqrt(6)));
+    m.addLayer(std::make_unique<ParallelDenseLayer>(2, 40960, 256, ActivationFactory::create(ActivationFactory::type::linear),stdDev));
     m.addLayer(std::make_unique<DenseLayer>(512,32, ActivationFactory::create(ActivationFactory::type::relu)));
     m.addLayer(std::make_unique<DenseLayer>(32,32, ActivationFactory::create(ActivationFactory::type::relu)));
     m.addLayer(std::make_unique<DenseLayer>(32, 1, ActivationFactory::create(ActivationFactory::type::linear)));
@@ -73,7 +73,10 @@ int main(int argc, const char*argv[]) {
     DiskInputSet2 inSet("./TESTSET", 81920,result["batchSize"].as<unsigned int>());
     getInputSet(inSet);
     
-    auto m = createModel();
+    // for the first layer let's use a std dev of sqrt(2/active_input)
+    // we assume an average of 20 pieces on the board
+    double stdDev = sqrt(2.0 /(20 * (result["batchSize"].as<unsigned int>())));
+    auto m = createModel(stdDev);
     
     if (result["randomize"].as<bool>()) {
         m.randomizeParams();
