@@ -50,16 +50,20 @@ int main(int argc, const char*argv[]) {
     
     cxxopts::Options options("Neural Net", "Vajolet Neural net trainer");
     options.add_options()
-        ("help", "Print help")
-        ("p,passes", "traiing passes", cxxopts::value<unsigned int>()->default_value("30000"))
+        
+        ("b,beta", "rmsprop beta", cxxopts::value<double>()->default_value("0.9"))
+        ("d,stdDev", "std dev", cxxopts::value<double>()->default_value("0.0"))
         ("e,eta", "eta", cxxopts::value<double>()->default_value("1e-4"))
         ("r,regularization", "regularization value", cxxopts::value<double>()->default_value("1.0"))
-        ("b,beta", "rmsprop beta", cxxopts::value<double>()->default_value("0.9"))
-        ("randomize", "randomize model parmeters", cxxopts::value<bool>()->default_value("false"))
         ("n,nPath", "weight file path", cxxopts::value<std::string>()->default_value("./nn-start.txt"))
+        ("p,passes", "traiing passes", cxxopts::value<unsigned int>()->default_value("30000"))
         ("s,batchSize", "batchSize", cxxopts::value<unsigned int>()->default_value("30"))
-        ("d,stdDev", "std dev", cxxopts::value<double>()->default_value("0.0"))
+        ("c,decimation", "decimation", cxxopts::value<unsigned int>()->default_value("10000"))
+
+        ("help", "Print help")
         ("print", "print validation error", cxxopts::value<unsigned int>()->default_value("30"))
+        ("randomize", "randomize model parmeters", cxxopts::value<bool>()->default_value("false"))
+        
     ;
     
     auto result = options.parse(argc, argv);
@@ -120,7 +124,7 @@ int main(int argc, const char*argv[]) {
                        result["beta"].as<double>()
                       );
     
-    gd.train();
+    gd.train(result["decimation"].as<unsigned int>());
 
     {
         std::cout<<"serialize"<<std::endl;

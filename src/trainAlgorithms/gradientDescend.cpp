@@ -25,7 +25,7 @@ GradientDescend::~GradientDescend() {
     
 }
 
-double GradientDescend::train() {
+double GradientDescend::train(unsigned int decimation) {
     std::cerr <<"TrainsetError,ValidationError"<<std::endl;
     //auto start = std::chrono::high_resolution_clock::now();
     bool infinite = (0 == _passes);
@@ -33,7 +33,7 @@ double GradientDescend::train() {
     
     for(unsigned int p = 0; infinite || p < _passes; ++p) {
         _pass(p);
-        _printTrainResult(p);
+        _printTrainResult(p, decimation);
     }
     std::cout<<"final ValidationSet avg loss: " <<sqrt(_model.calcAvgLoss(_inputSet.validationSet()))<<std::endl;
     return _model.calcAvgLoss(_inputSet.validationSet());
@@ -62,34 +62,31 @@ void GradientDescend::_pass(const unsigned int pass) {
     ++_count;
 }
 
-void GradientDescend::_printTrainResult(const unsigned int pass) {
-    //auto finish = std::chrono::high_resolution_clock::now();
-    //std::chrono::duration<double> elapsed = finish - start;
-    //std::cout << "Elapsed time: " << elapsed.count() << " s\n";
-    const unsigned int decimation = 10000;
-    if(/*l<_min*/(pass%decimation)==0) 
+void GradientDescend::_printTrainResult(const unsigned int pass, unsigned int decimation) {
+    if((pass%decimation)==0) 
     {
-       // _min = l;
-        double l = /*_model.getAvgLoss();*/_model.calcAvgLoss(_inputSet.validationSet());
-        unsigned int p = pass /decimation;
-        std::cout<<"pass: "<< p<<" loss "<<sqrt(l) <<std::endl;
-        std::ofstream nnFile;
-        std::string fileName;
-        fileName += "nn-";
-        fileName += std::to_string(p);
-        //fileName += "-";
-        //fileName += std::to_string(sqrt(l));
-        fileName += ".txt";
-        nnFile.open (fileName);
-        _model.serialize(nnFile);
-        nnFile.close();
+        unsigned int p = pass / decimation;
+
+        double l = _model.calcAvgLoss(_inputSet.validationSet());
+
+        std::cout << "pass: " << p << " loss "<< sqrt(l) << std::endl;
+        _save(p);
+
         std::cerr <<sqrt(_accumulatorLoss/_count)<<",";
         std::cerr <<sqrt(l)<<std::endl;
+
         _accumulatorLoss = 0;
         _count = 0;
     }
-    //std::cout<<"pass: "<< pass + 1 <<"/"<<_passes<< " total loss: " << l << " minloss "<<_min<<std::endl;
-    
-    
-    
+}
+
+void GradientDescend::_save(const unsigned int pass) {
+    std::ofstream nnFile;
+    std::string fileName;
+    fileName += "nn-";
+    fileName += std::to_string(pass);
+    fileName += ".txt";
+    nnFile.open (fileName);
+    _model.serialize(nnFile);
+    nnFile.close();
 }

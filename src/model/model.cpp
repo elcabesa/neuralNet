@@ -1,4 +1,5 @@
 #include <cassert>
+#include <cmath>
 #include <iostream>
 #include <numeric>
 
@@ -55,12 +56,16 @@ double Model::calcAvgLoss(const std::vector<std::shared_ptr<LabeledExample>>& in
     //std::cout<<"calcAvgLoss"<<std::endl;
     double error = 0.0;
     unsigned int n = 0;
+    //double avg = -0.271935;
+    //double sum = 0.0;
     for(auto& le: input) {
+        //sum += std::pow((*le).label() -avg, 2.0);
         error += calcLoss(*le, verbose);
         if(verbose && ++n >= count) {
             break;
         }
     }
+    //std::cout<<"std dev:"<< sqrt(sum/input.size());
     return error / input.size();
 }
 

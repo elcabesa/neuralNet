@@ -9,7 +9,7 @@ public:
     GradientDescend(Model& model, const InputSet& inputSet, unsigned int passes, double learnRate, double regularization = 1.0,  double beta = 0.9);
     ~GradientDescend();
     
-    double train();
+    double train(unsigned int decimation);
 private:
     Model& _model;
     const InputSet& _inputSet;
@@ -19,7 +19,8 @@ private:
     double _beta;
     
     void _pass(const unsigned int pass);
-    void _printTrainResult(const unsigned int pass);
+    void _printTrainResult(const unsigned int pass, unsigned int decimation);
+    void _save(const unsigned int pass);
     
     double _min;
     double _accumulatorLoss;
