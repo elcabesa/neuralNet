@@ -40,13 +40,13 @@ TEST(modelTest, wrongSize) {
 TEST(modelTest, forwardPass) {
     Model m;
     m.addLayer(std::make_unique<DenseLayer>(2, 2, ActivationFactory::create(ActivationFactory::type::relu)));
-    m.addLayer(std::make_unique<DenseLayer>(2,1, ActivationFactory::create(ActivationFactory::type::linear)));
-    DenseInput in({2.5, 1.7});
+    m.addLayer(std::make_unique<DenseLayer>(2, 1, ActivationFactory::create(ActivationFactory::type::linear)));
+    DenseInput in({0.25, 0.17});
     
     {
         auto& out = m.forwardPass(in);
         ASSERT_EQ(out.size(), 1);
-        ASSERT_DOUBLE_EQ(out.get(0), 8.4);
+        ASSERT_DOUBLE_EQ(out.get(0), 0.84);
     }
     
     m.getLayer(0).bias() = {0.2, -0.3};
@@ -58,7 +58,7 @@ TEST(modelTest, forwardPass) {
     {
         auto& out = m.forwardPass(in);
         ASSERT_EQ(out.size(), 1);
-        ASSERT_DOUBLE_EQ(out.get(0), 0.1492);
+        ASSERT_DOUBLE_EQ(out.get(0), 0.70252);
     }
     
     m.getLayer(0).bias() = {0.2, -0.3};
@@ -70,7 +70,7 @@ TEST(modelTest, forwardPass) {
     {
         auto& out = m.forwardPass(in);
         ASSERT_EQ(out.size(), 1);
-        ASSERT_DOUBLE_EQ(out.get(0), -0.2098);
+        ASSERT_DOUBLE_EQ(out.get(0), 0.69362);
     }
 }
 
@@ -78,12 +78,12 @@ TEST(modelTest, forwardPassRelu) {
     Model m;
     m.addLayer(std::make_unique<DenseLayer>(2, 2, ActivationFactory::create(ActivationFactory::type::relu)));
     m.addLayer(std::make_unique<DenseLayer>(2,1, ActivationFactory::create(ActivationFactory::type::relu)));
-    DenseInput in({2.5, 1.7});
+    DenseInput in({0.25, 0.17});
     
     {
         auto& out = m.forwardPass(in);
         ASSERT_EQ(out.size(), 1);
-        ASSERT_DOUBLE_EQ(out.get(0), 8.4);
+        ASSERT_DOUBLE_EQ(out.get(0), 0.84);
     }
     
     m.getLayer(0).bias() = {0.2, -0.3};
@@ -95,7 +95,7 @@ TEST(modelTest, forwardPassRelu) {
     {
         auto& out = m.forwardPass(in);
         ASSERT_EQ(out.size(), 1);
-        ASSERT_DOUBLE_EQ(out.get(0), 0.1492);
+        ASSERT_DOUBLE_EQ(out.get(0), 0.70252);
     }
     
     m.getLayer(0).bias() = {0.2, -0.3};
@@ -107,7 +107,7 @@ TEST(modelTest, forwardPassRelu) {
     {
         auto& out = m.forwardPass(in);
         ASSERT_EQ(out.size(), 1);
-        ASSERT_DOUBLE_EQ(out.get(0), -0.02098);
+        ASSERT_DOUBLE_EQ(out.get(0), 0.69362);
     }
 }
 
@@ -124,7 +124,7 @@ TEST(modelTest, calcLoss) {
     m.getLayer(0).weight() = {0.2, 0.4, -0.2, 1.7};
     m.getLayer(1).weight() = {1.02, -0.2};
     
-    ASSERT_DOUBLE_EQ(m.calcLoss(le), 24.85689032);
+    ASSERT_DOUBLE_EQ(m.calcLoss(le), 21.3725912402);
 }
 
 TEST(modelTest, calcTotalLoss) {

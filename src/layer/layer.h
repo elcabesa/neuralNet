@@ -19,8 +19,8 @@ public:
     virtual void propagate(const Input& input) = 0;
     virtual void printParams() const = 0;
     virtual void randomizeParams() = 0;
-    virtual void backwardCalcBias(const std::vector<double>& h) = 0;
-    virtual void backwardCalcWeight(const Input& input) = 0;
+    virtual void backwardCalcBiasGradient(const std::vector<double>& h) = 0;
+    virtual void backwardCalcWeightGradient(const Input& input) = 0;
     virtual std::vector<double> backPropHelper() const = 0;
     
     virtual void resetSum() = 0;
@@ -38,6 +38,8 @@ public:
     
     virtual void upgradeBias(double beta, double learnRate) = 0;
     virtual void upgradeWeight(double beta, double learnRate, double regularization) = 0;
+
+    virtual void printMinMax() = 0;
 
 protected:
     unsigned int _inputSize;

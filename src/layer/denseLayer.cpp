@@ -47,6 +47,9 @@ void DenseLayer::calcOut() {
     //unsigned int negative = 0;
     for(unsigned int o=0; o < _outputSize; ++o) {
         _output.set(o, _act->propagate(_netOutput[o]));
+        _output.get(o);
+        _min = std::min(_min,  _output.get(o));
+        _max = std::max(_max,  _output.get(o));
         /*if(_netOutput[o]<0 ){
             ++negative;
         }*/
@@ -147,7 +150,7 @@ void DenseLayer::accumulateGradients(const Input& input) {
     }
 }
 
-void DenseLayer::backwardCalcBias(const std::vector<double>& h) {
+void DenseLayer::backwardCalcBiasGradient(const std::vector<double>& h) {
     assert(h.size() == _outputSize);
     unsigned int i = 0;
     for(auto& b: _biasGradient) {
@@ -157,7 +160,7 @@ void DenseLayer::backwardCalcBias(const std::vector<double>& h) {
     }
 }
 
-void DenseLayer::backwardCalcWeight(const Input& input) {
+void DenseLayer::backwardCalcWeightGradient(const Input& input) {
     assert(input.size() == _inputSize);
     unsigned int num = input.getElementNumber();
     for(unsigned int idx = 0; idx < num; ++idx) {
@@ -260,4 +263,10 @@ bool DenseLayer::deserialize(std::ifstream& ss) {
     if(ss.get() != '}') {std::cout<<"DenseLayer missing }"<<std::endl;return false;} 
     if(ss.get() != '\n') {std::cout<<"DenseLayer missing line feed"<<std::endl;return false;}
     return true;
+}
+
+void DenseLayer::printMinMax() {
+    std::cout<<"------------------------"<<std::endl;
+    std::cout<<"min "<<_min<<std::endl;
+    std::cout<<"max "<<_max<<std::endl;
 }

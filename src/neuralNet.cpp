@@ -63,6 +63,7 @@ int main(int argc, const char*argv[]) {
         ("help", "Print help")
         ("print", "print validation error", cxxopts::value<unsigned int>()->default_value("30"))
         ("randomize", "randomize model parmeters", cxxopts::value<bool>()->default_value("false"))
+        ("stat", "printNetworkStats", cxxopts::value<bool>()->default_value("false"))
         
     ;
     
@@ -75,7 +76,7 @@ int main(int argc, const char*argv[]) {
     }
     std::cout << "NeuralNET" << std::endl;
     
-    DiskInputSet2 inSet("./TESTSET", 81920,result["batchSize"].as<unsigned int>());
+    DiskInputSet2 inSet("./TESTSET", 81920, result["batchSize"].as<unsigned int>());
     getInputSet(inSet);
     
     // for the first layer let's use a std dev of sqrt(2/active_input)
@@ -114,6 +115,15 @@ int main(int argc, const char*argv[]) {
     {
         m.calcAvgLoss(inSet.validationSet(), true, result["print"].as<unsigned int>());
         exit(0);
+    }
+
+    if (result.count("stat"))
+    {
+        for(;;) {
+            for(auto& le: inSet.batch()) {
+                m.forwardPass((*le).features(), true);
+            }
+        }
     }
 
     GradientDescend gd(m,

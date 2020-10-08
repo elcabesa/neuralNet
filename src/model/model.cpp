@@ -31,16 +31,17 @@ void Model::printParams() {
 const Input& Model::forwardPass(const Input& input, bool verbose /* = false */) {
     //std::cout<<"forward pass"<<std::endl;
     const Input* in = &input;
+    if(verbose) { std::cout<<"*****************"<<std::endl;}
     for(auto& p: _layers) {
         p->propagate(*in);
         if(verbose) {
-            p->printOutput();
+            p->printMinMax();
         }
         in = &p->output();
     }
-    if(verbose) {
+    /*if(verbose) {
         in->print();
-    }
+    }*/
     return *in;
 }
 
@@ -83,23 +84,23 @@ void Model::calcLossGradient(const LabeledExample& le) {
         if(actualLayer == _layers.rbegin()) {
             // todo manage multi output network
             std::vector<double> h = {cost.derivate(out.get(0), le.label())};
-            (*actualLayer)->backwardCalcBias(h);
+            (*actualLayer)->backwardCalcBiasGradient(h);
         }
         else {
             auto PreviousLayer = actualLayer - 1;
             auto h = (*PreviousLayer)->backPropHelper();
-            (*actualLayer)->backwardCalcBias(h);
+            (*actualLayer)->backwardCalcBiasGradient(h);
         }
         
         auto nextLayer = actualLayer + 1;
         if(nextLayer != _layers.rend()) {
             const Input& input = (*nextLayer)->output();
-            (*actualLayer)->backwardCalcWeight(input);
+            (*actualLayer)->backwardCalcWeightGradient(input);
             (*actualLayer)->accumulateGradients(input);
         }
         else {
             const Input& input = le.features();
-            (*actualLayer)->backwardCalcWeight(input);
+            (*actualLayer)->backwardCalcWeightGradient(input);
             (*actualLayer)->accumulateGradients(input);
         }
         

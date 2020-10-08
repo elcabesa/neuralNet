@@ -17,8 +17,8 @@ public:
     void propagate(const Input& input);
     void printParams() const;
     void randomizeParams();
-    void backwardCalcBias(const std::vector<double>& h);
-    void backwardCalcWeight(const Input& input);
+    void backwardCalcBiasGradient(const std::vector<double>& h);
+    void backwardCalcWeightGradient(const Input& input);
     std::vector<double> backPropHelper() const;
     
     void resetSum();
@@ -38,6 +38,8 @@ public:
     
     void upgradeBias(double beta, double learnRate);
     void upgradeWeight(double beta, double learnRate, double regularization);
+
+    void printMinMax();
 
     
     void serialize(std::ofstream& ss) const;

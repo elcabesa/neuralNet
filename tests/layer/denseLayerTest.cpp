@@ -59,21 +59,21 @@ TEST(denseTest, testPropagate3) {
 TEST(denseTest, testPropagateRelu) {
     DenseLayer layer(4, 2, ActivationFactory::create(ActivationFactory::type::relu));
     
-    layer.bias() = {3.0, 1.1};
-    layer.weight() = {0.5, 0.7, -1.0, 0.2,
-                      1.1,-1.0, 3.0,-0.9};
+    layer.bias() = {0.3, 0.11};
+    layer.weight() = {0.05, 0.07, -0.1, 0.02,
+                      0.11,-0.10, 0.3,-0.09};
 
     layer.propagate(DenseInput({0.0, 0.0, 0.0, 0.0}));
-    ASSERT_DOUBLE_EQ(layer.output().get(0), 3.0);
-    ASSERT_DOUBLE_EQ(layer.output().get(1), 1.1);
+    ASSERT_DOUBLE_EQ(layer.output().get(0), 0.3);
+    ASSERT_DOUBLE_EQ(layer.output().get(1), 0.11);
     
     layer.propagate(DenseInput({2.0, 5.0, 1.0, 1.0}));
-    ASSERT_DOUBLE_EQ(layer.output().get(0), 3.1);
-    ASSERT_DOUBLE_EQ(layer.output().get(1), 1.6);
+    ASSERT_DOUBLE_EQ(layer.output().get(0), 0.31);
+    ASSERT_DOUBLE_EQ(layer.output().get(1), 0.16);
 
     layer.propagate(DenseInput({-2.0, 5.0, 7.0, 0.1}));
-    ASSERT_DOUBLE_EQ(layer.output().get(0), 5.0);
-    ASSERT_DOUBLE_EQ(layer.output().get(1), -0.639);
+    ASSERT_DOUBLE_EQ(layer.output().get(0), 0.50);
+    ASSERT_DOUBLE_EQ(layer.output().get(1), -0.00639);
     
 }
 

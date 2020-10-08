@@ -18,8 +18,8 @@ public:
     void propagate(const Input& input);
     void printParams() const;
     void randomizeParams();
-    void backwardCalcBias(const std::vector<double>& h);
-    void backwardCalcWeight(const Input& input);
+    void backwardCalcBiasGradient(const std::vector<double>& h);
+    void backwardCalcWeightGradient(const Input& input);
     std::vector<double> backPropHelper() const;
     
     void resetSum();
@@ -40,6 +40,8 @@ public:
     
     void serialize(std::ofstream& ss) const;
     bool deserialize(std::ifstream& ss);
+
+    void printMinMax();
     
 private:
     std::vector<double> _bias;
@@ -61,6 +63,9 @@ private:
     
     void calcNetOut(const Input& input);
     void calcOut();
+
+    double _min = 1e8;
+    double _max = -1e8;
 };
 
 #endif  

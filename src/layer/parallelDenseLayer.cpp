@@ -108,22 +108,22 @@ void ParallelDenseLayer::accumulateGradients(const Input& input) {
     }
 }
 
-void ParallelDenseLayer::backwardCalcBias(const std::vector<double>& h) {
+void ParallelDenseLayer::backwardCalcBiasGradient(const std::vector<double>& h) {
     assert(h.size() == _outputSize);
     unsigned int n = 0;
     for(auto& l: _parallelLayers) {
         const std::vector<double> in(h.begin() + _layerOutputSize * n, h.begin() + _layerOutputSize * (n + 1));
-        l.backwardCalcBias(in);
+        l.backwardCalcBiasGradient(in);
         ++n;
     }
 }
 
 
-void ParallelDenseLayer::backwardCalcWeight(const Input& input) {
+void ParallelDenseLayer::backwardCalcWeightGradient(const Input& input) {
     unsigned int n= 0;
     for(auto& l: _parallelLayers) {
         const ParalledSparseInput psi(input, n , _layerInputSize);
-        l.backwardCalcWeight(psi);
+        l.backwardCalcWeightGradient(psi);
         ++n;
     }
 }
@@ -160,4 +160,11 @@ bool ParallelDenseLayer::deserialize(std::ifstream& ss) {
     if(ss.get() != '}') {std::cout<<"ParallelDenseLayer missing }"<<std::endl;return false;}
     if(ss.get() != '\n') {std::cout<<"DenseLayer missing line feed"<<std::endl;return false;}
     return true;
+}
+
+
+void ParallelDenseLayer::printMinMax() {
+    for(auto& l: _parallelLayers) {
+        l.printMinMax();
+    }
 }
