@@ -46,6 +46,7 @@ public:
 private:
     std::vector<double> _bias;
     std::vector<double> _weight;
+    std::vector<double> _quantizedWeight;
 
     std::vector<double> _netOutput;
     std::shared_ptr<Activation> _act;

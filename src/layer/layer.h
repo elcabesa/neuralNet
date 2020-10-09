@@ -41,11 +41,14 @@ public:
 
     virtual void printMinMax() = 0;
 
+    void setQuantization(bool q);
+
 protected:
     unsigned int _inputSize;
     unsigned int _outputSize;
     DenseInput _output;
     const double _stdDev;
+    bool _quantization;
     
 };
 

@@ -7,7 +7,8 @@ Layer::Layer(const unsigned int inputSize, const unsigned int outputSize, const 
     _inputSize(inputSize),
     _outputSize(outputSize),
     _output(outputSize),
-    _stdDev(stdDev)
+    _stdDev(stdDev),
+    _quantization(false)
 {}
 
 Layer::~Layer() {}

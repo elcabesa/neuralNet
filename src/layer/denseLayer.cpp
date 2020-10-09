@@ -13,6 +13,7 @@ DenseLayer::DenseLayer(const unsigned int inputSize, const unsigned int outputSi
 {
     _bias.resize(outputSize, 0.0);
     _weight.resize(outputSize * inputSize, 1.0);
+    _quantizedWeight.resize(outputSize * inputSize, 1.0);
     
     _biasGradient.resize(outputSize, 0.0);
     _weightGradient.resize(outputSize * inputSize, 0.0);
@@ -47,6 +48,10 @@ void DenseLayer::calcOut() {
     //unsigned int negative = 0;
     for(unsigned int o=0; o < _outputSize; ++o) {
         _output.set(o, _act->propagate(_netOutput[o]));
+        if(_quantization) {
+            //output quantization
+            _output.set(o,(std::lround(_output.get(o) * 255)/255));
+        }
         _output.get(o);
         _min = std::min(_min,  _output.get(o));
         _max = std::max(_max,  _output.get(o));
