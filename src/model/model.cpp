@@ -276,3 +276,9 @@ void Model::VerifyTotalLossGradient(const std::vector<std::shared_ptr<LabeledExa
     }
     std::cout<<std::endl;
 }
+
+void Model::setQuantization(bool q) {
+    for( auto& l: _layers) {
+        l->setQuantization(q);
+    }
+}

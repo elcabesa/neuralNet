@@ -12,7 +12,7 @@ class Activation;
 
 class DenseLayer: public Layer {
 public:
-    DenseLayer(const unsigned int inputSize, const unsigned int outputSize, std::shared_ptr<Activation> act, const double stdDev = 0.0);
+    DenseLayer(const unsigned int inputSize, const unsigned int outputSize, std::shared_ptr<Activation> act, unsigned int outScale, unsigned int weightScale, const double stdDev = 0.0);
     ~DenseLayer();
     
     void propagate(const Input& input);
@@ -42,6 +42,7 @@ public:
     bool deserialize(std::ifstream& ss);
 
     void printMinMax();
+    void setQuantization(bool q);
     
 private:
     std::vector<double> _bias;
@@ -67,6 +68,8 @@ private:
 
     double _min = 1e8;
     double _max = -1e8;
+
+    void _quantizeWeight();
 };
 
 #endif  

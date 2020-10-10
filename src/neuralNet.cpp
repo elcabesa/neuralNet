@@ -34,10 +34,10 @@ Model createModel(double stdDev) {
     std::cout<<"creating model"<<std::endl;
     
     Model m;
-    m.addLayer(std::make_unique<ParallelDenseLayer>(2, 40960, 256, ActivationFactory::create(ActivationFactory::type::relu),stdDev));
-    m.addLayer(std::make_unique<DenseLayer>(512,32, ActivationFactory::create(ActivationFactory::type::relu)));
-    m.addLayer(std::make_unique<DenseLayer>(32,32, ActivationFactory::create(ActivationFactory::type::relu)));
-    m.addLayer(std::make_unique<DenseLayer>(32, 1, ActivationFactory::create(ActivationFactory::type::linear)));
+    m.addLayer(std::make_unique<ParallelDenseLayer>(2, 40960, 256, ActivationFactory::create(Activation::type::relu), 255, 65280, stdDev));
+    m.addLayer(std::make_unique<DenseLayer>(512,32, ActivationFactory::create(Activation::type::relu),255, 256));
+    m.addLayer(std::make_unique<DenseLayer>(32,32, ActivationFactory::create(Activation::type::relu),255, 256));
+    m.addLayer(std::make_unique<DenseLayer>(32, 1, ActivationFactory::create(Activation::type::linear),0, 64));
     
     std::cout<<"done"<<std::endl;
     
@@ -113,7 +113,9 @@ int main(int argc, const char*argv[]) {
     
     if (result.count("print"))
     {
+        m.setQuantization(true);
         m.calcAvgLoss(inSet.validationSet(), true, result["print"].as<unsigned int>());
+        m.setQuantization(false);
         exit(0);
     }
 

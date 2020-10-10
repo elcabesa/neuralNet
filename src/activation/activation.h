@@ -6,24 +6,24 @@
 
 class Activation {    
 public:
-    
+    enum class type
+    {
+        linear,
+        relu
+    };
    
     Activation();
     virtual ~Activation();
     
     virtual double propagate(double input) const = 0;
     virtual double derivate(double input) const = 0;
-    virtual const std::string getType() const = 0;
+    virtual type getType() const = 0;
 };
 
 class ActivationFactory {
 public:
-    enum class type
-    {
-        linear,
-        relu
-    };
-    static std::unique_ptr<Activation> create(const ActivationFactory::type t  = ActivationFactory::type::linear);
+    
+    static std::unique_ptr<Activation> create(const Activation::type t  = Activation::type::linear);
 };
 
 #endif 

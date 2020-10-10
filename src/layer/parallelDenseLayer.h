@@ -11,7 +11,7 @@ class Activation;
 
 class ParallelDenseLayer: public Layer {
 public:
-    ParallelDenseLayer(const unsigned int number, const unsigned int inputSize, const unsigned int outputSize, std::shared_ptr<Activation> act, const double stdDev = 0.0);
+    ParallelDenseLayer(const unsigned int number, const unsigned int inputSize, const unsigned int outputSize, std::shared_ptr<Activation> act, unsigned int outScale, unsigned int weightScale, const double stdDev = 0.0);
     ~ParallelDenseLayer();
     
     void propagate(const Input& input);
@@ -44,6 +44,8 @@ public:
     
     void serialize(std::ofstream& ss) const;
     bool deserialize(std::ifstream& ss);
+
+    void setQuantization(bool q);
     
 private:
     std::vector<DenseLayer> _parallelLayers;

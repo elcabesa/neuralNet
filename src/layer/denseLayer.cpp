@@ -6,14 +6,15 @@
 #include "denseLayer.h"
 #include "input.h"
 
-DenseLayer::DenseLayer(const unsigned int inputSize, const unsigned int outputSize, std::shared_ptr<Activation> act, const double stdDev):
-    Layer{inputSize, outputSize, stdDev},
+DenseLayer::DenseLayer(const unsigned int inputSize, const unsigned int outputSize, std::shared_ptr<Activation> act, unsigned int outScale, unsigned int weightScale, const double stdDev):
+    Layer{inputSize, outputSize, outScale, weightScale, stdDev},
     _act(std::move(act))
     
 {
     _bias.resize(outputSize, 0.0);
     _weight.resize(outputSize * inputSize, 1.0);
     _quantizedWeight.resize(outputSize * inputSize, 1.0);
+    _quantizeWeight();
     
     _biasGradient.resize(outputSize, 0.0);
     _weightGradient.resize(outputSize * inputSize, 0.0);
@@ -37,7 +38,7 @@ void DenseLayer::calcNetOut(const Input& input) {
         auto& el = input.getElementFromIndex(idx);
         _activeFeature.insert(el.first);
         for(unsigned int o = 0; o < _outputSize; ++o) {
-            _netOutput[o] += el.second * _weight[_calcWeightIndex(el.first,o)];
+            _netOutput[o] += el.second * _quantizedWeight[_calcWeightIndex(el.first,o)];
         }
     }
     
@@ -48,13 +49,13 @@ void DenseLayer::calcOut() {
     //unsigned int negative = 0;
     for(unsigned int o=0; o < _outputSize; ++o) {
         _output.set(o, _act->propagate(_netOutput[o]));
-        if(_quantization) {
+        if(_quantization && _act->getType() != Activation::type::linear) {
             //output quantization
-            _output.set(o,(std::lround(_output.get(o) * 255)/255));
+            _output.set(o,(std::floor(_output.get(o) * _outScale) / _outScale));
         }
         _output.get(o);
-        _min = std::min(_min,  _output.get(o));
-        _max = std::max(_max,  _output.get(o));
+        _min = std::min(_min, _output.get(o));
+        _max = std::max(_max, _output.get(o));
         /*if(_netOutput[o]<0 ){
             ++negative;
         }*/
@@ -103,6 +104,8 @@ void DenseLayer::randomizeParams() {
     
     /*for(auto& x: _bias) {x = dist(rnd);}*/ 
     for(auto& x: _weight) {x = dist2(rnd);}
+
+    _quantizeWeight();
 }
 
 void DenseLayer::printParams() const {
@@ -118,7 +121,7 @@ std::vector<double> DenseLayer::backPropHelper() const {
     unsigned int i = 0;
     for(auto& r :ret) {
         for(unsigned int o = 0; o < _outputSize; ++o) {
-            r += _biasGradient[o] * _weight[_calcWeightIndex(i,o)];
+            r += _biasGradient[o] * _quantizedWeight[_calcWeightIndex(i,o)];
         }
         ++i;
     }
@@ -184,7 +187,6 @@ void DenseLayer::upgradeBias(double beta, double learnRate) {
         bma = beta * bma;
     }
 
-    
     unsigned int i = 0;
     //std::cout<<"--------------"<<std::endl;
     for(auto& b: _bias){
@@ -222,6 +224,8 @@ void DenseLayer::upgradeWeight(double beta, double learnRate, double regularizat
             //_weight[idx] -= gradWeight * (learnRate);
         }
     }
+
+    _quantizeWeight();
 }
 
 void DenseLayer::serialize(std::ofstream& ss) const{
@@ -267,6 +271,8 @@ bool DenseLayer::deserialize(std::ifstream& ss) {
     }
     if(ss.get() != '}') {std::cout<<"DenseLayer missing }"<<std::endl;return false;} 
     if(ss.get() != '\n') {std::cout<<"DenseLayer missing line feed"<<std::endl;return false;}
+
+    _quantizeWeight();
     return true;
 }
 
@@ -274,4 +280,21 @@ void DenseLayer::printMinMax() {
     std::cout<<"------------------------"<<std::endl;
     std::cout<<"min "<<_min<<std::endl;
     std::cout<<"max "<<_max<<std::endl;
+}
+
+void DenseLayer::_quantizeWeight() {
+    if(_quantization) {
+        for(unsigned int i=0; i<_weight.size(); ++i) {
+            _quantizedWeight[i] = std::round(_weight[i] * _weightScale) / _weightScale;;
+        }
+    }
+    else {
+        _quantizedWeight = _weight;
+    }
+}
+
+void DenseLayer::setQuantization(bool q) {
+    //std::cout<<"setQuantization "<<q<<std::endl;
+    _quantization = q;
+    _quantizeWeight();
 }

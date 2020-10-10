@@ -7,7 +7,7 @@
 
 class Layer {
 public:
-    Layer(const unsigned int inputSize, const unsigned int outputSize, const double stdDev);
+    Layer(const unsigned int inputSize, const unsigned int outputSize, unsigned int outScale, unsigned int weightScale, const double stdDev);
     virtual ~Layer();
     
     unsigned int getInputSize() const;
@@ -41,7 +41,7 @@ public:
 
     virtual void printMinMax() = 0;
 
-    void setQuantization(bool q);
+    virtual void setQuantization(bool q) = 0;
 
 protected:
     unsigned int _inputSize;
@@ -49,6 +49,8 @@ protected:
     DenseInput _output;
     const double _stdDev;
     bool _quantization;
+    unsigned int _outScale;
+    unsigned int _weightScale;
     
 };
 

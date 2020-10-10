@@ -10,7 +10,7 @@ public:
     
     double propagate(double input) const;
     double derivate(double input) const;
-    const std::string getType() const;
+    type getType() const;
 }; 
 
 

@@ -18,6 +18,6 @@ double reluActivation::derivate(double input) const {
     return (input >=0) ? ((input>=1) ? alpha: 1) : alpha;
 }
 
-const std::string reluActivation::getType() const {
-    return "Relu";
+Activation::type reluActivation::getType() const {
+    return Activation::type::relu;
 }
