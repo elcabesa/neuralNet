@@ -8,12 +8,12 @@
 #include "input.h"
 #include "parallelSparse.h"
 
-ParallelDenseLayer::ParallelDenseLayer(const unsigned int number, const unsigned int inputSize, const unsigned int outputSize, std::shared_ptr<Activation> act, const double stdDev):
-    Layer{number * inputSize, number * outputSize, stdDev}, _number(number), _layerInputSize(inputSize), _layerOutputSize(outputSize), _layerWeightNumber(_layerInputSize * _layerOutputSize)
+ParallelDenseLayer::ParallelDenseLayer(const unsigned int number, const unsigned int inputSize, const unsigned int outputSize, std::shared_ptr<Activation> act, unsigned int outScale, unsigned int weightScale, const double stdDev):
+    Layer{number * inputSize, number * outputSize, outScale, weightScale, stdDev}, _number(number), _layerInputSize(inputSize), _layerOutputSize(outputSize), _layerWeightNumber(_layerInputSize * _layerOutputSize)
     
 {
     for(unsigned int n = 0 ; n < number; ++n){
-        _parallelLayers.emplace_back(DenseLayer(_layerInputSize, _layerOutputSize, act, _stdDev));
+        _parallelLayers.emplace_back(DenseLayer(_layerInputSize, _layerOutputSize, act, outScale, weightScale, _stdDev));
     }    
 }
 
@@ -108,22 +108,22 @@ void ParallelDenseLayer::accumulateGradients(const Input& input) {
     }
 }
 
-void ParallelDenseLayer::backwardCalcBias(const std::vector<double>& h) {
+void ParallelDenseLayer::backwardCalcBiasGradient(const std::vector<double>& h) {
     assert(h.size() == _outputSize);
     unsigned int n = 0;
     for(auto& l: _parallelLayers) {
         const std::vector<double> in(h.begin() + _layerOutputSize * n, h.begin() + _layerOutputSize * (n + 1));
-        l.backwardCalcBias(in);
+        l.backwardCalcBiasGradient(in);
         ++n;
     }
 }
 
 
-void ParallelDenseLayer::backwardCalcWeight(const Input& input) {
+void ParallelDenseLayer::backwardCalcWeightGradient(const Input& input) {
     unsigned int n= 0;
     for(auto& l: _parallelLayers) {
         const ParalledSparseInput psi(input, n , _layerInputSize);
-        l.backwardCalcWeight(psi);
+        l.backwardCalcWeightGradient(psi);
         ++n;
     }
 }
@@ -160,4 +160,17 @@ bool ParallelDenseLayer::deserialize(std::ifstream& ss) {
     if(ss.get() != '}') {std::cout<<"ParallelDenseLayer missing }"<<std::endl;return false;}
     if(ss.get() != '\n') {std::cout<<"DenseLayer missing line feed"<<std::endl;return false;}
     return true;
+}
+
+
+void ParallelDenseLayer::printMinMax() {
+    for(auto& l: _parallelLayers) {
+        l.printMinMax();
+    }
+}
+
+void ParallelDenseLayer::setQuantization(bool q) {
+    for(auto& l: _parallelLayers) {
+        l.setQuantization(q);
+    }
 }

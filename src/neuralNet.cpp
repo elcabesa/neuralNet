@@ -34,10 +34,10 @@ Model createModel(double stdDev) {
     std::cout<<"creating model"<<std::endl;
     
     Model m;
-    m.addLayer(std::make_unique<ParallelDenseLayer>(2, 40960, 256, ActivationFactory::create(ActivationFactory::type::linear),stdDev));
-    m.addLayer(std::make_unique<DenseLayer>(512,32, ActivationFactory::create(ActivationFactory::type::relu)));
-    m.addLayer(std::make_unique<DenseLayer>(32,32, ActivationFactory::create(ActivationFactory::type::relu)));
-    m.addLayer(std::make_unique<DenseLayer>(32, 1, ActivationFactory::create(ActivationFactory::type::linear)));
+    m.addLayer(std::make_unique<ParallelDenseLayer>(2, 40960, 256, ActivationFactory::create(Activation::type::relu), 255, 65280, stdDev));
+    m.addLayer(std::make_unique<DenseLayer>(512,32, ActivationFactory::create(Activation::type::relu),255, 256));
+    m.addLayer(std::make_unique<DenseLayer>(32,32, ActivationFactory::create(Activation::type::relu),255, 256));
+    m.addLayer(std::make_unique<DenseLayer>(32, 1, ActivationFactory::create(Activation::type::linear),0, 64));
     
     std::cout<<"done"<<std::endl;
     
@@ -63,6 +63,7 @@ int main(int argc, const char*argv[]) {
         ("help", "Print help")
         ("print", "print validation error", cxxopts::value<unsigned int>()->default_value("30"))
         ("randomize", "randomize model parmeters", cxxopts::value<bool>()->default_value("false"))
+        ("stat", "printNetworkStats", cxxopts::value<bool>()->default_value("false"))
         
     ;
     
@@ -75,7 +76,7 @@ int main(int argc, const char*argv[]) {
     }
     std::cout << "NeuralNET" << std::endl;
     
-    DiskInputSet2 inSet("./TESTSET", 81920,result["batchSize"].as<unsigned int>());
+    DiskInputSet2 inSet("./TESTSET", 81920, result["batchSize"].as<unsigned int>());
     getInputSet(inSet);
     
     // for the first layer let's use a std dev of sqrt(2/active_input)
@@ -112,8 +113,19 @@ int main(int argc, const char*argv[]) {
     
     if (result.count("print"))
     {
+        m.setQuantization(true);
         m.calcAvgLoss(inSet.validationSet(), true, result["print"].as<unsigned int>());
+        m.setQuantization(false);
         exit(0);
+    }
+
+    if (result.count("stat"))
+    {
+        for(;;) {
+            for(auto& le: inSet.batch()) {
+                m.forwardPass((*le).features(), true);
+            }
+        }
     }
 
     GradientDescend gd(m,

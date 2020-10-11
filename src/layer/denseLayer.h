@@ -12,14 +12,14 @@ class Activation;
 
 class DenseLayer: public Layer {
 public:
-    DenseLayer(const unsigned int inputSize, const unsigned int outputSize, std::shared_ptr<Activation> act, const double stdDev = 0.0);
+    DenseLayer(const unsigned int inputSize, const unsigned int outputSize, std::shared_ptr<Activation> act, unsigned int outScale, unsigned int weightScale, const double stdDev = 0.0);
     ~DenseLayer();
     
     void propagate(const Input& input);
     void printParams() const;
     void randomizeParams();
-    void backwardCalcBias(const std::vector<double>& h);
-    void backwardCalcWeight(const Input& input);
+    void backwardCalcBiasGradient(const std::vector<double>& h);
+    void backwardCalcWeightGradient(const Input& input);
     std::vector<double> backPropHelper() const;
     
     void resetSum();
@@ -40,10 +40,14 @@ public:
     
     void serialize(std::ofstream& ss) const;
     bool deserialize(std::ifstream& ss);
+
+    void printMinMax();
+    void setQuantization(bool q);
     
 private:
     std::vector<double> _bias;
     std::vector<double> _weight;
+    std::vector<double> _quantizedWeight;
 
     std::vector<double> _netOutput;
     std::shared_ptr<Activation> _act;
@@ -61,6 +65,11 @@ private:
     
     void calcNetOut(const Input& input);
     void calcOut();
+
+    double _min = 1e8;
+    double _max = -1e8;
+
+    void _quantizeWeight();
 };
 
 #endif  

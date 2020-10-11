@@ -40,6 +40,9 @@ public:
     
     void clear();
 
+    void setQuantization(bool q);
+
+
 private:
     std::vector<std::unique_ptr<Layer>> _layers;
     Cost cost;

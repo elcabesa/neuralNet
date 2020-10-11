@@ -18,7 +18,8 @@ GradientDescend::GradientDescend(Model& model, const InputSet& inputSet, unsigne
     _beta(beta),
     _min(1e20),
     _accumulatorLoss(0),
-    _count(0)
+    _count(0),
+    _quantization(false)
 {}
 
 GradientDescend::~GradientDescend() {
@@ -29,14 +30,21 @@ double GradientDescend::train(unsigned int decimation) {
     std::cerr <<"TrainsetError,ValidationError"<<std::endl;
     //auto start = std::chrono::high_resolution_clock::now();
     bool infinite = (0 == _passes);
+    _model.setQuantization(true);
     std::cout<<"initial ValidationSet avg loss: " << sqrt(_model.calcAvgLoss(_inputSet.validationSet()))<<std::endl;
-    
+    _model.setQuantization(_quantization);
     for(unsigned int p = 0; infinite || p < _passes; ++p) {
+        if (p>50) {_quantization= true;}
+        else {_quantization= false;}
+        _model.setQuantization(_quantization);
         _pass(p);
         _printTrainResult(p, decimation);
     }
-    std::cout<<"final ValidationSet avg loss: " <<sqrt(_model.calcAvgLoss(_inputSet.validationSet()))<<std::endl;
-    return _model.calcAvgLoss(_inputSet.validationSet());
+    _model.setQuantization(true);
+    double r = _model.calcAvgLoss(_inputSet.validationSet());
+    std::cout<<"final ValidationSet avg loss: " <<sqrt(r)<<std::endl;
+    _model.setQuantization(false);    
+    return r;
 }
 
 void GradientDescend::_pass(const unsigned int pass) {
@@ -66,8 +74,9 @@ void GradientDescend::_printTrainResult(const unsigned int pass, unsigned int de
     if((pass%decimation)==0) 
     {
         unsigned int p = pass / decimation;
-
+        _model.setQuantization(true);
         double l = _model.calcAvgLoss(_inputSet.validationSet());
+        _model.setQuantization(_quantization);
 
         std::cout << "pass: " << p << " loss "<< sqrt(l) << std::endl;
         _save(p);

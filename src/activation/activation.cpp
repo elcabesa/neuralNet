@@ -6,13 +6,13 @@ Activation::Activation() {}
 
 Activation::~Activation() {}
 
-std::unique_ptr<Activation> ActivationFactory::create( const ActivationFactory::type t )
+std::unique_ptr<Activation> ActivationFactory::create( const Activation::type t )
 {
-	if( t == type::linear)
+	if( t == Activation::type::linear)
 	{
 		return std::make_unique<linearActivation>();
 	}
-	else if(t == type::relu)
+	else if(t == Activation::type::relu)
 	{
 		return std::make_unique<reluActivation>();
 	}
