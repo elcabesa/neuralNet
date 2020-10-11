@@ -23,6 +23,6 @@ TEST(linearTest, getType) {
     
     linearActivation lin;
     
-    ASSERT_EQ(lin.getType(), "Linear");
+    ASSERT_EQ(lin.getType(), Activation::type::linear);
     
 }

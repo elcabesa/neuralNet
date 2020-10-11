@@ -28,6 +28,6 @@ TEST(reluTest, getType) {
     
     reluActivation relu;
     
-    ASSERT_EQ(relu.getType(), "Relu");
+    ASSERT_EQ(relu.getType(), Activation::type::relu);
     
 }

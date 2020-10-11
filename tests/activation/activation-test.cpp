@@ -4,9 +4,9 @@
 
 TEST(ActivationFactory, createLinear) {
     
-    auto ac = ActivationFactory::create(ActivationFactory::type::linear);
+    auto ac = ActivationFactory::create(Activation::type::linear);
     
-    ASSERT_EQ(ac->getType(), "Linear");
+    ASSERT_EQ(ac->getType(), Activation::type::linear);
     
     ASSERT_DOUBLE_EQ(ac->propagate(-2000), -2000);
     ASSERT_DOUBLE_EQ(ac->propagate(0), 0);
@@ -15,9 +15,9 @@ TEST(ActivationFactory, createLinear) {
 
 TEST(ActivationFactory, createRelu) {
     
-    auto ac = ActivationFactory::create(ActivationFactory::type::relu);
+    auto ac = ActivationFactory::create(Activation::type::relu);
     
-    ASSERT_EQ(ac->getType(), "Relu");
+    ASSERT_EQ(ac->getType(), Activation::type::relu);
     
     ASSERT_DOUBLE_EQ(ac->propagate(-2000), -2000 * 0.01);
     ASSERT_DOUBLE_EQ(ac->propagate(0), 0);
@@ -26,9 +26,9 @@ TEST(ActivationFactory, createRelu) {
 
 TEST(ActivationFactory, createWrong) {
     
-    auto ac = ActivationFactory::create(ActivationFactory::type(12));
+    auto ac = ActivationFactory::create(Activation::type(12));
     
-    ASSERT_EQ(ac->getType(), "Linear");
+    ASSERT_EQ(ac->getType(), Activation::type::linear);
     
     ASSERT_DOUBLE_EQ(ac->propagate(-2000), -2000);
     ASSERT_DOUBLE_EQ(ac->propagate(0), 0);
@@ -39,7 +39,7 @@ TEST(ActivationFactory, createDefault) {
     
     auto ac = ActivationFactory::create();
     
-    ASSERT_EQ(ac->getType(), "Linear");
+    ASSERT_EQ(ac->getType(), Activation::type::linear);
     
     ASSERT_DOUBLE_EQ(ac->propagate(-2000), -2000);
     ASSERT_DOUBLE_EQ(ac->propagate(0), 0);

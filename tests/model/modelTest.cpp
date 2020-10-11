@@ -9,10 +9,10 @@
 
 TEST(modelTest, layers) {
     Model m;
-    m.addLayer(std::make_unique<ParallelDenseLayer>(2, 40960, 256, ActivationFactory::create(ActivationFactory::type::linear)));
-    m.addLayer(std::make_unique<DenseLayer>(512,32, ActivationFactory::create(ActivationFactory::type::relu)));
-    m.addLayer(std::make_unique<DenseLayer>(32,32, ActivationFactory::create(ActivationFactory::type::relu)));
-    m.addLayer(std::make_unique<DenseLayer>(32, 1, ActivationFactory::create(ActivationFactory::type::linear)));
+    m.addLayer(std::make_unique<ParallelDenseLayer>(2, 40960, 256, ActivationFactory::create(Activation::type::linear), 1, 1));
+    m.addLayer(std::make_unique<DenseLayer>(512,32, ActivationFactory::create(Activation::type::relu), 1, 1));
+    m.addLayer(std::make_unique<DenseLayer>(32,32, ActivationFactory::create(Activation::type::relu), 1, 1));
+    m.addLayer(std::make_unique<DenseLayer>(32, 1, ActivationFactory::create(Activation::type::linear), 1, 1));
     
     ASSERT_EQ(m.getLayerCount(),4);
     
@@ -32,15 +32,15 @@ TEST(modelTest, layers) {
 
 TEST(modelTest, wrongSize) {
     Model m;
-    m.addLayer(std::make_unique<DenseLayer>(2, 2, ActivationFactory::create(ActivationFactory::type::relu)));
-    ASSERT_EXIT(m.addLayer(std::make_unique<DenseLayer>(23,1, ActivationFactory::create(ActivationFactory::type::linear))),::testing::ExitedWithCode(0),"");
+    m.addLayer(std::make_unique<DenseLayer>(2, 2, ActivationFactory::create(Activation::type::relu), 1, 1));
+    ASSERT_EXIT(m.addLayer(std::make_unique<DenseLayer>(23,1, ActivationFactory::create(Activation::type::linear), 1, 1)),::testing::ExitedWithCode(0),"");
 }
 
 
 TEST(modelTest, forwardPass) {
     Model m;
-    m.addLayer(std::make_unique<DenseLayer>(2, 2, ActivationFactory::create(ActivationFactory::type::relu)));
-    m.addLayer(std::make_unique<DenseLayer>(2, 1, ActivationFactory::create(ActivationFactory::type::linear)));
+    m.addLayer(std::make_unique<DenseLayer>(2, 2, ActivationFactory::create(Activation::type::relu), 1, 1));
+    m.addLayer(std::make_unique<DenseLayer>(2, 1, ActivationFactory::create(Activation::type::linear), 1, 1));
     DenseInput in({0.25, 0.17});
     
     {
@@ -76,8 +76,8 @@ TEST(modelTest, forwardPass) {
 
 TEST(modelTest, forwardPassRelu) {
     Model m;
-    m.addLayer(std::make_unique<DenseLayer>(2, 2, ActivationFactory::create(ActivationFactory::type::relu)));
-    m.addLayer(std::make_unique<DenseLayer>(2,1, ActivationFactory::create(ActivationFactory::type::relu)));
+    m.addLayer(std::make_unique<DenseLayer>(2, 2, ActivationFactory::create(Activation::type::relu), 1, 1));
+    m.addLayer(std::make_unique<DenseLayer>(2,1, ActivationFactory::create(Activation::type::relu), 1, 1));
     DenseInput in({0.25, 0.17});
     
     {
@@ -113,8 +113,8 @@ TEST(modelTest, forwardPassRelu) {
 
 TEST(modelTest, calcLoss) {
     Model m;
-    m.addLayer(std::make_unique<DenseLayer>(2, 2, ActivationFactory::create(ActivationFactory::type::relu)));
-    m.addLayer(std::make_unique<DenseLayer>(2,1, ActivationFactory::create(ActivationFactory::type::relu)));
+    m.addLayer(std::make_unique<DenseLayer>(2, 2, ActivationFactory::create(Activation::type::relu), 1, 1));
+    m.addLayer(std::make_unique<DenseLayer>(2,1, ActivationFactory::create(Activation::type::relu), 1, 1));
     std::shared_ptr<Input> in(new DenseInput({2.5, 1.7}));
     LabeledExample le(std::move(in), 72000);
     
@@ -129,8 +129,8 @@ TEST(modelTest, calcLoss) {
 
 TEST(modelTest, calcTotalLoss) {
     Model m;
-    m.addLayer(std::make_unique<DenseLayer>(2, 2, ActivationFactory::create(ActivationFactory::type::relu)));
-    m.addLayer(std::make_unique<DenseLayer>(2,1, ActivationFactory::create(ActivationFactory::type::relu)));
+    m.addLayer(std::make_unique<DenseLayer>(2, 2, ActivationFactory::create(Activation::type::relu), 1, 1));
+    m.addLayer(std::make_unique<DenseLayer>(2,1, ActivationFactory::create(Activation::type::relu), 1, 1));
     
     m.getLayer(0).bias() = {0.2, -0.3};
     m.getLayer(1).bias() = {0.5};
@@ -175,8 +175,8 @@ TEST(modelTest, calcTotalLoss) {
 
 TEST(modelTest, calcLossGradient) {
     Model m;
-    m.addLayer(std::make_unique<DenseLayer>(2, 2, ActivationFactory::create(ActivationFactory::type::linear)));
-    m.addLayer(std::make_unique<DenseLayer>(2, 1, ActivationFactory::create(ActivationFactory::type::linear)));
+    m.addLayer(std::make_unique<DenseLayer>(2, 2, ActivationFactory::create(Activation::type::linear), 1, 1));
+    m.addLayer(std::make_unique<DenseLayer>(2, 1, ActivationFactory::create(Activation::type::linear), 1, 1));
     
     m.getLayer(0).bias() = {0.2, -0.3};
     m.getLayer(1).bias() = {0.5};
@@ -223,8 +223,8 @@ TEST(modelTest, calcLossGradient) {
 
 TEST(modelTest, calcLossGradientRelu) {
     Model m;
-    m.addLayer(std::make_unique<DenseLayer>(2, 2, ActivationFactory::create(ActivationFactory::type::relu)));
-    m.addLayer(std::make_unique<DenseLayer>(2, 1, ActivationFactory::create(ActivationFactory::type::linear)));
+    m.addLayer(std::make_unique<DenseLayer>(2, 2, ActivationFactory::create(Activation::type::relu), 1, 1));
+    m.addLayer(std::make_unique<DenseLayer>(2, 1, ActivationFactory::create(Activation::type::linear), 1, 1));
     
     m.getLayer(0).bias() = {0.2, -0.3};
     m.getLayer(1).bias() = {0.5};
@@ -285,10 +285,10 @@ TEST(modelTest, calcLossGradientRelu) {
 TEST(modelTest, calcLossGradientComplex) {
     Model m;
 
-    m.addLayer(std::make_unique<ParallelDenseLayer>(2, 2, 2, ActivationFactory::create(ActivationFactory::type::linear)));
-    m.addLayer(std::make_unique<DenseLayer>(4, 2, ActivationFactory::create(ActivationFactory::type::relu)));
-    m.addLayer(std::make_unique<DenseLayer>(2, 2, ActivationFactory::create(ActivationFactory::type::relu)));
-    m.addLayer(std::make_unique<DenseLayer>(2, 1, ActivationFactory::create(ActivationFactory::type::linear)));
+    m.addLayer(std::make_unique<ParallelDenseLayer>(2, 2, 2, ActivationFactory::create(Activation::type::linear), 1, 1));
+    m.addLayer(std::make_unique<DenseLayer>(4, 2, ActivationFactory::create(Activation::type::relu), 1, 1));
+    m.addLayer(std::make_unique<DenseLayer>(2, 2, ActivationFactory::create(Activation::type::relu), 1, 1));
+    m.addLayer(std::make_unique<DenseLayer>(2, 1, ActivationFactory::create(Activation::type::linear), 1, 1));
     
     m.randomizeParams();
     
