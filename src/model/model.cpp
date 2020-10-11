@@ -137,8 +137,9 @@ bool Model::deserialize(std::ifstream& ss) {
     char buffer[4];
     ss.read(buffer, 4);
     std::string v(buffer, 4);
-    if(v != VERSION) {std::cout<<"VRONG NETWORK VERSION: "<<v<<" expected: "<<VERSION<<std::endl;return false;}
-    if(ss.get() != '{') {std::cout<<"MODEL missing }"<<std::endl;return false;}
+    if(v != VERSION) {std::cout<<"WRONG NETWORK VERSION: "<<v<<" expected: "<<VERSION<<std::endl;return false;}
+    if(ss.get() != '}') {std::cout<<"MODEL missing }"<<std::endl;return false;}
+    if(ss.get() != '{') {std::cout<<"MODEL missing {"<<std::endl;return false;}
     for(auto& l :_layers) {
         if(!l->deserialize(ss)) {std::cout<<"MODEL internal layer error"<<std::endl;return false;}
     }
