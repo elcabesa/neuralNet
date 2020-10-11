@@ -25,6 +25,7 @@ private:
     double _min;
     double _accumulatorLoss;
     unsigned int _count;
+    bool _quantization;
     
 };
 

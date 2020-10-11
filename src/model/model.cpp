@@ -121,6 +121,7 @@ void Model::calcTotalLossGradient(const std::vector<std::shared_ptr<LabeledExamp
 
 
 void Model::serialize(std::ofstream& ss) const {
+    ss<<"{version:1}"<<std::endl;
     ss<<"{";
     for(auto& l :_layers) {
         l->serialize(ss);
