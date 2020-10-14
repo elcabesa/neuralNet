@@ -9,7 +9,7 @@
 #include "inputSet.h"
 #include "model.h"
 
-GradientDescend::GradientDescend(Model& model, const InputSet& inputSet, unsigned int passes, double learnRate,double regularization, double beta):
+GradientDescend::GradientDescend(Model& model, const InputSet& inputSet, unsigned int passes, double learnRate,double regularization, double beta, unsigned int quant, bool rmsprop):
     _model(model),
     _inputSet(inputSet),
     _passes(passes),
@@ -19,7 +19,9 @@ GradientDescend::GradientDescend(Model& model, const InputSet& inputSet, unsigne
     _min(1e20),
     _accumulatorLoss(0),
     _count(0),
-    _quantization(false)
+    _quantization(false),
+    _quantizationPass(quant),
+    _rmsProp(rmsprop)
 {}
 
 GradientDescend::~GradientDescend() {
@@ -34,8 +36,8 @@ double GradientDescend::train(unsigned int decimation) {
     std::cout<<"initial ValidationSet avg loss: " << sqrt(_model.calcAvgLoss(_inputSet.validationSet()))<<std::endl;
     _model.setQuantization(_quantization);
     for(unsigned int p = 0; infinite || p < _passes; ++p) {
-        if (p>50) {_quantization= true;}
-        else {_quantization= false;}
+        if (_quantizationPass && p > _quantizationPass) {_quantization = true;}
+        else {_quantization = false;}
         _model.setQuantization(_quantization);
         _pass(p);
         _printTrainResult(p, decimation);
@@ -57,8 +59,8 @@ void GradientDescend::_pass(const unsigned int pass) {
     //std::cout<<"-----------------"<<std::endl;
     for( unsigned int ll = 0; ll < _model.getLayerCount(); ++ll) {
         Layer& l = _model.getLayer(ll);
-        l.upgradeBias(_beta, _learnRate);
-        l.upgradeWeight(_beta, _learnRate, _regularization);
+        l.upgradeBias(_beta, _learnRate, _rmsProp);
+        l.upgradeWeight(_beta, _learnRate, _regularization, _rmsProp);
     }
     //double avgLoss = _model.calcAvgLoss(batch);
     //std::cout<<sqrt(_model.getAvgLoss())<<" "<< sqrt(avgLoss) <<std::endl;

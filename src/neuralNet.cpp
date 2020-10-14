@@ -59,11 +59,13 @@ int main(int argc, const char*argv[]) {
         ("p,passes", "traiing passes", cxxopts::value<unsigned int>()->default_value("30000"))
         ("s,batchSize", "batchSize", cxxopts::value<unsigned int>()->default_value("30"))
         ("c,decimation", "decimation", cxxopts::value<unsigned int>()->default_value("10000"))
+        ("q,quantization", "quantization #", cxxopts::value<unsigned int>()->default_value("50"))
 
         ("help", "Print help")
         ("print", "print validation error", cxxopts::value<unsigned int>()->default_value("30"))
         ("randomize", "randomize model parmeters", cxxopts::value<bool>()->default_value("false"))
         ("stat", "printNetworkStats", cxxopts::value<bool>()->default_value("false"))
+        ("rmsprop", "true ->rmsprop, false ->gd", cxxopts::value<bool>()->default_value("false"))
         
     ;
     
@@ -133,7 +135,9 @@ int main(int argc, const char*argv[]) {
                        result["passes"].as<unsigned int>(),
                        result["eta"].as<double>(),
                        result["regularization"].as<double>(),
-                       result["beta"].as<double>()
+                       result["beta"].as<double>(),
+                       result["quantization"].as<unsigned int>(),
+                       result["rmsprop"].as<bool>()
                       );
     
     gd.train(result["decimation"].as<unsigned int>());

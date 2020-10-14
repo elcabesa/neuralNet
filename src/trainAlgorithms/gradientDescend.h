@@ -6,7 +6,7 @@ class InputSet;
 
 class GradientDescend {
 public:
-    GradientDescend(Model& model, const InputSet& inputSet, unsigned int passes, double learnRate, double regularization = 1.0,  double beta = 0.9);
+    GradientDescend(Model& model, const InputSet& inputSet, unsigned int passes, double learnRate, double regularization, double beta, unsigned int quant, bool rmsprop);
     ~GradientDescend();
     
     double train(unsigned int decimation);
@@ -26,6 +26,8 @@ private:
     double _accumulatorLoss;
     unsigned int _count;
     bool _quantization;
+    unsigned int _quantizationPass;
+    bool _rmsProp;
     
 };
 

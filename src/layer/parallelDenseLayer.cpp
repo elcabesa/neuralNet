@@ -128,15 +128,15 @@ void ParallelDenseLayer::backwardCalcWeightGradient(const Input& input) {
     }
 }
 
-void ParallelDenseLayer::upgradeBias(double beta, double learnRate) {
+void ParallelDenseLayer::upgradeBias(double beta, double learnRate, bool rmsprop) {
     for(auto& l: _parallelLayers) {
-        l.upgradeBias(beta, learnRate);
+        l.upgradeBias(beta, learnRate, rmsprop);
     }
     
 }
-void ParallelDenseLayer::upgradeWeight(double beta, double learnRate, double regularization) {
+void ParallelDenseLayer::upgradeWeight(double beta, double learnRate, double regularization, bool rmsprop) {
     for(auto& l: _parallelLayers) {
-        l.upgradeWeight(beta, learnRate, regularization);
+        l.upgradeWeight(beta, learnRate, regularization, rmsprop);
     }
 }
 

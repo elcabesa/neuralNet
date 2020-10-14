@@ -33,8 +33,8 @@ public:
     double getBiasSumGradient(unsigned int index) const;
     double getWeightSumGradient(unsigned int index) const;
     
-    void upgradeBias(double beta, double learnRate);
-    void upgradeWeight(double beta, double learnRate, double regularization);
+    void upgradeBias(double beta, double learnRate, bool rmsprop = true);
+    void upgradeWeight(double beta, double learnRate, double regularization, bool rmsprop = true);
     
     unsigned int _calcWeightIndex(const unsigned int i, const unsigned int o) const;
     

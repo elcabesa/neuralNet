@@ -36,8 +36,8 @@ public:
     virtual void serialize(std::ofstream& ss) const = 0;
     virtual bool deserialize(std::ifstream& ss) = 0;
     
-    virtual void upgradeBias(double beta, double learnRate) = 0;
-    virtual void upgradeWeight(double beta, double learnRate, double regularization) = 0;
+    virtual void upgradeBias(double beta, double learnRate, bool rmsprop = true) = 0;
+    virtual void upgradeWeight(double beta, double learnRate, double regularization, bool rmsprop = true) = 0;
 
     virtual void printMinMax() = 0;
 

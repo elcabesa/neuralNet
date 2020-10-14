@@ -180,31 +180,36 @@ void DenseLayer::backwardCalcWeightGradient(const Input& input) {
     }
 }
 
-void DenseLayer::upgradeBias(double beta, double learnRate) {
+void DenseLayer::upgradeBias(double beta, double learnRate, bool rmsprop) {
     double beta2 = (1.0 - beta);
-    
-    for(auto& bma: _biasMovAvg){
-        bma = beta * bma;
+    if (rmsprop) {
+        for(auto& bma: _biasMovAvg){
+            bma = beta * bma;
+        }
     }
 
     unsigned int i = 0;
     //std::cout<<"--------------"<<std::endl;
     for(auto& b: _bias){
         double gradBias = getBiasSumGradient(i);
-        _biasMovAvg[i] += beta2 * gradBias * gradBias;
-        b -= gradBias * (learnRate / sqrt(_biasMovAvg[i] /*+ 1e-8*/));
-        //std::cout<<(i+1)<<": "<<b<<" "<<gradBias<<" "<<(gradBias / b * 100)<<"%"<<std::endl;
-        //b -= gradBias * (learnRate);
+        if (rmsprop) {
+            _biasMovAvg[i] += beta2 * gradBias * gradBias;
+            b -= gradBias * (learnRate / sqrt(_biasMovAvg[i] /*+ 1e-8*/));
+        } else {
+            b -= gradBias * learnRate;
+        }
         ++i;
     }
     
 }
 
-void DenseLayer::upgradeWeight(double beta, double learnRate, double regularization) {
+void DenseLayer::upgradeWeight(double beta, double learnRate, double regularization, bool rmsprop) {
     double beta2 = (1.0 - beta);
     
-    for(auto& wma: _weightMovAvg){
-        wma = beta * wma;
+    if (rmsprop) {
+        for(auto& wma: _weightMovAvg){
+            wma = beta * wma;
+        }
     }
     
     //std::cout<<"ACTIVE FEATURE SIZE: "<<_activeFeature.size()<<std::endl;
@@ -219,12 +224,15 @@ void DenseLayer::upgradeWeight(double beta, double learnRate, double regularizat
             // this should be done for every element, but I did it only for active features to speedup
             //_weightMovAvg[idx] *= beta;
             //-----------------------------
-            _weightMovAvg[idx] += beta2 * gradWeight * gradWeight;
-            _weight[idx] = (regularization * _weight[idx] ) - gradWeight * (learnRate / sqrt(_weightMovAvg[idx] /*+ 1e-8*/));
-            //_weight[idx] -= gradWeight * (learnRate);
+            if (rmsprop) {
+                _weightMovAvg[idx] += beta2 * gradWeight * gradWeight;
+                _weight[idx] = (regularization * _weight[idx]) - gradWeight * (learnRate / sqrt(_weightMovAvg[idx] /*+ 1e-8*/));
+            }
+            else {
+                _weight[idx] = (regularization * _weight[idx]) - gradWeight * learnRate;
+            }
         }
     }
-
     _quantizeWeight();
 }
 

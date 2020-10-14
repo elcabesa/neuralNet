@@ -36,8 +36,8 @@ public:
 
     unsigned int _calcBiasIndex(const unsigned int layer, const unsigned int offset) const;
     
-    void upgradeBias(double beta, double learnRate);
-    void upgradeWeight(double beta, double learnRate, double regularization);
+    void upgradeBias(double beta, double learnRate, bool rmsprop = true);
+    void upgradeWeight(double beta, double learnRate, double regularization, bool rmsprop = true);
 
     void printMinMax();
 
