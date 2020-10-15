@@ -6,9 +6,10 @@
 #include "denseLayer.h"
 #include "input.h"
 
-DenseLayer::DenseLayer(const unsigned int inputSize, const unsigned int outputSize, std::shared_ptr<Activation> act, unsigned int outScale, unsigned int weightScale, const double stdDev):
-    Layer{inputSize, outputSize, outScale, weightScale, stdDev},
-    _act(std::move(act))
+DenseLayer::DenseLayer(const unsigned int inputSize, const unsigned int outputSize, std::shared_ptr<Activation> act, unsigned int outScale, unsigned int weightScale, const unsigned int accumulatorBits, const double stdDev):
+    Layer{inputSize, outputSize, outScale, weightScale, accumulatorBits, stdDev},
+    _act(std::move(act)),
+    _outputShift(0)
     
 {
     _bias.resize(outputSize, 0.0);
@@ -40,6 +41,10 @@ void DenseLayer::calcNetOut(const Input& input) {
         for(unsigned int o = 0; o < _outputSize; ++o) {
             _netOutput[o] += el.second * _quantizedWeight[_calcWeightIndex(el.first,o)];
         }
+    }
+    for(unsigned int o = 0; o < _outputSize; ++o) {
+        // use the right formula!! we have to find at which value he overflow occurs
+        if(std::abs(_netOutput[o]) * _weightScale > std::pow(2, _accumulatorBits - 1)) { std::cout<<"accumulator["<<o<<"] = " <<_netOutput[o]<<std::endl;}
     }
     
 }
@@ -293,7 +298,7 @@ void DenseLayer::printMinMax() {
 void DenseLayer::_quantizeWeight() {
     if(_quantization) {
         for(unsigned int i=0; i<_weight.size(); ++i) {
-            _quantizedWeight[i] = std::round(_weight[i] * _weightScale) / _weightScale;;
+            _quantizedWeight[i] = std::round(_weight[i] * _weightScale) / _weightScale;
         }
     }
     else {

@@ -28,6 +28,8 @@ private:
     bool _quantization;
     unsigned int _quantizationPass;
     bool _rmsProp;
+    double _totalLoss;
+    unsigned long long int _totalCount;
     
 };
 

@@ -21,7 +21,9 @@ GradientDescend::GradientDescend(Model& model, const InputSet& inputSet, unsigne
     _count(0),
     _quantization(false),
     _quantizationPass(quant),
-    _rmsProp(rmsprop)
+    _rmsProp(rmsprop),
+    _totalLoss(0.0),
+    _totalCount(0)
 {}
 
 GradientDescend::~GradientDescend() {
@@ -32,21 +34,21 @@ double GradientDescend::train(unsigned int decimation) {
     std::cerr <<"TrainsetError,ValidationError"<<std::endl;
     //auto start = std::chrono::high_resolution_clock::now();
     bool infinite = (0 == _passes);
-    _model.setQuantization(true);
+    /*_model.setQuantization(true);
     std::cout<<"initial ValidationSet avg loss: " << sqrt(_model.calcAvgLoss(_inputSet.validationSet()))<<std::endl;
-    _model.setQuantization(_quantization);
+    _model.setQuantization(_quantization);*/
     for(unsigned int p = 0; infinite || p < _passes; ++p) {
-        if (_quantizationPass && p > _quantizationPass) {_quantization = true;}
+        if (p >= _quantizationPass) {_quantization = true;}
         else {_quantization = false;}
         _model.setQuantization(_quantization);
         _pass(p);
         _printTrainResult(p, decimation);
     }
-    _model.setQuantization(true);
+    /*_model.setQuantization(true);
     double r = _model.calcAvgLoss(_inputSet.validationSet());
     std::cout<<"final ValidationSet avg loss: " <<sqrt(r)<<std::endl;
-    _model.setQuantization(false);    
-    return r;
+    _model.setQuantization(false);   */ 
+    return 0;
 }
 
 void GradientDescend::_pass(const unsigned int pass) {
@@ -75,17 +77,23 @@ void GradientDescend::_pass(const unsigned int pass) {
 void GradientDescend::_printTrainResult(const unsigned int pass, unsigned int decimation) {
     if((pass%decimation)==0) 
     {
-        unsigned int p = pass / decimation;
-        _model.setQuantization(true);
+        unsigned int p = pass /*/ decimation*/;
+        /*_model.setQuantization(true);
         double l = _model.calcAvgLoss(_inputSet.validationSet());
-        _model.setQuantization(_quantization);
+        _model.setQuantization(_quantization);*/
 
-        std::cout << "pass: " << p << " loss "<< sqrt(l) << std::endl;
-        _save(p);
+        //std::cout << "pass: " << p << " loss "<< sqrt(_accumulatorLoss/_count)<<std::endl;
+        //_save(p);
 
         std::cerr <<sqrt(_accumulatorLoss/_count)<<",";
-        std::cerr <<sqrt(l)<<std::endl;
+        _totalLoss += _accumulatorLoss;
+        _totalCount += _count;
+        std::cerr <<sqrt(_totalLoss/_totalCount)<<std::endl;
 
+        std::cout << "pass: " << p << " loss "<< sqrt(_accumulatorLoss/_count)<< " " <<sqrt(_totalLoss/_totalCount)<<std::endl;
+
+        
+        //std::cout<<" AVGLOSS " << _lossLowPassFilter<<std::endl; 
         _accumulatorLoss = 0;
         _count = 0;
     }

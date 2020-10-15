@@ -8,12 +8,12 @@
 #include "input.h"
 #include "parallelSparse.h"
 
-ParallelDenseLayer::ParallelDenseLayer(const unsigned int number, const unsigned int inputSize, const unsigned int outputSize, std::shared_ptr<Activation> act, unsigned int outScale, unsigned int weightScale, const double stdDev):
-    Layer{number * inputSize, number * outputSize, outScale, weightScale, stdDev}, _number(number), _layerInputSize(inputSize), _layerOutputSize(outputSize), _layerWeightNumber(_layerInputSize * _layerOutputSize)
+ParallelDenseLayer::ParallelDenseLayer(const unsigned int number, const unsigned int inputSize, const unsigned int outputSize, std::shared_ptr<Activation> act, unsigned int outScale, unsigned int weightScale, const unsigned int accumulatorBits, const double stdDev):
+    Layer{number * inputSize, number * outputSize, outScale, weightScale, accumulatorBits, stdDev}, _number(number), _layerInputSize(inputSize), _layerOutputSize(outputSize), _layerWeightNumber(_layerInputSize * _layerOutputSize)
     
 {
     for(unsigned int n = 0 ; n < number; ++n){
-        _parallelLayers.emplace_back(DenseLayer(_layerInputSize, _layerOutputSize, act, outScale, weightScale, _stdDev));
+        _parallelLayers.emplace_back(DenseLayer(_layerInputSize, _layerOutputSize, act, outScale, weightScale, accumulatorBits,  _stdDev));
     }    
 }
 
