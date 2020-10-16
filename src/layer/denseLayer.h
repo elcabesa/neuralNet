@@ -35,6 +35,8 @@ public:
     
     void upgradeBias(double beta, double learnRate, bool rmsprop = true);
     void upgradeWeight(double beta, double learnRate, double regularization, bool rmsprop = true);
+
+    double getQuantizedWeight(unsigned int) const;
     
     unsigned int _calcWeightIndex(const unsigned int i, const unsigned int o) const;
     
@@ -47,7 +49,7 @@ public:
 private:
     std::vector<double> _bias;
     std::vector<double> _weight;
-    std::vector<double> _quantizedWeight;
+    //std::vector<double> _quantizedWeight;
 
     std::vector<double> _netOutput;
     std::shared_ptr<Activation> _act;
@@ -69,7 +71,7 @@ private:
     double _min = 1e8;
     double _max = -1e8;
 
-    void _quantizeWeight();
+    //void _quantizeWeight();
 
     unsigned int _outputShift;
 };
