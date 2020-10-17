@@ -27,7 +27,7 @@ DenseLayer::DenseLayer(const unsigned int inputSize, const unsigned int outputSi
 
 DenseLayer::~DenseLayer() {}
 
-void DenseLayer::calcNetOut(const Input& input) {
+void DenseLayer::_calcNetOut(const Input& input) {
     assert(input.size() == _inputSize);
     _netOutput = _bias;
     unsigned int num = input.getElementNumber();
@@ -35,14 +35,14 @@ void DenseLayer::calcNetOut(const Input& input) {
         auto& el = input.getElementFromIndex(idx);
         _activeFeature.insert(el.first);
         for(unsigned int o = 0; o < _outputSize; ++o) {
-            _netOutput[o] += el.second * getQuantizedWeight(_calcWeightIndex(el.first,o));
+            _netOutput[o] += el.second * _getQuantizedWeight(_calcWeightIndex(el.first,o));
         }
     }
     
     
 }
 
-void DenseLayer::calcOut() {
+void DenseLayer::_calcOut() {
     for(unsigned int o=0; o < _outputSize; ++o) {
         // overflow warning
         if(std::abs(_netOutput[o]) > std::pow(2, _accumulatorBits - 1)) { std::cout<<"warning acc overflow: accumulator["<<o<<"] = " <<_netOutput[o]<<std::endl;}
@@ -60,8 +60,8 @@ void DenseLayer::calcOut() {
 }
 
 void DenseLayer::propagate(const Input& input) {
-    calcNetOut(input);
-    calcOut();
+    _calcNetOut(input);
+    _calcOut();
 }
 
 unsigned int DenseLayer::_calcWeightIndex(const unsigned int i, const unsigned int o) const {
@@ -110,7 +110,7 @@ std::vector<double> DenseLayer::backPropHelper() const {
     unsigned int i = 0;
     for(auto& r :ret) {
         for(unsigned int o = 0; o < _outputSize; ++o) {
-            r += _biasGradient[o] * getQuantizedWeight(_calcWeightIndex(i,o));
+            r += _biasGradient[o] * _getQuantizedWeight(_calcWeightIndex(i,o));
         }
         ++i;
     }
@@ -129,7 +129,13 @@ void DenseLayer::resetSum() {
     _biasSumGradient.resize(_outputSize, 0.0);
 }
 
-void DenseLayer::accumulateGradients(const Input& input) {
+void DenseLayer::backwardPropagate(const std::vector<double>& h, const Input& input) {
+    _backwardCalcBiasGradient(h);
+    _backwardCalcWeightGradient(input);
+    _accumulateGradients(input);
+}
+
+void DenseLayer::_accumulateGradients(const Input& input) {
     unsigned int i= 0;
     for(auto& b: _biasSumGradient) {
         b += _biasGradient[i];
@@ -146,7 +152,7 @@ void DenseLayer::accumulateGradients(const Input& input) {
     }
 }
 
-void DenseLayer::backwardCalcBiasGradient(const std::vector<double>& h) {
+void DenseLayer::_backwardCalcBiasGradient(const std::vector<double>& h) {
     assert(h.size() == _outputSize);
     unsigned int i = 0;
     for(auto& b: _biasGradient) {
@@ -156,7 +162,7 @@ void DenseLayer::backwardCalcBiasGradient(const std::vector<double>& h) {
     }
 }
 
-void DenseLayer::backwardCalcWeightGradient(const Input& input) {
+void DenseLayer::_backwardCalcWeightGradient(const Input& input) {
     assert(input.size() == _inputSize);
     unsigned int num = input.getElementNumber();
     for(unsigned int idx = 0; idx < num; ++idx) {
@@ -271,11 +277,7 @@ void DenseLayer::printMinMax() {
     std::cout<<"max "<<_max<<std::endl;
 }
 
-void DenseLayer::setQuantization(bool q) {
-    _quantization = q;
-}
-
-double DenseLayer::getQuantizedWeight(unsigned int i) const {
+double DenseLayer::_getQuantizedWeight(unsigned int i) const {
     if(_quantization) {
         return std::floor(_weight[i]);
     } else {

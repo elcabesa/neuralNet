@@ -34,3 +34,7 @@ void Layer::printOutput() const {
     _output.print();
 }
 
+void Layer::setQuantization(bool q) {
+    _quantization = q;
+}
+

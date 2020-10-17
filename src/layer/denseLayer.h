@@ -18,12 +18,12 @@ public:
     void propagate(const Input& input);
     void printParams() const;
     void randomizeParams();
-    void backwardCalcBiasGradient(const std::vector<double>& h);
-    void backwardCalcWeightGradient(const Input& input);
+    void backwardPropagate(const std::vector<double>& h, const Input& input);
+    
     std::vector<double> backPropHelper() const;
     
     void resetSum();
-    void accumulateGradients(const Input& input);
+    
     
     std::vector<double>& bias();
     std::vector<double>& weight();
@@ -34,20 +34,15 @@ public:
     void upgradeBias(double beta, double learnRate, bool rmsprop = true);
     void upgradeWeight(double beta, double learnRate, double regularization, bool rmsprop = true);
 
-    double getQuantizedWeight(unsigned int) const;
-    
-    unsigned int _calcWeightIndex(const unsigned int i, const unsigned int o) const;
-    
-    void serialize(std::ofstream& ss) const;
-    bool deserialize(std::ifstream& ss);
-
     void printMinMax();
     void setQuantization(bool q);
+
+    void serialize(std::ofstream& ss) const;
+    bool deserialize(std::ifstream& ss);
     
 private:
     std::vector<double> _bias;
     std::vector<double> _weight;
-    //std::vector<double> _quantizedWeight;
 
     std::vector<double> _netOutput;
     std::shared_ptr<Activation> _act;
@@ -63,8 +58,13 @@ private:
     
     std::set<unsigned int> _activeFeature;
     
-    void calcNetOut(const Input& input);
-    void calcOut();
+    void _calcNetOut(const Input& input);
+    void _calcOut();
+    double _getQuantizedWeight(unsigned int) const;
+    unsigned int _calcWeightIndex(const unsigned int i, const unsigned int o) const;
+    void _backwardCalcBiasGradient(const std::vector<double>& h);
+    void _backwardCalcWeightGradient(const Input& input);
+    void _accumulateGradients(const Input& input);
 
     double _min = 1e8;
     double _max = -1e8;

@@ -9,167 +9,300 @@
 #include "parallelSparse.h"
 
 ParallelDenseLayer::ParallelDenseLayer(const unsigned int number, const unsigned int inputSize, const unsigned int outputSize, std::shared_ptr<Activation> act, const unsigned int accumulatorBits, const double outScaling, const double stdDev):
-    Layer{number * inputSize, number * outputSize, accumulatorBits, outScaling,  stdDev}, _number(number), _layerInputSize(inputSize), _layerOutputSize(outputSize), _layerWeightNumber(_layerInputSize * _layerOutputSize)
+    Layer{number * inputSize, number * outputSize, accumulatorBits, outScaling,  stdDev},
+    _number(number),
+    _layerInputSize(inputSize),
+    _layerOutputSize(outputSize),
+    _layerWeightNumber(_layerInputSize * _layerOutputSize),
+    _act(std::move(act))
 {
-    for(unsigned int n = 0 ; n < number; ++n){
-        _parallelLayers.emplace_back(DenseLayer(_layerInputSize, _layerOutputSize, act, accumulatorBits, outScaling, _stdDev));
-    }    
+    _bias.resize(_layerOutputSize, 0.0);
+    _weight.resize(_layerOutputSize * _layerInputSize, 1.0);
+
+    _netOutput.resize(_outputSize, 0.0);
+    
+    _biasGradient.resize(_outputSize, 0.0);
+    _weightGradient.resize(_layerOutputSize * _layerInputSize * _number, 0.0);
+    
+    _biasSumGradient.resize(_layerOutputSize, 0.0);
+    _weightSumGradient.resize(_layerOutputSize * _layerInputSize, 0.0);
+    
+    
+    _biasMovAvg.resize(_layerOutputSize, 0.0);
+    _weightMovAvg.resize(_layerOutputSize * _layerInputSize, 0.0);
 }
 
 ParallelDenseLayer::~ParallelDenseLayer() {}
 
-std::vector<double>& ParallelDenseLayer::bias() {return _parallelLayers[0/0].bias();}
-std::vector<double>& ParallelDenseLayer::weight() {return _parallelLayers[0/0].bias();}
-
-DenseLayer& ParallelDenseLayer::getLayer(unsigned int i) {
-    assert(i<_number);
-    return _parallelLayers[i];
-}
-
-unsigned int ParallelDenseLayer::getLayerNumber() {
-    return _number;
-}
-
-double ParallelDenseLayer::getBiasSumGradient(unsigned int index) const {
-    unsigned int layerNum = index / _layerOutputSize;
-    assert(layerNum<_number);
-    return _parallelLayers[layerNum].getBiasSumGradient(index % _layerOutputSize);
-}
-double ParallelDenseLayer::getWeightSumGradient(unsigned int index) const {
-    unsigned int layerNum = index / _layerWeightNumber;
-    assert(layerNum<_number);
-    return _parallelLayers[layerNum].getWeightSumGradient(index % _layerWeightNumber);
-}
-
-unsigned int ParallelDenseLayer::_calcBiasIndex(const unsigned int layer, const unsigned int offset) const {
-    assert(offset < _layerOutputSize);
-    assert(layer < _number);
-    unsigned int x = layer * _layerOutputSize + offset;
-    assert(x < _outputSize);
-    return x;
-}
+std::vector<double>& ParallelDenseLayer::bias() {return _bias;}
+std::vector<double>& ParallelDenseLayer::weight() {return _weight;}
 
 void ParallelDenseLayer::randomizeParams() {    
-    for(auto& l: _parallelLayers) {
-        l.randomizeParams();
-    }    
-}
-
-void ParallelDenseLayer::propagate(const Input& input) {
-    unsigned int n= 0;
-    _output.clear();
-    for(auto& l: _parallelLayers) {
-        
-        const ParalledSparseInput psi(input, n, _layerInputSize);
-        l.propagate(psi);
-        
-        // copy back output
-        auto& out = l.output();
-        unsigned int num = out.getElementNumber();
-        for(unsigned int o = 0; o < num; ++o){
-            auto el = out.getElementFromIndex(o);
-            _output.set(_calcBiasIndex(n, el.first), el.second); 
-        }
-        ++n;
+    double stdDev = _stdDev;
+    if( stdDev == 0.0) {
+        stdDev = sqrt(2.0 / _inputSize);
     }
+
+    std::random_device rnd;
+    std::normal_distribution<double> dist(0.0, 0.1);
+    std::normal_distribution<double> dist2(0.0, stdDev);
     
+    for (auto& x: _bias) {x = dist(rnd);}
+    for (auto& x: _weight) {x = dist2(rnd);}    
 }
-
-void ParallelDenseLayer::printParams() const {
-    for(auto& l: _parallelLayers) {
-        l.printParams();
-    }
-
-}
-
-std::vector<double> ParallelDenseLayer::backPropHelper() const {
-    std::vector<double> ret;
-    for(auto& l: _parallelLayers) {
-        auto r = l.backPropHelper();
-        ret.insert(ret.end(), r.begin(), r.end());
-    }
-    return ret;    
-}
-
-void ParallelDenseLayer::resetSum() {
-    for(auto& l: _parallelLayers) {
-        l.resetSum();
-    } 
-}
-
-void ParallelDenseLayer::accumulateGradients(const Input& input) {
-    assert(input.size() == _inputSize);
-    unsigned int n= 0;
-    for(auto& l: _parallelLayers) {
-        const ParalledSparseInput psi(input, n , _layerInputSize);
-        l.accumulateGradients(psi);
-        ++n;
-    }
-}
-
-void ParallelDenseLayer::backwardCalcBiasGradient(const std::vector<double>& h) {
-    assert(h.size() == _outputSize);
-    unsigned int n = 0;
-    for(auto& l: _parallelLayers) {
-        const std::vector<double> in(h.begin() + _layerOutputSize * n, h.begin() + _layerOutputSize * (n + 1));
-        l.backwardCalcBiasGradient(in);
-        ++n;
-    }
-}
-
-
-void ParallelDenseLayer::backwardCalcWeightGradient(const Input& input) {
-    unsigned int n= 0;
-    for(auto& l: _parallelLayers) {
-        const ParalledSparseInput psi(input, n , _layerInputSize);
-        l.backwardCalcWeightGradient(psi);
-        ++n;
-    }
-}
-
-void ParallelDenseLayer::upgradeBias(double beta, double learnRate, bool rmsprop) {
-    for(auto& l: _parallelLayers) {
-        l.upgradeBias(beta, learnRate, rmsprop);
-    }
-    
-}
-void ParallelDenseLayer::upgradeWeight(double beta, double learnRate, double regularization, bool rmsprop) {
-    for(auto& l: _parallelLayers) {
-        l.upgradeWeight(beta, learnRate, regularization, rmsprop);
-    }
-}
-
 
 void ParallelDenseLayer::serialize(std::ofstream& ss) const{
+    union un{
+        double d;
+        char c[8];
+    }u;
+
     ss << "{";
-    for(auto& l: _parallelLayers) {
-        l.serialize(ss);
+    for (auto & b: _bias) {
+        u.d = b;
+        ss.write(u.c, 8);
+        ss<<", ";
     }
+    ss <<std::endl;
+    for (auto & w: _weight) {
+        u.d = w;
+        ss.write(u.c, 8);
+        ss<<", ";
+    }
+
     ss << "}"<<std::endl;
 }
 
 bool ParallelDenseLayer::deserialize(std::ifstream& ss) {
-    //std::cout<<"DESERIALIZE PARALLEL DENSE LAYER"<<std::endl;
-    if(ss.get() != '{') {std::cout<<"ParallelDenseLayer missing {"<<std::endl;return false;}
-    
-    for(auto& l :_parallelLayers) {
-        if(!l.deserialize(ss)) {std::cout<<"ParallelDenseLayer internal layer error"<<std::endl;return false;}
+    union un{
+        double d;
+        char c[8];
+    }u;
+
+    if(ss.get() != '{') {std::cout<<"DenseLayer missing {"<<std::endl;return false;}
+    for (auto & b: _bias) {
+        ss.read(u.c, 8);
+        b = u.d;
+        if(ss.get() != ',') {std::cout<<"DenseLayer missing ,"<<std::endl;return false;}
+        if(ss.get() != ' ') {std::cout<<"DenseLayer missing space"<<std::endl;return false;}
     }
-    
-    if(ss.get() != '}') {std::cout<<"ParallelDenseLayer missing }"<<std::endl;return false;}
     if(ss.get() != '\n') {std::cout<<"DenseLayer missing line feed"<<std::endl;return false;}
+    for (auto & w: _weight) {
+        ss.read(u.c, 8);
+        w = u.d;
+        if(ss.get() != ',') {std::cout<<"DenseLayer missing ,"<<std::endl;return false;}
+        if(ss.get() != ' ') {std::cout<<"DenseLayer missing space"<<std::endl;return false;}
+    }
+    if(ss.get() != '}') {std::cout<<"DenseLayer missing }"<<std::endl;return false;}
+    if(ss.get() != '\n') {std::cout<<"DenseLayer missing line feed"<<std::endl;return false;}
+
     return true;
 }
 
+void ParallelDenseLayer::printParams() const {
+    std::cout<<"weights"<<std::endl;
+    for(auto& x: _weight) {std::cout<<x <<" ";} std::cout<<std::endl;
+    std::cout<<"bias"<<std::endl;
+    for(auto& x: _bias) {std::cout<<x <<" ";} std::cout<<std::endl;
+}
 
-void ParallelDenseLayer::printMinMax() {
-    for(auto& l: _parallelLayers) {
-        l.printMinMax();
+void ParallelDenseLayer::_calcNetOut(const Input& input, unsigned int layer) {
+    assert(input.size() == _layerInputSize);
+    // copy biases to output
+    for (unsigned int o = 0; o < _layerOutputSize; ++o) {
+        _netOutput[o + layer * _layerOutputSize] = _bias[o];
+    }
+    // for each input
+    unsigned int num = input.getElementNumber();
+    for (unsigned int idx = 0; idx < num; ++idx) {
+        auto& el = input.getElementFromIndex(idx);
+        _activeFeature.insert(el.first);
+        // calc all the output
+        for(unsigned int o = 0; o < _layerOutputSize; ++o) {
+            _netOutput[o + layer * _layerOutputSize] += el.second * _getQuantizedWeight(_calcWeightIndex(el.first, o));
+        }
+    } 
+}
+
+void ParallelDenseLayer::_calcOut(unsigned int layer) {
+    for(unsigned int o = 0; o < _layerOutputSize; ++o) {
+        unsigned int idx = o + layer * _layerOutputSize;
+        // overflow warning
+        if(std::abs(_netOutput[idx]) > std::pow(2, _accumulatorBits - 1)) { std::cout<<"warning acc overflow: accumulator["<<idx<<"] = " <<_netOutput[idx]<<std::endl;}
+        
+        _output.set(idx, _act->propagate(_netOutput[idx] / _outScaling));
+
+        if (_quantization) {
+            //output quantization
+            _output.set(idx, std::floor(_output.get(idx)));
+        }
+        // save min and max
+        _min = std::min(_min, _output.get(idx));
+        _max = std::max(_max, _output.get(idx));
     }
 }
 
-void ParallelDenseLayer::setQuantization(bool q) {
-    for(auto& l: _parallelLayers) {
-        l.setQuantization(q);
+void ParallelDenseLayer::propagate(const Input& input) {
+    for ( unsigned int n = 0; n < _number; ++n) {
+        const ParalledSparseInput psi(input, n, _layerInputSize);
+        _calcNetOut(psi, n);
+        _calcOut(n);
+    }
+}
+
+double ParallelDenseLayer::_getQuantizedWeight(unsigned int i) const {
+    if(_quantization) {
+        return std::floor(_weight[i]);
+    } else {
+        return _weight[i];
+    }
+}
+
+unsigned int ParallelDenseLayer::_calcWeightIndex(const unsigned int i, const unsigned int o) const {
+    assert(o + i * _layerOutputSize < _weight.size());
+    return o + i * _layerOutputSize;
+}
+
+void ParallelDenseLayer::printMinMax() {
+    std::cout<<"------------------------"<<std::endl;
+    std::cout<<"min "<<_min<<std::endl;
+    std::cout<<"max "<<_max<<std::endl;
+}
+
+std::vector<double> ParallelDenseLayer::backPropHelper() const {
+    std::vector<double> ret;
+    std::cout<<"AAAAAAAAAAAAAAAAAAAAA"<<std::endl;
+    return ret;    
+}
+
+double ParallelDenseLayer::getBiasSumGradient(unsigned int index) const {
+    assert(index < _bias.size());
+    return _biasSumGradient[index];
+}
+
+double ParallelDenseLayer::getWeightSumGradient(unsigned int index) const {
+    assert(index < _weight.size());
+    return _weightSumGradient[index];
+}
+
+void ParallelDenseLayer::resetSum() {
+    for(auto f: _activeFeature) {
+        for(unsigned int o = 0; o < _layerOutputSize; ++o) {
+            unsigned int idx = _calcWeightIndex(f, o);
+            _weightSumGradient[idx] = 0.0;
+        }
+    }
+    _activeFeature.clear();
+    _biasSumGradient.clear();
+    _biasSumGradient.resize(_layerOutputSize, 0.0);
+}
+
+
+void ParallelDenseLayer::upgradeBias(double beta, double learnRate, bool rmsprop) {
+    double beta2 = (1.0 - beta);
+    if (rmsprop) {
+        for(auto& bma: _biasMovAvg){
+            bma = beta * bma;
+        }
+    }
+
+    unsigned int i = 0;
+    for (auto& b: _bias) {
+        double gradBias = getBiasSumGradient(i);
+        if (rmsprop) {
+            _biasMovAvg[i] += beta2 * gradBias * gradBias;
+            b -= gradBias * (learnRate / sqrt(_biasMovAvg[i] /*+ 1e-8*/));
+        } else {
+            b -= gradBias * learnRate;
+        }
+        ++i;
+    }
+    
+}
+
+void ParallelDenseLayer::upgradeWeight(double beta, double learnRate, double regularization, bool rmsprop) {
+    double beta2 = (1.0 - beta);
+    
+    if (rmsprop) {
+        for (auto& wma: _weightMovAvg) {
+            wma = beta * wma;
+        }
+    }
+
+    for (auto f: _activeFeature) {
+        for(unsigned int o = 0; o < _outputSize; ++o) {
+            unsigned int idx = _calcWeightIndex(f, o);
+            double gradWeight = getWeightSumGradient(idx);
+            //-----------------------------
+            // this should be done for every element, but I did it only for active features to speedup
+            //_weightMovAvg[idx] *= beta;
+            //-----------------------------
+            if (rmsprop) {
+                _weightMovAvg[idx] += beta2 * gradWeight * gradWeight;
+                _weight[idx] = (regularization * _weight[idx]) - gradWeight * (learnRate / sqrt(_weightMovAvg[idx] /*+ 1e-8*/));
+            }
+            else {
+                _weight[idx] = (regularization * _weight[idx]) - gradWeight * learnRate;
+            }
+        }
+    }
+}
+
+//-------------------------------------------------------
+
+void ParallelDenseLayer::backwardPropagate(const std::vector<double>& h, const Input& input) {
+    _backwardCalcBiasGradient(h);
+    _backwardCalcWeightGradient(input);
+    _accumulateGradients(input);
+}
+
+void ParallelDenseLayer::_accumulateGradients(const Input& input) {
+    assert(input.size() == _inputSize);
+
+    unsigned int i= 0;
+    for(auto& b: _biasSumGradient) {
+        for (unsigned int layer = 0; layer < _number; ++layer) {
+            b += _biasGradient[i + layer * _layerOutputSize];
+        }
+        ++i;
+    }
+
+    for (unsigned int layer = 0; layer < _number; ++layer) {
+        const ParalledSparseInput psi(input, layer , _layerInputSize);
+        unsigned int num = psi.getElementNumber();
+        for(unsigned int idx = 0; idx < num; ++idx) {
+            auto & el = psi.getElementFromIndex(idx);
+            for(unsigned int o = 0; o < _layerOutputSize; ++o) {
+                unsigned int index = _calcWeightIndex(el.first, o);
+                _weightSumGradient[index] += _weightGradient[index +  layer * _weight.size()];
+            }
+        }
+    }
+}
+
+void ParallelDenseLayer::_backwardCalcBiasGradient(const std::vector<double>& h) {
+    assert(h.size() == _outputSize);
+
+    unsigned int i = 0;
+    for(auto& b: _biasGradient) {
+        double activationDerivate = _act->derivate(_netOutput[i]);
+        b = h[i] * activationDerivate / _outScaling;
+        ++i;
+    }
+}
+
+
+void ParallelDenseLayer::_backwardCalcWeightGradient(const Input& input) {
+    for (unsigned int layer = 0; layer < _number; ++layer) {
+        const ParalledSparseInput psi(input, layer , _layerInputSize);
+        assert(psi.size() == _layerInputSize);
+        unsigned int num = psi.getElementNumber();
+        for(unsigned int idx = 0; idx < num; ++idx) {
+            auto & el = psi.getElementFromIndex(idx);
+            for(unsigned int o = 0; o < _layerOutputSize; ++o) {
+                double w = _biasGradient[o + layer * _layerOutputSize] * el.second;
+                _weightGradient[_calcWeightIndex(el.first, o) + layer * _weight.size()] = w;
+            }
+        }
     }
 }
