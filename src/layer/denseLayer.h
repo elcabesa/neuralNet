@@ -12,7 +12,7 @@ class Activation;
 
 class DenseLayer: public Layer {
 public:
-    DenseLayer(const unsigned int inputSize, const unsigned int outputSize, std::shared_ptr<Activation> act, unsigned int outScale, unsigned int weightScale, const unsigned int accumulatorBits, const double stdDev = 0.0);
+    DenseLayer(const unsigned int inputSize, const unsigned int outputSize, std::shared_ptr<Activation> act, const unsigned int accumulatorBits, const double outScaling, const double stdDev = 0.0);
     ~DenseLayer();
     
     void propagate(const Input& input);
@@ -27,8 +27,6 @@ public:
     
     std::vector<double>& bias();
     std::vector<double>& weight();
-    
-    void consolidateResult();
     
     double getBiasSumGradient(unsigned int index) const;
     double getWeightSumGradient(unsigned int index) const;
@@ -70,10 +68,6 @@ private:
 
     double _min = 1e8;
     double _max = -1e8;
-
-    //void _quantizeWeight();
-
-    unsigned int _outputShift;
 };
 
 #endif  

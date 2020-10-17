@@ -10,7 +10,9 @@ TEST(reluTest, propagate) {
     ASSERT_DOUBLE_EQ(relu.propagate(-1), -0.01);
     ASSERT_DOUBLE_EQ(relu.propagate(0), 0);
     ASSERT_DOUBLE_EQ(relu.propagate(0.5), 0.5);
-    ASSERT_DOUBLE_EQ(relu.propagate(5), 1.04);
+    ASSERT_DOUBLE_EQ(relu.propagate(5), 5.0);
+    ASSERT_DOUBLE_EQ(relu.propagate(127), 127.0);
+    ASSERT_DOUBLE_EQ(relu.propagate(128), 127.01);
 }
 
 TEST(reluTest, derivate) {
@@ -21,7 +23,7 @@ TEST(reluTest, derivate) {
     ASSERT_DOUBLE_EQ(relu.derivate(-1), 0.01);
     ASSERT_DOUBLE_EQ(relu.derivate(0.1), 1.0);
     ASSERT_DOUBLE_EQ(relu.derivate(0.5), 1.0);
-    ASSERT_DOUBLE_EQ(relu.derivate(5), 0.01);
+    ASSERT_DOUBLE_EQ(relu.derivate(256), 0.01);
 }
 
 TEST(reluTest, getType) {

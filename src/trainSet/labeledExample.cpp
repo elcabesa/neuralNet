@@ -7,5 +7,5 @@ const Input& LabeledExample::features() const {
     return *_features;
 }
 double LabeledExample::label() const {
-    return _label / 10000.0;
+    return _label;
 }

@@ -3,15 +3,14 @@
 
 #include "layer.h"
 
-Layer::Layer(const unsigned int inputSize, const unsigned int outputSize, unsigned int outScale, unsigned int weightScale, const unsigned int accumulatorBits, const double stdDev):
+Layer::Layer(const unsigned int inputSize, const unsigned int outputSize, const unsigned int accumulatorBits, const double outScaling, const double stdDev):
     _inputSize(inputSize),
     _outputSize(outputSize),
     _output(outputSize),
     _stdDev(stdDev),
     _quantization(false),
-    _outScale(outScale),
-    _weightScale(weightScale),
-    _accumulatorBits(accumulatorBits)
+    _accumulatorBits(accumulatorBits),
+    _outScaling(outScaling)
 
 {}
 

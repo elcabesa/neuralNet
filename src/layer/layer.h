@@ -7,7 +7,7 @@
 
 class Layer {
 public:
-    Layer(const unsigned int inputSize, const unsigned int outputSize, unsigned int outScale, unsigned int weightScale, const unsigned int accumulatorBits, const double stdDev);
+    Layer(const unsigned int inputSize, const unsigned int outputSize, const unsigned int accumulatorBits, const double outScaling, const double stdDev);
     virtual ~Layer();
     
     unsigned int getInputSize() const;
@@ -49,9 +49,8 @@ protected:
     DenseInput _output;
     const double _stdDev;
     bool _quantization;
-    unsigned int _outScale;
-    unsigned int _weightScale;
     unsigned int _accumulatorBits;
+    double _outScaling;
     
 };
 

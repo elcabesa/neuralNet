@@ -21,7 +21,7 @@ TEST(ActivationFactory, createRelu) {
     
     ASSERT_DOUBLE_EQ(ac->propagate(-2000), -2000 * 0.01);
     ASSERT_DOUBLE_EQ(ac->propagate(0), 0);
-    ASSERT_DOUBLE_EQ(ac->propagate(587), 6.86);
+    ASSERT_DOUBLE_EQ(ac->propagate(587), 131.6);
 }
 
 TEST(ActivationFactory, createWrong) {
