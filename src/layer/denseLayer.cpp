@@ -42,10 +42,10 @@ void DenseLayer::calcNetOut(const Input& input) {
             _netOutput[o] += el.second * getQuantizedWeight(_calcWeightIndex(el.first,o));
         }
     }
-    for(unsigned int o = 0; o < _outputSize; ++o) {
+    /*for(unsigned int o = 0; o < _outputSize; ++o) {
         // use the right formula!! we have to find at which value he overflow occurs
         if(std::abs(_netOutput[o]) * _weightScale > std::pow(2, _accumulatorBits - 1)) { std::cout<<"accumulator["<<o<<"] = " <<_netOutput[o]<<std::endl;}
-    }
+    }*/
     
 }
 
@@ -104,10 +104,10 @@ void DenseLayer::randomizeParams() {
     }
     //std::cout<<"std dev "<<stdDev<<std::endl;
     std::random_device rnd;
-    /*std::normal_distribution<double> dist(0.0, 1.0);*/
+    std::normal_distribution<double> dist(0.0, 0.1);
     std::normal_distribution<double> dist2(0.0, stdDev);
     
-    /*for(auto& x: _bias) {x = dist(rnd);}*/ 
+    for(auto& x: _bias) {x = dist(rnd);}
     for(auto& x: _weight) {x = dist2(rnd);}
 
     //_quantizeWeight();
