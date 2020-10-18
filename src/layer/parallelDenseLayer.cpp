@@ -107,8 +107,10 @@ void ParallelDenseLayer::_calcNetOut(const Input& input, unsigned int layer) {
     assert(input.size() == _layerInputSize);
     // copy biases to output
     for (unsigned int o = 0; o < _layerOutputSize; ++o) {
-        _netOutput[o + layer * _layerOutputSize] = _bias[o];
+        _netOutput[o + layer * _layerOutputSize] = _getQuantizedBias(o);
     }
+    
+
     // for each input
     unsigned int num = input.getElementNumber();
     for (unsigned int idx = 0; idx < num; ++idx) {
@@ -131,7 +133,7 @@ void ParallelDenseLayer::_calcOut(unsigned int layer) {
 
         if (_quantization) {
             //output quantization
-            _output.set(idx, std::floor(_output.get(idx)));
+            _output.set(idx, std::trunc(_output.get(idx)));
         }
         // save min and max
         _min = std::min(_min, _output.get(idx));
@@ -145,13 +147,26 @@ void ParallelDenseLayer::propagate(const Input& input) {
         _calcNetOut(psi, n);
         _calcOut(n);
     }
+
+    /*std::cout<<"----------------"<<std::endl;
+    for (unsigned int o = 0; o < _outputSize; ++o) {
+        std::cout<<(int)(_output.get(o))<<std::endl;
+    }*/
 }
 
 double ParallelDenseLayer::_getQuantizedWeight(unsigned int i) const {
     if(_quantization) {
-        return std::floor(_weight[i]);
+        return std::trunc(_weight[i]);
     } else {
         return _weight[i];
+    }
+}
+
+double ParallelDenseLayer::_getQuantizedBias(unsigned int i) const {
+    if(_quantization) {
+        return std::trunc(_bias[i]);
+    } else {
+        return _bias[i];
     }
 }
 

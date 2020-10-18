@@ -29,7 +29,10 @@ DenseLayer::~DenseLayer() {}
 
 void DenseLayer::_calcNetOut(const Input& input) {
     assert(input.size() == _inputSize);
-    _netOutput = _bias;
+    for(unsigned int o = 0; o < _outputSize; ++o) {
+        _netOutput[o] = _getQuantizedBias(o);
+    }
+    
     unsigned int num = input.getElementNumber();
     for(unsigned int idx = 0; idx < num; ++idx) {
         auto& el = input.getElementFromIndex(idx);
@@ -51,7 +54,7 @@ void DenseLayer::_calcOut() {
 
         if (_quantization) {
             //output quantization
-            _output.set(o, std::floor(_output.get(o)));
+            _output.set(o, std::trunc(_output.get(o)));
         }
         // save min and max
         _min = std::min(_min, _output.get(o));
@@ -62,6 +65,11 @@ void DenseLayer::_calcOut() {
 void DenseLayer::propagate(const Input& input) {
     _calcNetOut(input);
     _calcOut();
+
+    /*std::cout<<"----------------"<<std::endl;
+    for (unsigned int o = 0; o < _outputSize; ++o) {
+        std::cout<<(int)(_output.get(o))<<std::endl;
+    }*/
 }
 
 unsigned int DenseLayer::_calcWeightIndex(const unsigned int i, const unsigned int o) const {
@@ -277,8 +285,16 @@ void DenseLayer::printMinMax() {
 
 double DenseLayer::_getQuantizedWeight(unsigned int i) const {
     if(_quantization) {
-        return std::floor(_weight[i]);
+        return std::trunc(_weight[i]);
     } else {
         return _weight[i];
+    }
+}
+
+double DenseLayer::_getQuantizedBias(unsigned int i) const {
+    if(_quantization) {
+        return std::trunc(_bias[i]);
+    } else {
+        return _bias[i];
     }
 }

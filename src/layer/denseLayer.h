@@ -54,6 +54,7 @@ private:
     void _calcNetOut(const Input& input);
     void _calcOut();
     double _getQuantizedWeight(unsigned int) const;
+    double _getQuantizedBias(unsigned int) const;
     unsigned int _calcWeightIndex(const unsigned int i, const unsigned int o) const;
     void _backwardCalcBiasGradient(const std::vector<double>& h);
     void _backwardCalcWeightGradient(const Input& input);

@@ -11,7 +11,7 @@ public:
     double propagate(double input) const;
     double derivate(double input) const;
     type getType() const;
-    static constexpr double alpha = 0.01;
+    static constexpr double alpha = 0.0001;
     static constexpr double saturation = 127.0;
 }; 
 
