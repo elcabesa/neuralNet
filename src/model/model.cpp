@@ -185,7 +185,7 @@ void Model::VerifyTotalLossGradient(const std::vector<std::shared_ptr<LabeledExa
         
         for(unsigned int i = 0; auto& b : actualLayer.bias()) {
             //std::cout<<"\tbias "<<i<<std::endl;
-            std::cout<<"\rlayer "<<l<<" bias "<<i<<"\t\t";
+            //std::cout<<"\rlayer "<<l<<" bias "<<i<<"\t\t";
             double grad = 0.0;
             for(auto& e :input) {
                 auto originalB = b;
@@ -198,6 +198,8 @@ void Model::VerifyTotalLossGradient(const std::vector<std::shared_ptr<LabeledExa
             }
             if(std::abs(actualLayer.getBiasSumGradient(i) - grad) > maxError) {
                 std::cout<<"EEEEEEEERRRRRRORE"<<std::endl;
+                std::cout<<actualLayer.getBiasSumGradient(i)<<std::endl;
+                std::cout<<grad<<std::endl;
                 exit(-1);
             }
             ++i;
@@ -205,7 +207,7 @@ void Model::VerifyTotalLossGradient(const std::vector<std::shared_ptr<LabeledExa
 
         for(unsigned int i = 0; auto& w : actualLayer.weight()) {
             //std::cout<<"\tweight "<<i<<std::endl;
-            std::cout<<"\rlayer "<<l<<" weight "<<i<<"\t\t";
+            //std::cout<<"\rlayer "<<l<<" weight "<<i<<"\t\t";
             double grad = 0.0;
             for(auto& e :input) {
                 auto originalW = w;

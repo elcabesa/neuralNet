@@ -212,7 +212,7 @@ void ParallelDenseLayer::upgradeBias(double beta, double learnRate, bool rmsprop
         } else {
             b -= gradBias * learnRate;
         }
-        if(std::abs(b) > std::pow(2, 15)) {std::cout<<"ERROR, parallel layer bias overflow"<<std::endl;}
+        if(std::abs(b) > std::pow(2, 15)) {std::cout<<"ERROR, bias overflow"<<i<<" "<<b<<std::endl;}
         ++i;
     }
     
@@ -242,7 +242,7 @@ void ParallelDenseLayer::upgradeWeight(double beta, double learnRate, double reg
             else {
                 _weight[idx] = (regularization * _weight[idx]) - gradWeight * learnRate;
             }
-            if(std::abs(_weight[idx]) > std::pow(2, 15)) {std::cout<<"ERROR, parallel layer weight overflow"<<std::endl;}
+            if(std::abs(_weight[idx]) > std::pow(2, 15)) {std::cout<<"ERROR, weight overflow "<<idx<<" "<<_weight[idx]<<std::endl;}
         }
     }
 }
