@@ -78,9 +78,9 @@ void GradientDescend::_printTrainResult(const unsigned int pass, unsigned int de
     if((pass%decimation)==0) 
     {
         unsigned int p = pass / decimation;
-        /*_model.setQuantization(true);
+        _model.setQuantization(true);
         double l = _model.calcAvgLoss(_inputSet.validationSet());
-        _model.setQuantization(_quantization);*/
+        _model.setQuantization(_quantization);
 
         //std::cout << "pass: " << p << " loss "<< sqrt(_accumulatorLoss/_count)<<std::endl;
         
@@ -88,9 +88,9 @@ void GradientDescend::_printTrainResult(const unsigned int pass, unsigned int de
         std::cerr <<sqrt(_accumulatorLoss/_count)<<",";
         _totalLoss += _accumulatorLoss;
         _totalCount += _count;
-        std::cerr <<sqrt(_totalLoss/_totalCount)<<std::endl;
+        std::cerr <<sqrt(l)<<std::endl;
 
-        std::cout << "pass: " << p << " loss "<< sqrt(_accumulatorLoss/_count)<< " " <<sqrt(_totalLoss/_totalCount)<<std::endl;
+        std::cout << "pass: " << p << " loss "<< sqrt(_accumulatorLoss/_count)<< " " <<sqrt(l)<<std::endl;
         //std::cout << sqrt(_totalLoss/_totalCount)<<std::endl;
         _save(p);
 
