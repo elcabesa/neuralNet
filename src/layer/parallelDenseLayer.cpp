@@ -37,11 +37,11 @@ ParallelDenseLayer::~ParallelDenseLayer() {}
 void ParallelDenseLayer::randomizeParams() {    
     double stdDev = _stdDev;
     if( stdDev == 0.0) {
-        stdDev = sqrt(2.0 / _inputSize);
+        stdDev = 25 * sqrt(2.0 / _inputSize);
     }
 
     std::random_device rnd;
-    std::normal_distribution<double> dist(0.0, 0.1);
+    std::normal_distribution<double> dist(0.0, 25);
     std::normal_distribution<double> dist2(0.0, stdDev);
     
     for (auto& x: _bias) {x = dist(rnd);}
@@ -212,6 +212,7 @@ void ParallelDenseLayer::upgradeBias(double beta, double learnRate, bool rmsprop
         } else {
             b -= gradBias * learnRate;
         }
+        if(std::abs(b) > std::pow(2, 15)) {std::cout<<"ERROR, parallel layer bias overflow"<<std::endl;}
         ++i;
     }
     
@@ -241,6 +242,7 @@ void ParallelDenseLayer::upgradeWeight(double beta, double learnRate, double reg
             else {
                 _weight[idx] = (regularization * _weight[idx]) - gradWeight * learnRate;
             }
+            if(std::abs(_weight[idx]) > std::pow(2, 15)) {std::cout<<"ERROR, parallel layer weight overflow"<<std::endl;}
         }
     }
 }

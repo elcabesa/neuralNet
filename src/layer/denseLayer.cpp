@@ -82,11 +82,11 @@ double DenseLayer::getWeightSumGradient(unsigned int index) const{
 void DenseLayer::randomizeParams() {
     double stdDev = _stdDev;
     if( stdDev == 0.0) {
-        stdDev = sqrt(2.0 / _inputSize);
+        stdDev = 25 * sqrt(2.0 / _inputSize);
     }
 
     std::random_device rnd;
-    std::normal_distribution<double> dist(0.0, 0.1);
+    std::normal_distribution<double> dist(0.0, 25);
     std::normal_distribution<double> dist2(0.0, stdDev);
     
     for (auto& x: _bias) {x = dist(rnd);}
@@ -187,6 +187,7 @@ void DenseLayer::upgradeBias(double beta, double learnRate, bool rmsprop) {
         } else {
             b -= gradBias * learnRate;
         }
+        if(std::abs(b) > std::pow(2, 31)) {std::cout<<"ERROR, bias overflow"<<std::endl;}
         ++i;
     }
 }
@@ -215,6 +216,7 @@ void DenseLayer::upgradeWeight(double beta, double learnRate, double regularizat
             else {
                 _weight[idx] = (regularization * _weight[idx]) - gradWeight * learnRate;
             }
+            if(std::abs(_weight[idx]) > std::pow(2, 7)) {std::cout<<"ERROR, weight overflow"<<std::endl;}
         }
     }
 }
