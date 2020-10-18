@@ -24,9 +24,8 @@ public:
     
     virtual void resetSum() = 0;
     
-    virtual std::vector<double>& bias() = 0;
-    virtual std::vector<double>& weight() = 0;
-    
+    std::vector<double>& bias();
+    std::vector<double>& weight();
     
     virtual double getBiasSumGradient(unsigned int index) const = 0;
     virtual double getWeightSumGradient(unsigned int index) const = 0;
@@ -49,6 +48,9 @@ protected:
     bool _quantization;
     unsigned int _accumulatorBits;
     double _outScaling;
+
+    std::vector<double> _bias;
+    std::vector<double> _weight;
     
 };
 

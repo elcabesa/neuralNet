@@ -22,9 +22,6 @@ public:
     std::vector<double> backPropHelper() const;
     
     void resetSum();
-
-    std::vector<double>& bias();
-    std::vector<double>& weight();
     
     double getBiasSumGradient(unsigned int index) const;
     double getWeightSumGradient(unsigned int index) const;
@@ -44,8 +41,7 @@ private:
     const unsigned int _layerOutputSize;
     const unsigned int _layerWeightNumber;
 
-    std::vector<double> _bias;
-    std::vector<double> _weight;
+    
 
     std::vector<double> _netOutput;
     std::shared_ptr<Activation> _act;

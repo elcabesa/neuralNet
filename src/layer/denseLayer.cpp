@@ -69,10 +69,6 @@ unsigned int DenseLayer::_calcWeightIndex(const unsigned int i, const unsigned i
     return o + i * _outputSize;
 }
 
-std::vector<double>& DenseLayer::bias() {return _bias;}
-std::vector<double>& DenseLayer::weight() {return _weight;}
-
-
 double DenseLayer::getBiasSumGradient(unsigned int index) const{
     assert(index < _bias.size());
     return _biasSumGradient[index];

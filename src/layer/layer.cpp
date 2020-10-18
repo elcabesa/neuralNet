@@ -38,3 +38,6 @@ void Layer::setQuantization(bool q) {
     _quantization = q;
 }
 
+std::vector<double>& Layer::bias() {return _bias;}
+std::vector<double>& Layer::weight() {return _weight;}
+

@@ -34,9 +34,6 @@ ParallelDenseLayer::ParallelDenseLayer(const unsigned int number, const unsigned
 
 ParallelDenseLayer::~ParallelDenseLayer() {}
 
-std::vector<double>& ParallelDenseLayer::bias() {return _bias;}
-std::vector<double>& ParallelDenseLayer::weight() {return _weight;}
-
 void ParallelDenseLayer::randomizeParams() {    
     double stdDev = _stdDev;
     if( stdDev == 0.0) {
@@ -247,8 +244,6 @@ void ParallelDenseLayer::upgradeWeight(double beta, double learnRate, double reg
         }
     }
 }
-
-//-------------------------------------------------------
 
 void ParallelDenseLayer::backwardPropagate(const std::vector<double>& h, const Input& input) {
     _backwardCalcBiasGradient(h);
