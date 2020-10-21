@@ -49,21 +49,26 @@ void ParallelDenseLayer::randomizeParams() {
 }
 
 void ParallelDenseLayer::serialize(std::ofstream& ss) const{
-    union un{
-        double d;
-        char c[8];
-    }u;
+    union _bb{
+        int16_t d;
+        char c[2];
+    }bb;
+
+    union _ww{
+        int8_t d;
+        char c[1];
+    }ww;
 
     ss << "{";
     for (auto & b: _bias) {
-        u.d = b;
-        ss.write(u.c, 8);
+        bb.d = std::trunc(b);
+        ss.write(bb.c, 2);
         ss<<", ";
     }
     ss <<std::endl;
     for (auto & w: _weight) {
-        u.d = w;
-        ss.write(u.c, 8);
+        ww.d = std::trunc(w);
+        ss.write(ww.c, 1);
         ss<<", ";
     }
 
@@ -71,22 +76,27 @@ void ParallelDenseLayer::serialize(std::ofstream& ss) const{
 }
 
 bool ParallelDenseLayer::deserialize(std::ifstream& ss) {
-    union un{
-        double d;
-        char c[8];
-    }u;
+    union _bb{
+        int16_t d;
+        char c[2];
+    }bb;
+
+    union _ww{
+        int8_t d;
+        char c[1];
+    }ww;
 
     if(ss.get() != '{') {std::cout<<"DenseLayer missing {"<<std::endl;return false;}
     for (auto & b: _bias) {
-        ss.read(u.c, 8);
-        b = u.d;
+        ss.read(bb.c, 2);
+        b = bb.d;
         if(ss.get() != ',') {std::cout<<"DenseLayer missing ,"<<std::endl;return false;}
         if(ss.get() != ' ') {std::cout<<"DenseLayer missing space"<<std::endl;return false;}
     }
     if(ss.get() != '\n') {std::cout<<"DenseLayer missing line feed"<<std::endl;return false;}
     for (auto & w: _weight) {
-        ss.read(u.c, 8);
-        w = u.d;
+        ss.read(ww.c, 1);
+        w = ww.d;
         if(ss.get() != ',') {std::cout<<"DenseLayer missing ,"<<std::endl;return false;}
         if(ss.get() != ' ') {std::cout<<"DenseLayer missing space"<<std::endl;return false;}
     }
@@ -227,7 +237,9 @@ void ParallelDenseLayer::upgradeBias(double beta, double learnRate, bool rmsprop
         } else {
             b -= gradBias * learnRate;
         }
-        if(std::abs(b) > std::pow(2, 15)) {std::cout<<"ERROR, bias overflow"<<i<<" "<<b<<std::endl;}
+        if(std::abs(b) > std::pow(2, 15)) {std::cout<<"ERROR, parallel bias overflow"<<i<<" "<<b<<std::endl;}
+        if(b > 32767) {b = 32767;}
+        if(b < -32767) {b = -32767;}
         ++i;
     }
     
@@ -257,7 +269,9 @@ void ParallelDenseLayer::upgradeWeight(double beta, double learnRate, double reg
             else {
                 _weight[idx] = (regularization * _weight[idx]) - gradWeight * learnRate;
             }
-            if(std::abs(_weight[idx]) > std::pow(2, 15)) {std::cout<<"ERROR, weight overflow "<<idx<<" "<<_weight[idx]<<std::endl;}
+            if(std::abs(_weight[idx]) > std::pow(2, 7)) {std::cout<<"ERROR, parallel weight overflow "<<idx<<" "<<_weight[idx]<<std::endl;}
+            if(_weight[idx] > 127) {_weight[idx] = 127;}
+            if(_weight[idx] < -127) {_weight[idx] = -127;}
         }
     }
 }
