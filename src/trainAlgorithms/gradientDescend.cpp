@@ -34,9 +34,9 @@ double GradientDescend::train(unsigned int decimation) {
     std::cerr <<"TrainsetError,ValidationError"<<std::endl;
     //auto start = std::chrono::high_resolution_clock::now();
     bool infinite = (0 == _passes);
-    /*_model.setQuantization(true);
+    _model.setQuantization(true);
     std::cout<<"initial ValidationSet avg loss: " << sqrt(_model.calcAvgLoss(_inputSet.validationSet()))<<std::endl;
-    _model.setQuantization(_quantization);*/
+    _model.setQuantization(_quantization);
     for(unsigned int p = 1; infinite || p <= _passes; ++p) {
         if (p >= _quantizationPass) {_quantization = true;}
         else {_quantization = false;}
@@ -60,6 +60,7 @@ void GradientDescend::_pass(const unsigned int pass) {
     
     //std::cout<<"-----------------"<<std::endl;
     for( unsigned int ll = 0; ll < _model.getLayerCount(); ++ll) {
+        //std::cout<<"layer "<<ll<<std::endl;
         Layer& l = _model.getLayer(ll);
         l.upgradeBias(_beta, _learnRate, _rmsProp);
         l.upgradeWeight(_beta, _learnRate, _regularization, _rmsProp);

@@ -36,13 +36,12 @@ void DenseLayer::_calcNetOut(const Input& input) {
     unsigned int num = input.getElementNumber();
     for(unsigned int idx = 0; idx < num; ++idx) {
         auto& el = input.getElementFromIndex(idx);
+        double in = _quantization ? std::trunc(el.second) : el.second;
         _activeFeature.insert(el.first);
         for(unsigned int o = 0; o < _outputSize; ++o) {
-            _netOutput[o] += el.second * _getQuantizedWeight(_calcWeightIndex(el.first,o));
+            _netOutput[o] += in * _getQuantizedWeight(_calcWeightIndex(el.first,o));
         }
     }
-    
-    
 }
 
 void DenseLayer::_calcOut() {
@@ -52,10 +51,6 @@ void DenseLayer::_calcOut() {
         
         _output.set(o, _act->propagate(_netOutput[o] / _outScaling));
 
-        if (_quantization) {
-            //output quantization
-            _output.set(o, std::trunc(_output.get(o)));
-        }
         // save min and max
         _min = std::min(_min, _output.get(o));
         _max = std::max(_max, _output.get(o));
@@ -65,11 +60,6 @@ void DenseLayer::_calcOut() {
 void DenseLayer::propagate(const Input& input) {
     _calcNetOut(input);
     _calcOut();
-
-    /*std::cout<<"----------------"<<std::endl;
-    for (unsigned int o = 0; o < _outputSize; ++o) {
-        std::cout<<(int)(_output.get(o))<<std::endl;
-    }*/
 }
 
 unsigned int DenseLayer::_calcWeightIndex(const unsigned int i, const unsigned int o) const {
@@ -191,7 +181,7 @@ void DenseLayer::upgradeBias(double beta, double learnRate, bool rmsprop) {
         double gradBias = getBiasSumGradient(i);
         if (rmsprop) {
             _biasMovAvg[i] += beta2 * gradBias * gradBias;
-            b -= gradBias * (learnRate / sqrt(_biasMovAvg[i] /*+ 1e-8*/));
+            b -= gradBias * (learnRate / sqrt(_biasMovAvg[i] + 1e-8));
         } else {
             b -= gradBias * learnRate;
         }
@@ -221,7 +211,7 @@ void DenseLayer::upgradeWeight(double beta, double learnRate, double regularizat
             //-----------------------------
             if (rmsprop) {
                 _weightMovAvg[idx] += beta2 * gradWeight * gradWeight;
-                _weight[idx] = (regularization * _weight[idx]) - gradWeight * (learnRate / sqrt(_weightMovAvg[idx] /*+ 1e-8*/));
+                _weight[idx] = (regularization * _weight[idx]) - gradWeight * (learnRate / sqrt(_weightMovAvg[idx] + 1e-8));
             }
             else {
                 _weight[idx] = (regularization * _weight[idx]) - gradWeight * learnRate;
@@ -246,13 +236,13 @@ void DenseLayer::serialize(std::ofstream& ss) const{
 
     ss << "{";
     for (auto & b: _bias) {
-        bb.d = std::trunc(b);
+        bb.d = std::round(b);
         ss.write(bb.c, 4);
         //ss<<", ";
     }
     ss <<std::endl;
     for (auto & w: _weight) {
-        ww.d = std::trunc(w);
+        ww.d = std::round(w);
         ss.write(ww.c, 1);
         //ss<<", ";
     }
@@ -299,7 +289,7 @@ void DenseLayer::printMinMax() {
 
 double DenseLayer::_getQuantizedWeight(unsigned int i) const {
     if(_quantization) {
-        return std::trunc(_weight[i]);
+        return std::round(_weight[i]);
     } else {
         return _weight[i];
     }
@@ -307,7 +297,7 @@ double DenseLayer::_getQuantizedWeight(unsigned int i) const {
 
 double DenseLayer::_getQuantizedBias(unsigned int i) const {
     if(_quantization) {
-        return std::trunc(_bias[i]);
+        return std::round(_bias[i]);
     } else {
         return _bias[i];
     }

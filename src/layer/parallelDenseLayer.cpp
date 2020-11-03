@@ -61,13 +61,13 @@ void ParallelDenseLayer::serialize(std::ofstream& ss) const{
 
     ss << "{";
     for (auto & b: _bias) {
-        bb.d = std::trunc(b);
+        bb.d = std::round(b);
         ss.write(bb.c, 2);
         //ss<<", ";
     }
     ss <<std::endl;
     for (auto & w: _weight) {
-        ww.d = std::trunc(w);
+        ww.d = std::round(w);
         ss.write(ww.c, 1);
         //ss<<", ";
     }
@@ -125,10 +125,11 @@ void ParallelDenseLayer::_calcNetOut(const Input& input, unsigned int layer) {
     unsigned int num = input.getElementNumber();
     for (unsigned int idx = 0; idx < num; ++idx) {
         auto& el = input.getElementFromIndex(idx);
+        double in = _quantization ? std::trunc(el.second) : el.second;
         _activeFeature.insert(el.first);
         // calc all the output
         for(unsigned int o = 0; o < _layerOutputSize; ++o) {
-            _netOutput[o + layer * _layerOutputSize] += el.second * _getQuantizedWeight(_calcWeightIndex(el.first, o));
+            _netOutput[o + layer * _layerOutputSize] += in * _getQuantizedWeight(_calcWeightIndex(el.first, o));
         }
     } 
 }
@@ -141,10 +142,6 @@ void ParallelDenseLayer::_calcOut(unsigned int layer) {
         
         _output.set(idx, _act->propagate(_netOutput[idx] / _outScaling));
 
-        if (_quantization) {
-            //output quantization
-            _output.set(idx, std::trunc(_output.get(idx)));
-        }
         // save min and max
         _min = std::min(_min, _output.get(idx));
         _max = std::max(_max, _output.get(idx));
@@ -157,16 +154,11 @@ void ParallelDenseLayer::propagate(const Input& input) {
         _calcNetOut(psi, n);
         _calcOut(n);
     }
-
-    /*std::cout<<"----------------"<<std::endl;
-    for (unsigned int o = 0; o < _outputSize; ++o) {
-        std::cout<<(int)(_output.get(o))<<std::endl;
-    }*/
 }
 
 double ParallelDenseLayer::_getQuantizedWeight(unsigned int i) const {
     if(_quantization) {
-        return std::trunc(_weight[i]);
+        return std::round(_weight[i]);
     } else {
         return _weight[i];
     }
@@ -174,7 +166,7 @@ double ParallelDenseLayer::_getQuantizedWeight(unsigned int i) const {
 
 double ParallelDenseLayer::_getQuantizedBias(unsigned int i) const {
     if(_quantization) {
-        return std::trunc(_bias[i]);
+        return std::round(_bias[i]);
     } else {
         return _bias[i];
     }
@@ -233,7 +225,7 @@ void ParallelDenseLayer::upgradeBias(double beta, double learnRate, bool rmsprop
         double gradBias = getBiasSumGradient(i);
         if (rmsprop) {
             _biasMovAvg[i] += beta2 * gradBias * gradBias;
-            b -= gradBias * (learnRate / sqrt(_biasMovAvg[i] /*+ 1e-8*/));
+            b -= gradBias * (learnRate / sqrt(_biasMovAvg[i] + 1e-8));
         } else {
             b -= gradBias * learnRate;
         }
@@ -264,7 +256,7 @@ void ParallelDenseLayer::upgradeWeight(double beta, double learnRate, double reg
             //-----------------------------
             if (rmsprop) {
                 _weightMovAvg[idx] += beta2 * gradWeight * gradWeight;
-                _weight[idx] = (regularization * _weight[idx]) - gradWeight * (learnRate / sqrt(_weightMovAvg[idx] /*+ 1e-8*/));
+                _weight[idx] = (regularization * _weight[idx]) - gradWeight * (learnRate / sqrt(_weightMovAvg[idx] + 1e-8));
             }
             else {
                 _weight[idx] = (regularization * _weight[idx]) - gradWeight * learnRate;
