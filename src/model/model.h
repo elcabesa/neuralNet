@@ -18,7 +18,8 @@ public:
     
     void addLayer(std::unique_ptr<Layer> l);
     Layer& getLayer(unsigned int index);
-    unsigned int getLayerCount();
+    const Layer& getLayer(unsigned int index) const;
+    unsigned int getLayerCount() const;
     
     void randomizeParams();
     void printParams();

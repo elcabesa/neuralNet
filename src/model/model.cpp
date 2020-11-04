@@ -8,6 +8,7 @@
 #include "inputSet.h"
 #include "model.h"
 #include "parallelDenseLayer.h"
+#include "stats.h"
 
 Model::Model():_totalLoss{0}, _avgLoss{0} {}
 
@@ -55,6 +56,7 @@ double Model::calcLoss(const LabeledExample& le, bool verbose) {
 
 double Model::calcAvgLoss(const std::vector<std::shared_ptr<LabeledExample>>& input, bool verbose, unsigned int count/* = 30*/) {
     //std::cout<<"calcAvgLoss"<<std::endl;
+    Stats st(*this);
     double error = 0.0;
     unsigned int n = 0;
     //double avg = -0.271935;
@@ -62,10 +64,12 @@ double Model::calcAvgLoss(const std::vector<std::shared_ptr<LabeledExample>>& in
     for(auto& le: input) {
         //sum += std::pow((*le).label() -avg, 2.0);
         error += calcLoss(*le, verbose);
+        st.update();
         if(verbose && ++n >= count) {
             break;
         }
     }
+    st.print();
     //std::cout<<"std dev:"<< sqrt(sum/input.size());
     return error / input.size();
 }
@@ -137,7 +141,13 @@ Layer& Model::getLayer(unsigned int index) {
     assert(index < getLayerCount());
     return *(_layers[index]);
 }
-unsigned int Model::getLayerCount() {
+
+const Layer& Model::getLayer(unsigned int index) const {
+    assert(index < getLayerCount());
+    return *(_layers[index]);
+}
+
+unsigned int Model::getLayerCount() const {
     return _layers.size();
 }
 

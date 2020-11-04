@@ -1,13 +1,16 @@
 #ifndef _LAYER_H
 #define _LAYER_H
 
-#include <iostream>
 #include <fstream>
+#include <iostream>
+#include <memory>
+
+#include "activation.h"
 #include "dense.h"
 
 class Layer {
 public:
-    Layer(const unsigned int inputSize, const unsigned int outputSize, const unsigned int accumulatorBits, const double outScaling, const double stdDev);
+    Layer(const unsigned int inputSize, const unsigned int outputSize, const unsigned int accumulatorBits, const double outScaling, const double stdDev, std::shared_ptr<Activation> act);
     virtual ~Layer();
     
     unsigned int getInputSize() const;
@@ -40,6 +43,8 @@ public:
 
     void setQuantization(bool q);
 
+    Activation::type getActivatinType() const;
+
 protected:
     unsigned int _inputSize;
     unsigned int _outputSize;
@@ -48,6 +53,8 @@ protected:
     bool _quantization;
     unsigned int _accumulatorBits;
     double _outScaling;
+
+    std::shared_ptr<Activation> _act;
 
     std::vector<double> _bias;
     std::vector<double> _weight;

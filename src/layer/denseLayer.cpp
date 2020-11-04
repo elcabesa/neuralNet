@@ -7,8 +7,7 @@
 #include "input.h"
 
 DenseLayer::DenseLayer(const unsigned int inputSize, const unsigned int outputSize, std::shared_ptr<Activation> act, const unsigned int accumulatorBits, const double outScaling, const double stdDev):
-    Layer{inputSize, outputSize, accumulatorBits, outScaling, stdDev},
-    _act(std::move(act))
+    Layer{inputSize, outputSize, accumulatorBits, outScaling, stdDev, act}
 {
     _bias.resize(outputSize, 0.0);
     _weight.resize(outputSize * inputSize, 1.0);

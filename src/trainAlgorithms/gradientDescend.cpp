@@ -35,7 +35,8 @@ double GradientDescend::train(unsigned int decimation) {
     //auto start = std::chrono::high_resolution_clock::now();
     bool infinite = (0 == _passes);
     _model.setQuantization(true);
-    std::cout<<"initial ValidationSet avg loss: " << sqrt(_model.calcAvgLoss(_inputSet.validationSet()))<<std::endl;
+    double avgLoss = _model.calcAvgLoss(_inputSet.validationSet());
+    std::cout<<"initial ValidationSet avg loss: " << sqrt(avgLoss)<<std::endl;
     _model.setQuantization(_quantization);
     for(unsigned int p = 1; infinite || p <= _passes; ++p) {
         if (p >= _quantizationPass) {_quantization = true;}

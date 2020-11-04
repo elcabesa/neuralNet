@@ -44,7 +44,6 @@ private:
     
 
     std::vector<double> _netOutput;
-    std::shared_ptr<Activation> _act;
 
     std::set<unsigned int> _activeFeature;
 
