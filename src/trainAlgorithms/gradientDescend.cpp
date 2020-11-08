@@ -106,7 +106,7 @@ void GradientDescend::_printTrainResult(const unsigned int pass, unsigned int de
 void GradientDescend::_save(const unsigned int pass) {
     std::ofstream nnFile;
     std::string fileName;
-    fileName += "nn-";
+    fileName += "save/nn-";
     fileName += std::to_string(pass);
     fileName += ".txt";
     nnFile.open (fileName);
