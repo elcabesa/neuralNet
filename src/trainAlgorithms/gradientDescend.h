@@ -3,6 +3,7 @@
 
 class Model;
 class InputSet;
+class PedoneCheck;
 
 class GradientDescend {
 public:
@@ -30,6 +31,8 @@ private:
     bool _rmsProp;
     double _totalLoss;
     unsigned long long int _totalCount;
+
+    //PedoneCheck* _pedone;
     
 };
 

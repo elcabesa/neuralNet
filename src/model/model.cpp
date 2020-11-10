@@ -186,8 +186,9 @@ void Model::clear() {
 }
 
 void Model::VerifyTotalLossGradient(const std::vector<std::shared_ptr<LabeledExample>>& input) {
-    const double delta = 0.00001;
+    const double delta = 1e-4;
     const double maxError = 1e-6;
+    const double maxRelError = 1e-4;
     //std::cout<<"eccomi"<<std::endl;
     for(unsigned int l = 0; l < getLayerCount(); ++l) {
         auto& actualLayer = getLayer(l);
@@ -206,18 +207,21 @@ void Model::VerifyTotalLossGradient(const std::vector<std::shared_ptr<LabeledExa
                 b = originalB;
                 grad += (lplus - lminus)/(2.0 * delta);
             }
-            if(std::abs(actualLayer.getBiasSumGradient(i) - grad) > maxError) {
+            double abserr = std::abs(actualLayer.getBiasSumGradient(i) - grad);
+            if( std::abs(abserr/grad)>maxRelError && abserr > maxError  ) {
                 std::cout<<"EEEEEEEERRRRRRORE"<<std::endl;
+                std::cout<<"layer "<<l<<" bias "<<i<<std::endl;
                 std::cout<<actualLayer.getBiasSumGradient(i)<<std::endl;
                 std::cout<<grad<<std::endl;
                 exit(-1);
             }
             ++i;
         }
+        //std::cout<<std::endl;
 
         for(unsigned int i = 0; auto& w : actualLayer.weight()) {
             //std::cout<<"\tweight "<<i<<std::endl;
-            //std::cout<<"\rlayer "<<l<<" weight "<<i<<"\t\t";
+            //if( i%100 ==0)std::cout<<"\rlayer "<<l<<" weight "<<i<<"\t\t";
             double grad = 0.0;
             for(auto& e :input) {
                 auto originalW = w;
@@ -228,8 +232,13 @@ void Model::VerifyTotalLossGradient(const std::vector<std::shared_ptr<LabeledExa
                 w = originalW;
                 grad += (lplus - lminus)/(2.0 * delta);
             }
-            if(std::abs(actualLayer.getWeightSumGradient(i) - grad) > maxError) {
+            double abserr = std::abs(actualLayer.getWeightSumGradient(i) - grad);
+            if( std::abs(abserr/grad)>maxRelError && abserr > maxError  ) {
                 std::cout<<"EEEEEEEERRRRRRORE"<<std::endl;
+                std::cout<<"layer "<<l<<" bias "<<i<<std::endl;
+                std::cout<<"weight "<<w<<std::endl;
+                std::cout<<actualLayer.getWeightSumGradient(i)<<std::endl;
+                std::cout<<grad<<std::endl;
                 exit(-1);
             }
             ++i;

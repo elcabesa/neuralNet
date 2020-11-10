@@ -246,7 +246,7 @@ void ParallelDenseLayer::upgradeWeight(double beta, double learnRate, double reg
     }
 
     for (auto f: _activeFeature) {
-        for(unsigned int o = 0; o < _outputSize; ++o) {
+        for(unsigned int o = 0; o < _layerOutputSize; ++o) {
             unsigned int idx = _calcWeightIndex(f, o);
             double gradWeight = getWeightSumGradient(idx);
             //-----------------------------
