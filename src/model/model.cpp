@@ -109,7 +109,7 @@ void Model::calcTotalLossGradient(const std::vector<std::shared_ptr<LabeledExamp
     _avgLoss = _totalLoss / input.size();
 }
 
-#define VERSION "0003"
+#define VERSION "0004"
 void Model::serialize(std::ofstream& ss) const {
     ss<<"{V:"<<VERSION<<"}";
     ss<<"{";
