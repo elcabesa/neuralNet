@@ -79,11 +79,11 @@ double DenseLayer::getWeightSumGradient(unsigned int index) const{
 void DenseLayer::randomizeParams() {
     double stdDev = _stdDev;
     if( stdDev == 0.0) {
-        stdDev = 25 * sqrt(2.0 / _inputSize);
+        stdDev = 1 * sqrt(2.0 / _inputSize);
     }
 
     std::random_device rnd;
-    std::normal_distribution<double> dist(0.0, 25);
+    std::normal_distribution<double> dist(0.0, 1);
     std::normal_distribution<double> dist2(0.0, stdDev);
     
     for (auto& x: _bias) {x = dist(rnd);}

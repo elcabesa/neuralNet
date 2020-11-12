@@ -1,3 +1,4 @@
+#include <cmath>
 #include "labeledExample.h"
 #include "input.h"
 
@@ -7,5 +8,5 @@ const Input& LabeledExample::features() const {
     return *_features;
 }
 double LabeledExample::label() const {
-    return _label / 20.0;
+    return _label / 100.0;
 }

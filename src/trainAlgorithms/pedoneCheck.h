@@ -12,7 +12,7 @@ public:
     void caricaPesi();
     void caricaInput(LabeledExample& b);
     void calcolaRisRete();
-    void calcGrad(double label);
+    double calcGrad(double label);
     void updateweights(double l);
 
 

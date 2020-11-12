@@ -40,9 +40,9 @@ double GradientDescend::train(unsigned int decimation) {
     std::cout<<"initial ValidationSet avg loss: " << sqrt(avgLoss)<<std::endl;
     _model.setQuantization(_quantization);
     
-    /*if(_pedone) {delete _pedone;}
+    if(_pedone) {delete _pedone;}
     _pedone = new PedoneCheck(&_model);
-    _pedone->caricaPesi();*/
+    _pedone->caricaPesi();
 
     for(unsigned int p = 1; infinite || p <= _passes; ++p) {
         if (p >= _quantizationPass) {_quantization = true;}
@@ -62,29 +62,29 @@ void GradientDescend::_pass(const unsigned int pass) {
     //std::cout<<"GRADIENT DESCENT PASS "<< pass<<std::endl;
     auto & batch = _inputSet.batch();
     //std::cout<<"batchsize "<<batch.size()<<std::endl;
-    _model.calcTotalLossGradient(batch);
+    //_model.calcTotalLossGradient(batch);
     // TODO REMOVE
     //_pedone->caricaPesi();
-    /*_pedone->caricaInput((*batch[0]));
+    _pedone->caricaInput((*batch[0]));
     _pedone->calcolaRisRete();
-    _pedone->calcGrad((*batch[0]).label());*/
+    double pedLoss = _pedone->calcGrad((*batch[0]).label());
     //_model.VerifyTotalLossGradient(batch);
     
     //std::cout<<"-----------------"<<std::endl;
-    for( unsigned int ll = 0; ll < _model.getLayerCount(); ++ll) {
+    /*for( unsigned int ll = 0; ll < _model.getLayerCount(); ++ll) {
         //std::cout<<"layer "<<ll<<std::endl;
         Layer& l = _model.getLayer(ll);
         l.upgradeBias(_beta, _learnRate, _rmsProp);
         l.upgradeWeight(_beta, _learnRate, _regularization, _rmsProp);
-    }
-    /*_pedone->updateweights(_learnRate);*/
+    }*/
+    _pedone->updateweights(_learnRate);
     //double avgLoss = _model.calcAvgLoss(batch);
     //std::cout<<sqrt(_model.getAvgLoss())<<" "<< sqrt(avgLoss) <<std::endl;
     //std::cout<<"intermediate loss "<< sqrt(_model.getAvgLoss()) <<std::endl;
     /*if(_model.getAvgLoss() > 400 ){
         std::cout<<"WARNING AVG LOSS "<<_model.getAvgLoss()<<std::endl;
     }*/
-    _accumulatorLoss += _model.getAvgLoss();
+    _accumulatorLoss += pedLoss;//_model.getAvgLoss();
     ++_count;
 }
 
