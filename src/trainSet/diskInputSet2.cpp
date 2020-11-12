@@ -55,13 +55,18 @@ const std::vector<std::shared_ptr<LabeledExample>>& DiskInputSet2::validationSet
     
 }
 
-const std::vector<std::shared_ptr<LabeledExample>>& DiskInputSet2::batch()const {    
+const std::vector<std::shared_ptr<LabeledExample>>& DiskInputSet2::batch() const {    
     _batch.clear();
     
     unsigned int count = 0;
     bool finish = false;
     while(!finish && count < _batchsize){
         auto ex = _parseLine(_ss, finish);
+
+        /*accumulator += std::pow((ex.label() - 4930) /23000, 2.0);
+        ++counter;
+        std::cout << sqrt(accumulator / counter) << std::endl;*/
+
         if(finish) {
             _ss.close();
             ++_n;

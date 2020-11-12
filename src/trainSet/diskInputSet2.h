@@ -43,6 +43,9 @@ private:
     std::shared_ptr<Input> _getFeatures(const char * const buf, unsigned int& index) const;
     double _getLabel(const char * const buf, unsigned int& index) const;
 
+    mutable double accumulator = 0.0;
+    mutable uint64_t counter = 0;
+
 };
 
 #endif 

@@ -14,7 +14,7 @@ class InputSet;
 
 class Model {
 public:
-    Model();
+    Model(double outputScaling);
     
     void addLayer(std::unique_ptr<Layer> l);
     Layer& getLayer(unsigned int index);
@@ -43,12 +43,16 @@ public:
 
     void setQuantization(bool q);
 
+    //todo remove
+    double getOutputScaling() const { return _outputScaling;}
+
 
 private:
     std::vector<std::unique_ptr<Layer>> _layers;
     Cost cost;
     double _totalLoss;
     double _avgLoss;
+    const double _outputScaling;
 };
 
 #endif

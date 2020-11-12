@@ -15,23 +15,26 @@ public:
     double calcGrad(double label);
     void updateweights(double l);
 
-
-    static constexpr unsigned int MaxInput = 10*64*64;
-    static constexpr unsigned int SizeLayer1 = 512;
-    static constexpr unsigned int SizeLayer23 = 32;
     static constexpr unsigned int SizeInputCompatto = 32;
 
+    static constexpr unsigned int MaxInput = 10 * 64 * 64;
+    static constexpr unsigned int SizeInputLayer = 256;
+    static constexpr unsigned int SizeLayer1 = 512;
+    static constexpr unsigned int SizeLayer2 = 32;
+    static constexpr unsigned int SizeLayer3 = 32;
+    
+
     struct PesiNNUE {
-        double pesiLayer1[MaxInput][SizeLayer1/2];
-        double biasLayer1[SizeLayer1/2];
+        double pesiLayer1[MaxInput][SizeInputLayer];
+        double biasLayer1[SizeInputLayer];
 
-        double pesiLayer2[SizeLayer1][SizeLayer23];
-        double biasLayer2[SizeLayer23];
+        double pesiLayer2[SizeLayer1][SizeLayer2];
+        double biasLayer2[SizeLayer2];
 
-        double pesiLayer3[SizeLayer23][SizeLayer23];
-        double biasLayer3[SizeLayer23];
+        double pesiLayer3[SizeLayer2][SizeLayer3];
+        double biasLayer3[SizeLayer3];
 
-        double pesiOutput[SizeLayer23];
+        double pesiOutput[SizeLayer3];
         double biasOutput;
     };
 
@@ -44,15 +47,15 @@ public:
     struct RisRete {
         double ris32Layer1[SizeLayer1];
         double risLayer1[SizeLayer1];
-        double risLayer2[SizeLayer23];
-        double risLayer3[SizeLayer23];
+        double risLayer2[SizeLayer2];
+        double risLayer3[SizeLayer3];
         double output;
     };
 
     struct BiasGrad {
         double BiasGradLayer1[SizeLayer1];
-        double BiasGradLayer2[SizeLayer23];
-        double BiasGradLayer3[SizeLayer23];
+        double BiasGradLayer2[SizeLayer2];
+        double BiasGradLayer3[SizeLayer3];
         double BiasGradOutput;
     };
 

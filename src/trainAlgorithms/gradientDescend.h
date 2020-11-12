@@ -32,7 +32,7 @@ private:
     double _totalLoss;
     unsigned long long int _totalCount;
 
-    PedoneCheck* _pedone;
+    PedoneCheck* _pedone = nullptr;
     
 };
 

@@ -37,7 +37,7 @@ double GradientDescend::train(unsigned int decimation) {
     bool infinite = (0 == _passes);
     _model.setQuantization(true);
     double avgLoss = _model.calcAvgLoss(_inputSet.validationSet());
-    std::cout<<"initial ValidationSet avg loss: " << sqrt(avgLoss)<<std::endl;
+    std::cout<<"initial ValidationSet avg loss: " << sqrt(2.0 * avgLoss) / 10000.0 <<std::endl;
     _model.setQuantization(_quantization);
     
     if(_pedone) {delete _pedone;}
@@ -53,7 +53,7 @@ double GradientDescend::train(unsigned int decimation) {
     }
     /*_model.setQuantization(true);
     double r = _model.calcAvgLoss(_inputSet.validationSet());
-    std::cout<<"final ValidationSet avg loss: " <<sqrt(r)<<std::endl;
+    std::cout<<"final ValidationSet avg loss: " <<sqrt(2.0 * r) / 10000.0 <<std::endl;
     _model.setQuantization(false);   */ 
     return 0;
 }
@@ -67,7 +67,7 @@ void GradientDescend::_pass(const unsigned int pass) {
     //_pedone->caricaPesi();
     _pedone->caricaInput((*batch[0]));
     _pedone->calcolaRisRete();
-    double pedLoss = _pedone->calcGrad((*batch[0]).label());
+    double pedLoss = _model.getOutputScaling() * _model.getOutputScaling() * _pedone->calcGrad((*batch[0]).label() / _model.getOutputScaling());
     //_model.VerifyTotalLossGradient(batch);
     
     //std::cout<<"-----------------"<<std::endl;
@@ -92,21 +92,21 @@ void GradientDescend::_printTrainResult(const unsigned int pass, unsigned int de
     if((pass%decimation)==0) 
     {
         unsigned int p = pass / decimation;
-        _model.setQuantization(true);
+        /*_model.setQuantization(true);
         double l = _model.calcAvgLoss(_inputSet.validationSet());
-        _model.setQuantization(_quantization);
-
+        _model.setQuantization(_quantization);*/
+        double l = _accumulatorLoss/_count;
         //std::cout << "pass: " << p << " loss "<< sqrt(_accumulatorLoss/_count)<<std::endl;
         
 
-        std::cerr <<sqrt(_accumulatorLoss/_count)<<",";
+        std::cerr <<sqrt(2.0 * _accumulatorLoss / _count) / 10000.0 <<",";
         _totalLoss += _accumulatorLoss;
         _totalCount += _count;
-        std::cerr <<sqrt(l)<<std::endl;
+        std::cerr <<sqrt(2.0 * l) / 10000.0 <<std::endl;
 
-        std::cout << "pass: " << p << " loss "<< sqrt(_accumulatorLoss/_count)<< " " <<sqrt(l)<<std::endl;
+        std::cout << "pass: " << p << " loss "<< sqrt(2.0 * _accumulatorLoss / _count) / 10000.0 << " " <<sqrt(2.0 * l) / 10000.0<<std::endl;
         //std::cout << sqrt(_totalLoss/_totalCount)<<std::endl;
-        _save(p);
+        //_save(p);
 
         
         //std::cout<<" AVGLOSS " << _lossLowPassFilter<<std::endl; 

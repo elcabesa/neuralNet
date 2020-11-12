@@ -30,10 +30,10 @@ void getInputSet(DiskInputSet2& inSet) {
     std::cout<<"done"<<std::endl;
 }
 
-Model createModel(double stdDev) {
+Model createModel(double stdDev, double scaling) {
     std::cout<<"creating model"<<std::endl;
     
-    Model m;
+    Model m(scaling);
     m.addLayer(std::make_unique<ParallelDenseLayer>(2, 40960, 256, ActivationFactory::create(Activation::type::relu), 16, 1.0, stdDev));
     m.addLayer(std::make_unique<DenseLayer>(512,32, ActivationFactory::create(Activation::type::relu), 32, 64.0));
     m.addLayer(std::make_unique<DenseLayer>(32,32, ActivationFactory::create(Activation::type::relu), 32, 64.0));
@@ -87,7 +87,7 @@ int main(int argc, const char*argv[]) {
     if (result.count("stdDev")) {
         stdDev = result["stdDev"].as<double>();
     }
-    auto m = createModel(stdDev);
+    auto m = createModel(stdDev, 23000);
     
     if (result["randomize"].as<bool>()) {
         m.randomizeParams();

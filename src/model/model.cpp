@@ -10,7 +10,7 @@
 #include "parallelDenseLayer.h"
 #include "stats.h"
 
-Model::Model():_totalLoss{0}, _avgLoss{0} {}
+Model::Model(double outputScaling):_totalLoss{0}, _avgLoss{0}, _outputScaling(outputScaling) {}
 
 void Model::addLayer(std::unique_ptr<Layer> l) {
     if(_layers.size() > 0 && _layers.back()->getOutputSize() != l->getInputSize()) {
@@ -49,8 +49,8 @@ const Input& Model::forwardPass(const Input& input, bool verbose /* = false */) 
 double Model::calcLoss(const LabeledExample& le, bool verbose) {
     //std::cout<<"calcLoss"<<std::endl;
     auto& out = forwardPass(le.features());
-    auto c = cost.calc(out.get(0), le.label());
-    if (verbose) { std::cerr<< out.get(0) <<","<<le.label()<<","<<c<<std::endl;}
+    auto c = cost.calc(out.get(0), le.label() / _outputScaling);
+    if (verbose) { std::cerr<< out.get(0) <<","<<le.label() / _outputScaling<<","<<c<<std::endl;}
     return c;
 }
 
@@ -71,7 +71,7 @@ double Model::calcAvgLoss(const std::vector<std::shared_ptr<LabeledExample>>& in
     }
     st.print();
     //std::cout<<"std dev:"<< sqrt(sum/input.size());
-    return error / input.size();
+    return (_outputScaling * _outputScaling * error / input.size());
 }
 
 double Model::getAvgLoss() const {
@@ -81,13 +81,13 @@ double Model::getAvgLoss() const {
 void Model::calcLossGradient(const LabeledExample& le) {
     //std::cout<<"calcLossGradient"<<std::endl;
     auto& out = forwardPass(le.features());
-    _totalLoss += cost.calc(out.get(0), le.label());
+    _totalLoss += cost.calc(out.get(0), le.label() / _outputScaling);
     for (auto actualLayer = _layers.rbegin(); actualLayer!= _layers.rend(); ++actualLayer) {
         auto nextLayer = actualLayer + 1;
         
         std::vector<double> h;
         if(actualLayer == _layers.rbegin()) {
-            h = {cost.derivate(out.get(0), le.label())};
+            h = {cost.derivate(out.get(0), le.label() / _outputScaling)};
         } else {
             h = (*(actualLayer - 1))->backPropHelper();  
         }
