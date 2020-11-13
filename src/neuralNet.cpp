@@ -87,7 +87,7 @@ int main(int argc, const char*argv[]) {
     if (result.count("stdDev")) {
         stdDev = result["stdDev"].as<double>();
     }
-    auto m = createModel(stdDev, 23000);
+    auto m = createModel(stdDev, 25800);
     
     if (result["randomize"].as<bool>()) {
         m.randomizeParams();

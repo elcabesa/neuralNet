@@ -15,4 +15,5 @@ add_subdirectory(input)
 add_subdirectory(trainAlgorithms)
 add_subdirectory(model)
 add_subdirectory(trainSet)
+add_subdirectory(utils)
 

@@ -6,6 +6,7 @@
 #include "labeledExample.h"
 #include "inputSet.h"
 #include "sparse.h"
+//#include "variance.h"
 
 class DiskInputSet2: public InputSet {
 public:
@@ -45,6 +46,7 @@ private:
 
     mutable double accumulator = 0.0;
     mutable uint64_t counter = 0;
+    //mutable VarianceCalculator _varCal;
 
 };
 

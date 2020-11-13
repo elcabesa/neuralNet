@@ -2,6 +2,7 @@
 #define _PEDONE_CHECK_H
 
 #include <cstdint>
+#include "variance.h"
 
 class Model;
 class LabeledExample;
@@ -68,6 +69,38 @@ private:
 
     static double _ActivationTrain(double x);
     static double _Derivative(double x);
+
+    /*VarianceCalculator _varCalL1_1;
+    VarianceCalculator _varCalL1_2;
+    VarianceCalculator _varCalL1_3;
+    VarianceCalculator _varCalL1_4;
+    VarianceCalculator _varCalL2_1;
+    VarianceCalculator _varCalL2_2;
+    VarianceCalculator _varCalL2_3;
+    VarianceCalculator _varCalL2_4;
+    VarianceCalculator _varCalL3_1;
+    VarianceCalculator _varCalL3_2;
+    VarianceCalculator _varCalL3_3;
+    VarianceCalculator _varCalL3_4;
+    VarianceCalculator _varCalOut;
+
+    VarianceCalculator _varCalL1_1bias;
+    VarianceCalculator _varCalL1_2bias;
+    VarianceCalculator _varCalL1_3bias;
+    VarianceCalculator _varCalL1_4bias;
+    VarianceCalculator _varCalL2_1bias;
+    VarianceCalculator _varCalL2_2bias;
+    VarianceCalculator _varCalL2_3bias;
+    VarianceCalculator _varCalL2_4bias;
+    VarianceCalculator _varCalL3_1bias;
+    VarianceCalculator _varCalL3_2bias;
+    VarianceCalculator _varCalL3_3bias;
+    VarianceCalculator _varCalL3_4bias;
+    VarianceCalculator _varCalOutbias;
+
+    VarianceCalculator _varCalOutWeight[SizeLayer3];*/
+    const unsigned int _decimation = 1000000;
+    unsigned int _decCounter = 0;
 };
 
 #endif

@@ -6,6 +6,27 @@
 #include "pedoneCheck.h"
 #include "model.h"
 
+/*#define STAT_SIZE (63)
+#define DECIMATION (1000000)
+#define SCALING (4.0)
+void updateStat(double val) {
+    static uint64_t stat[STAT_SIZE] = {0}; 
+    static int counter = 0;
+
+    int v = std::round(SCALING * val);
+    v += STAT_SIZE/2;
+    v = std::min(std::max(v , 0), STAT_SIZE -1);
+    ++stat[v];
+
+    if(++counter >= DECIMATION) {
+        counter = 0;
+        std::cout<<"-------------"<<std::endl;
+        for(int i = 0; i < STAT_SIZE; ++i) {
+            std::cout<< ((i- STAT_SIZE/2) / SCALING * 2.58) <<" "<<stat[i]<<std::endl;
+        }
+    }
+}*/
+
 PedoneCheck::PedoneCheck(Model* model):_NNUEmodel(model) {
     std::cout<<"PEDONE CHECK"<<std::endl;
 }
@@ -15,7 +36,7 @@ void PedoneCheck::caricaPesi() {
 
     //-------------------------------------------------------
     {
-        std::normal_distribution<double> dist(0.0, sqrt(2.0 / 30));
+        std::normal_distribution<double> dist(0.0, sqrt(2.0 / 300));
         //std::cout<<"bias"<<std::endl;
         for (unsigned int i = 0; i < SizeInputLayer; ++i) {
             _pesi.biasLayer1[i] = 0;
@@ -99,6 +120,10 @@ void PedoneCheck::calcolaRisRete() {
             }
         }
     }
+    /*_varCalL1_1.addValue(_risRete.ris32Layer1[0]);
+    _varCalL1_2.addValue(_risRete.ris32Layer1[128]);
+    _varCalL1_3.addValue(_risRete.ris32Layer1[256]);
+    _varCalL1_4.addValue(_risRete.ris32Layer1[384]);*/
     for (unsigned int out = 0; out < SizeLayer1; ++out) {
         _risRete.risLayer1[out] = _ActivationTrain(_risRete.ris32Layer1[out]);
     }
@@ -109,6 +134,10 @@ void PedoneCheck::calcolaRisRete() {
         for (unsigned int in = 0; in < SizeLayer1; ++in) {
             ris += _risRete.risLayer1[in] * _pesi.pesiLayer2[in][out];
         }
+        /*if(out==0)_varCalL2_1.addValue(ris);
+        if(out==8)_varCalL2_2.addValue(ris);
+        if(out==16)_varCalL2_3.addValue(ris);
+        if(out==24)_varCalL2_4.addValue(ris);*/
         _risRete.risLayer2[out] = _ActivationTrain(ris/* / 64.0*/);
     }
 
@@ -118,6 +147,10 @@ void PedoneCheck::calcolaRisRete() {
         for (unsigned int in = 0; in < SizeLayer2; ++in) {
             ris += _risRete.risLayer2[in] * _pesi.pesiLayer3[in][out];
         }
+        /*if(out==0)_varCalL3_1.addValue(ris);
+        if(out==8)_varCalL3_2.addValue(ris);
+        if(out==16)_varCalL3_3.addValue(ris);
+        if(out==24)_varCalL3_4.addValue(ris);*/
         _risRete.risLayer3[out] = _ActivationTrain(ris/* / 64.0*/);
     }
 
@@ -126,6 +159,48 @@ void PedoneCheck::calcolaRisRete() {
     for (unsigned int in = 0; in < SizeLayer3; ++in) {
         _risRete.output += _risRete.risLayer3[in] * _pesi.pesiOutput[in];
     }
+    /*_varCalOut.addValue(_risRete.output);
+    if(++_decCounter> _decimation) {
+        _decCounter = 0;
+        std::cout<<"--------------------"<<std::endl;
+        _varCalL1_1.print();
+        _varCalL1_2.print();
+        _varCalL1_3.print();
+        _varCalL1_4.print();
+        std::cout<<"-----"<<std::endl;
+        _varCalL2_1.print();
+        _varCalL2_2.print();
+        _varCalL2_3.print();
+        _varCalL2_4.print();
+        std::cout<<"-----"<<std::endl;
+        _varCalL3_1.print();
+        _varCalL3_2.print();
+        _varCalL3_3.print();
+        _varCalL3_4.print();
+        std::cout<<"-----"<<std::endl;
+        _varCalOut.print();
+        std::cout<<"-------grad--------"<<std::endl;
+        _varCalL1_1bias.print();
+        _varCalL1_2bias.print();
+        _varCalL1_3bias.print();
+        _varCalL1_4bias.print();
+        std::cout<<"-----"<<std::endl;
+        _varCalL2_1bias.print();
+        _varCalL2_2bias.print();
+        _varCalL2_3bias.print();
+        _varCalL2_4bias.print();
+        std::cout<<"-----"<<std::endl;
+        _varCalL3_1bias.print();
+        _varCalL3_2bias.print();
+        _varCalL3_3bias.print();
+        _varCalL3_4bias.print();
+        std::cout<<"-----"<<std::endl;
+        _varCalOutbias.print();
+        std::cout<<"-------gradweight--------"<<std::endl;
+        for(unsigned int i = 0; i < SizeLayer3; ++i) {
+            _varCalOutWeight[i].print();
+        }
+    }*/
 
 }
 
@@ -133,11 +208,16 @@ double PedoneCheck::calcGrad(double label) {
     double err;
     // output
     _biasGrad.BiasGradOutput = _risRete.output - label;
+    /*Outbias.addValue(_biasGrad.BiasGradOutput);*/
 
     // check layer3
     for (unsigned int in = 0; in < SizeLayer3; ++in) {
         err = _biasGrad.BiasGradOutput * _pesi.pesiOutput[in];
         _biasGrad.BiasGradLayer3[in] = err * _Derivative(_risRete.risLayer3[in])/* / 64.0*/;
+        /*if(in==0)_varCalL3_1bias.addValue(_biasGrad.BiasGradLayer3[in]);
+        if(in==8)_varCalL3_2bias.addValue(_biasGrad.BiasGradLayer3[in]);
+        if(in==16)_varCalL3_3bias.addValue(_biasGrad.BiasGradLayer3[in]);
+        if(in==24)_varCalL3_4bias.addValue(_biasGrad.BiasGradLayer3[in]);*/
     }
 
     // check layer2
@@ -147,6 +227,10 @@ double PedoneCheck::calcGrad(double label) {
             err += _biasGrad.BiasGradLayer3[out] * _pesi.pesiLayer3[in][out];
         }
         _biasGrad.BiasGradLayer2[in] = err * _Derivative(_risRete.risLayer2[in])/* / 64.0*/;
+        /*if(in==0)_varCalL2_1bias.addValue(_biasGrad.BiasGradLayer2[in]);
+        if(in==8)_varCalL2_2bias.addValue(_biasGrad.BiasGradLayer2[in]);
+        if(in==16)_varCalL2_3bias.addValue(_biasGrad.BiasGradLayer2[in]);
+        if(in==24)_varCalL2_4bias.addValue(_biasGrad.BiasGradLayer2[in]);*/
     }
 
     // check layer1
@@ -164,6 +248,12 @@ double PedoneCheck::calcGrad(double label) {
         }
         _biasGrad.BiasGradLayer1[in + SizeInputLayer] = err * _Derivative(_risRete.risLayer1[in + SizeInputLayer]);
     }
+
+    /*_varCalL1_1bias.addValue(_biasGrad.BiasGradLayer1[0] + _biasGrad.BiasGradLayer1[0 + SizeInputLayer]);
+    _varCalL1_2bias.addValue(_biasGrad.BiasGradLayer1[128] + _biasGrad.BiasGradLayer1[128 + SizeInputLayer]);
+    _varCalL1_3bias.addValue(_biasGrad.BiasGradLayer1[256] + _biasGrad.BiasGradLayer1[256 + SizeInputLayer]);
+    _varCalL1_4bias.addValue(_biasGrad.BiasGradLayer1[384] + _biasGrad.BiasGradLayer1[384 + SizeInputLayer]);*/
+
     return std::pow(_risRete.output - label, 2.0) / 2.0;
 }
 
@@ -173,6 +263,7 @@ void PedoneCheck::updateweights(double l) {
 
     for( unsigned int out = 0; out < SizeLayer3; ++out) {
         _pesi.pesiOutput[out] -= l * _biasGrad.BiasGradOutput * _risRete.risLayer3[out];
+        /*_varCalOutWeight[out].addValue(_biasGrad.BiasGradOutput * _risRete.risLayer3[out]);*/
     }
 
     // layer3
@@ -210,8 +301,8 @@ void PedoneCheck::updateweights(double l) {
 
 
 double PedoneCheck::_ActivationTrain(double x) {
-    x = std::max(x, 0.0);
-    x = std::min(x, 1.0);
+    x = std::max(x, 0.01 * x);
+    x = std::min(x, 1.0 + 0.01 * (x - 1.0));
     return x;
 }
 

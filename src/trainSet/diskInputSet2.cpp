@@ -62,10 +62,13 @@ const std::vector<std::shared_ptr<LabeledExample>>& DiskInputSet2::batch() const
     bool finish = false;
     while(!finish && count < _batchsize){
         auto ex = _parseLine(_ss, finish);
-
-        /*accumulator += std::pow((ex.label() - 4930) /23000, 2.0);
+    /*
+        //accumulator += ex.label();
+        accumulator += std::pow((ex.label() - 68), 2.0);
         ++counter;
         std::cout << sqrt(accumulator / counter) << std::endl;*/
+        //_varCal.addValue(ex.label());
+        //std::cout <<_varCal.getMean() <<" "<<_varCal.getVariance()<<" "<<_varCal.getstdDev()<< std::endl;
 
         if(finish) {
             _ss.close();
