@@ -60,6 +60,7 @@ int main(int argc, const char*argv[]) {
         ("s,batchSize", "batchSize", cxxopts::value<unsigned int>()->default_value("30"))
         ("c,decimation", "decimation", cxxopts::value<unsigned int>()->default_value("10000"))
         ("q,quantization", "quantization #", cxxopts::value<unsigned int>()->default_value("50"))
+        ("i,labelScaling", "labelScaling", cxxopts::value<unsigned int>()->default_value("30000"))
 
         ("help", "Print help")
         ("print", "print validation error", cxxopts::value<unsigned int>()->default_value("30"))
@@ -87,7 +88,7 @@ int main(int argc, const char*argv[]) {
     if (result.count("stdDev")) {
         stdDev = result["stdDev"].as<double>();
     }
-    auto m = createModel(stdDev, 25800);
+    auto m = createModel(stdDev, result["labelScaling"].as<unsigned int>());
     
     if (result["randomize"].as<bool>()) {
         m.randomizeParams();

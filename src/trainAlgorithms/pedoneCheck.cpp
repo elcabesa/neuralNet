@@ -36,10 +36,10 @@ void PedoneCheck::caricaPesi() {
 
     //-------------------------------------------------------
     {
-        std::normal_distribution<double> dist(0.0, sqrt(2.0 / 300));
+        std::normal_distribution<double> dist(0.0, 0.1 * sqrt(1.0 / 32.0));
         //std::cout<<"bias"<<std::endl;
         for (unsigned int i = 0; i < SizeInputLayer; ++i) {
-            _pesi.biasLayer1[i] = 0;
+            _pesi.biasLayer1[i] = 0.5;
         }
 
         //std::cout<<"weight"<<std::endl;
@@ -51,37 +51,43 @@ void PedoneCheck::caricaPesi() {
     }
     //-------------------------------------------------------
     {
-        std::normal_distribution<double> dist(0.0, sqrt(2.0 / SizeLayer1));
-        for (unsigned int i = 0; i < SizeLayer2; ++i) {
-            _pesi.biasLayer2[i] = 0;
-        }
-
+        std::normal_distribution<double> dist(0.0, sqrt(1.0 / SizeLayer1));
         for (unsigned int in = 0; in < SizeLayer1; ++in) {
             for (unsigned int out = 0; out < SizeLayer2; ++out) {
                 _pesi.pesiLayer2[in][out] = dist(rnd);
             }
         }
+        for (unsigned int out = 0; out < SizeLayer2; ++out) {
+            double sum = 0.0;
+            for (unsigned int in = 0; in < SizeLayer1; ++in) {
+                sum +=  _pesi.pesiLayer2[in][out];
+            }
+            _pesi.biasLayer2[out] = 0.5 - 0.5 * sum;
+        }
     }
     //-------------------------------------------------------
     {
-        std::normal_distribution<double> dist(0.0, sqrt(2.0 / SizeLayer2));
-        for (unsigned int i = 0; i < SizeLayer3; ++i) {
-            _pesi.biasLayer3[i] = 0;
-        }
-
+        std::normal_distribution<double> dist(0.0, sqrt(1.0 / SizeLayer2));
         for (unsigned int in = 0; in < SizeLayer2; ++in) {
             for (unsigned int out = 0; out < SizeLayer3; ++out) {
                 _pesi.pesiLayer3[in][out] = dist(rnd);
             }
         }
+
+        for (unsigned int out = 0; out < SizeLayer3; ++out) {
+            double sum = 0.0;
+            for (unsigned int in = 0; in < SizeLayer2; ++in) {
+                sum +=  _pesi.pesiLayer3[in][out];
+            }
+            _pesi.biasLayer3[out] = 0.5 - 0.5 * sum;
+        }
     }
     //-------------------------------------------------------
     {
-        std::normal_distribution<double> dist(0.0, sqrt(2.0 / SizeLayer3));
-        _pesi.biasOutput =0;
+        _pesi.biasOutput = 0.0;
 
         for (unsigned int in = 0; in < SizeLayer3; ++in) {
-            _pesi.pesiOutput[in] = dist(rnd);
+            _pesi.pesiOutput[in] = 0.0;
         }
     }
 }

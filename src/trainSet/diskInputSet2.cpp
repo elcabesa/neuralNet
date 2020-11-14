@@ -67,8 +67,8 @@ const std::vector<std::shared_ptr<LabeledExample>>& DiskInputSet2::batch() const
         accumulator += std::pow((ex.label() - 68), 2.0);
         ++counter;
         std::cout << sqrt(accumulator / counter) << std::endl;*/
-        //_varCal.addValue(ex.label());
-        //std::cout <<_varCal.getMean() <<" "<<_varCal.getVariance()<<" "<<_varCal.getstdDev()<< std::endl;
+        /*_varCal.addValue(ex.label());
+        _varCal.print();*/
 
         if(finish) {
             _ss.close();
