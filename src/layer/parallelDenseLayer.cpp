@@ -34,17 +34,11 @@ ParallelDenseLayer::ParallelDenseLayer(const unsigned int number, const unsigned
 ParallelDenseLayer::~ParallelDenseLayer() {}
 
 void ParallelDenseLayer::randomizeParams() {    
-    double stdDev = _stdDev;
-    if( stdDev == 0.0) {
-        stdDev = 25 * sqrt(2.0 / _inputSize);
-    }
-
     std::random_device rnd;
-    std::normal_distribution<double> dist(0.0, 25);
-    std::normal_distribution<double> dist2(0.0, stdDev);
+    std::normal_distribution<double> dist(0.0, 0.1 / sqrt(32.0));
     
-    for (auto& x: _bias) {x = dist(rnd);}
-    for (auto& x: _weight) {x = dist2(rnd);}    
+    for (auto& x: _bias) {x = 0.5;}
+    for (auto& x: _weight) {x = dist(rnd);}    
 }
 
 void ParallelDenseLayer::serialize(std::ofstream& ss) const{

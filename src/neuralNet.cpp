@@ -99,7 +99,7 @@ int main(int argc, const char*argv[]) {
         m.serialize(nnFile);
         nnFile.close();
         std::cout<<"done"<<std::endl;
-        return 0;
+        //return 0;
     }
     
     if (result.count("nPath")) {

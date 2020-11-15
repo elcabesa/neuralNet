@@ -106,7 +106,7 @@ void Model::calcTotalLossGradient(const std::vector<std::shared_ptr<LabeledExamp
         //std::cout<<"batch size "<<ex->features().getElementNumber()<<std::endl;
         calcLossGradient(*ex);
     }
-    _avgLoss = _totalLoss / input.size();
+    _avgLoss = _outputScaling * _outputScaling * _totalLoss / input.size();
 }
 
 #define VERSION "0004"

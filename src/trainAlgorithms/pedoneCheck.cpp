@@ -32,62 +32,76 @@ PedoneCheck::PedoneCheck(Model* model):_NNUEmodel(model) {
 }
 
 void PedoneCheck::caricaPesi() {
-    std::random_device rnd;
-
-    //-------------------------------------------------------
     {
-        std::normal_distribution<double> dist(0.0, 0.1 * sqrt(1.0 / 32.0));
+        //std::cout<<"loadLayer1"<<std::endl;
+        auto& l1 = _NNUEmodel->getLayer(0);
+        
+        if(l1.bias().size() != SizeLayer1 / 2) { std::cout<<"ERRORE DIMENSIONI BIAS LAYER1"<<std::endl;}
         //std::cout<<"bias"<<std::endl;
-        for (unsigned int i = 0; i < SizeInputLayer; ++i) {
-            _pesi.biasLayer1[i] = 0.5;
+        for (unsigned int i = 0; i < l1.bias().size(); ++i) {
+            _pesi.biasLayer1[i] = l1.bias()[i];
         }
+
+        if(l1.weight().size() != MaxInput * SizeLayer1 / 2) { std::cout<<"ERRORE DIMENSIONI WEIGHT LAYER1"<<std::endl;}
 
         //std::cout<<"weight"<<std::endl;
         for (unsigned int in = 0; in < MaxInput; ++in) {
-            for (unsigned int out = 0; out < SizeInputLayer; ++out) {
-                _pesi.pesiLayer1[in][out] = dist(rnd);
+            for (unsigned int out = 0; out < SizeLayer1 / 2; ++out) {
+                _pesi.pesiLayer1[in][out] = l1.weight()[out + in * SizeLayer1 / 2];
+                /*if(in == 19020 && out == 2) {
+                    std::cout<<"weight "<<_pesi.pesiLayer1[in][out]<<std::endl;
+                }*/
             }
         }
     }
     //-------------------------------------------------------
     {
-        std::normal_distribution<double> dist(0.0, sqrt(1.0 / SizeLayer1));
+        //std::cout<<"loadLayer2"<<std::endl;
+        auto& l2 = _NNUEmodel->getLayer(1);
+
+        if(l2.bias().size() != SizeLayer2) { std::cout<<"ERRORE DIMENSIONI BIAS LAYER2"<<std::endl;}
+        for (unsigned int i = 0; i < l2.bias().size(); ++i) {
+            _pesi.biasLayer2[i] = l2.bias()[i];
+        }
+
+        if(l2.weight().size() != SizeLayer2 * SizeLayer1) { std::cout<<"ERRORE DIMENSIONI WEIGHT LAYER2"<<std::endl;}
+
         for (unsigned int in = 0; in < SizeLayer1; ++in) {
             for (unsigned int out = 0; out < SizeLayer2; ++out) {
-                _pesi.pesiLayer2[in][out] = dist(rnd);
+                _pesi.pesiLayer2[in][out] = l2.weight()[out + in * SizeLayer2];
             }
-        }
-        for (unsigned int out = 0; out < SizeLayer2; ++out) {
-            double sum = 0.0;
-            for (unsigned int in = 0; in < SizeLayer1; ++in) {
-                sum +=  _pesi.pesiLayer2[in][out];
-            }
-            _pesi.biasLayer2[out] = 0.5 - 0.5 * sum;
         }
     }
     //-------------------------------------------------------
     {
-        std::normal_distribution<double> dist(0.0, sqrt(1.0 / SizeLayer2));
+        //std::cout<<"loadLayer3"<<std::endl;
+        auto& l3 = _NNUEmodel->getLayer(2);
+
+        if(l3.bias().size() != SizeLayer3) { std::cout<<"ERRORE DIMENSIONI BIAS LAYER3"<<std::endl;}
+        for (unsigned int i = 0; i < l3.bias().size(); ++i) {
+            _pesi.biasLayer3[i] = l3.bias()[i];
+        }
+
+        if(l3.weight().size() != SizeLayer2 * SizeLayer3) { std::cout<<"ERRORE DIMENSIONI WEIGHT LAYER3"<<std::endl;}
+
         for (unsigned int in = 0; in < SizeLayer2; ++in) {
             for (unsigned int out = 0; out < SizeLayer3; ++out) {
-                _pesi.pesiLayer3[in][out] = dist(rnd);
+                _pesi.pesiLayer3[in][out] = l3.weight()[out + in * SizeLayer3];
             }
-        }
-
-        for (unsigned int out = 0; out < SizeLayer3; ++out) {
-            double sum = 0.0;
-            for (unsigned int in = 0; in < SizeLayer2; ++in) {
-                sum +=  _pesi.pesiLayer3[in][out];
-            }
-            _pesi.biasLayer3[out] = 0.5 - 0.5 * sum;
         }
     }
     //-------------------------------------------------------
     {
-        _pesi.biasOutput = 0.0;
+        //std::cout<<"loadLayer4"<<std::endl;
+        auto& l4 = _NNUEmodel->getLayer(3);
+
+        if(l4.bias().size() != 1) { std::cout<<"ERRORE DIMENSIONI BIAS LAYER4"<<std::endl;}
+        _pesi.biasOutput = l4.bias()[0];
+
+        if(l4.weight().size() != SizeLayer3) { std::cout<<"ERRORE DIMENSIONI WEIGHT LAYER4"<<std::endl;}
 
         for (unsigned int in = 0; in < SizeLayer3; ++in) {
-            _pesi.pesiOutput[in] = 0.0;
+            _pesi.pesiOutput[in] = l4.weight()[in];
         }
     }
 }
