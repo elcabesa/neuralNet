@@ -55,6 +55,7 @@ public:
 
     struct BiasGrad {
         double BiasGradLayer1[SizeLayer1];
+        double WeightGradLayer1[MaxInput][SizeInputLayer];
         double BiasGradLayer2[SizeLayer2];
         double BiasGradLayer3[SizeLayer3];
         double BiasGradOutput;

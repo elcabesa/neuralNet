@@ -1,6 +1,7 @@
 #include <cmath>
 #include <iostream>
 #include <random>
+#include <set>
 
 #include "labeledExample.h"
 #include "pedoneCheck.h"
@@ -179,6 +180,38 @@ void PedoneCheck::calcolaRisRete() {
     for (unsigned int in = 0; in < SizeLayer3; ++in) {
         _risRete.output += _risRete.risLayer3[in] * _pesi.pesiOutput[in];
     }
+#ifdef COMPARE
+    //std::cout<<"check layer 1"<<std::endl;
+    for(unsigned int i = 0; i < SizeLayer1; ++i) {
+        if(_risRete.risLayer1[i] != _NNUEmodel->getLayer(0).getOutput(i)) {
+            std::cout<<"propagate layer 1 error"<<std::endl;
+            std::cout << i << " " << _risRete.risLayer1[i] << " " <<_NNUEmodel->getLayer(0).getOutput(i)<<std::endl;
+            exit(0);
+        }
+    }
+    //std::cout<<"check layer 2"<<std::endl;
+    for(unsigned int i = 0; i < SizeLayer2; ++i) {
+        if(_risRete.risLayer2[i] != _NNUEmodel->getLayer(1).getOutput(i)) {
+            std::cout<<"propagate layer 2 error"<<std::endl;
+            std::cout << i << " " << _risRete.risLayer2[i] << " " <<_NNUEmodel->getLayer(1).getOutput(i)<<std::endl;
+            exit(0);
+        }
+    }
+    //std::cout<<"check layer 3"<<std::endl;
+    for(unsigned int i = 0; i < SizeLayer3; ++i) {
+        if(_risRete.risLayer3[i] != _NNUEmodel->getLayer(2).getOutput(i)) {
+            std::cout<<"propagate layer 3 error"<<std::endl;
+            std::cout << i << " " << _risRete.risLayer3[i] << " " <<_NNUEmodel->getLayer(2).getOutput(i)<<std::endl;
+            exit(0);
+        }
+    }
+    //std::cout<<"check output"<<std::endl;
+    if(_risRete.output !=  _NNUEmodel->getLayer(3).getOutput(0)) {
+        std::cout<<"propagate layer 4 error"<<std::endl;
+        std::cout << _risRete.output << " " <<_NNUEmodel->getLayer(3).getOutput(0)<<std::endl;
+        exit(0);
+    }
+#endif
     /*_varCalOut.addValue(_risRete.output);
     if(++_decCounter> _decimation) {
         _decCounter = 0;
@@ -229,6 +262,13 @@ double PedoneCheck::calcGrad(double label) {
     // output
     _biasGrad.BiasGradOutput = _risRete.output - label;
     /*Outbias.addValue(_biasGrad.BiasGradOutput);*/
+#ifdef COMPARE
+    //std::cout<<"gradOutput = "<< _biasGrad.BiasGradOutput<<std::endl;
+    if (_NNUEmodel->getLayer(3).getBiasSumGradient(0) != _biasGrad.BiasGradOutput) {
+        std::cout << "grad out error "<< _NNUEmodel->getLayer(3).getBiasSumGradient(0)<<" "<<_biasGrad.BiasGradOutput<<std::endl;
+        exit(-1);
+    }
+#endif
 
     // check layer3
     for (unsigned int in = 0; in < SizeLayer3; ++in) {
@@ -239,6 +279,16 @@ double PedoneCheck::calcGrad(double label) {
         if(in==16)_varCalL3_3bias.addValue(_biasGrad.BiasGradLayer3[in]);
         if(in==24)_varCalL3_4bias.addValue(_biasGrad.BiasGradLayer3[in]);*/
     }
+#ifdef COMPARE
+    for(unsigned int i = 0; i < SizeLayer3; ++i) {
+        if (_NNUEmodel->getLayer(2).getBiasSumGradient(i) != _biasGrad.BiasGradLayer3[i]) {
+            std::cout<<_risRete.risLayer3[i]<<std::endl;
+            std::cout << "grad layer3 error "<< _NNUEmodel->getLayer(2).getBiasSumGradient(i)<<" "<<_biasGrad.BiasGradLayer3[i]<<std::endl;
+            std::cout << _NNUEmodel->getLayer(2).getBiasSumGradient(i) - _biasGrad.BiasGradLayer3[i]<<std::endl;
+            exit(-1);
+        }
+    }
+#endif
 
     // check layer2
     for (unsigned int in = 0; in < SizeLayer2; ++in) {
@@ -252,6 +302,16 @@ double PedoneCheck::calcGrad(double label) {
         if(in==16)_varCalL2_3bias.addValue(_biasGrad.BiasGradLayer2[in]);
         if(in==24)_varCalL2_4bias.addValue(_biasGrad.BiasGradLayer2[in]);*/
     }
+#ifdef COMPARE
+    for(unsigned int i = 0; i < SizeLayer2; ++i) {
+        if (_NNUEmodel->getLayer(1).getBiasSumGradient(i) != _biasGrad.BiasGradLayer2[i]) {
+            std::cout<<_risRete.risLayer2[i]<<std::endl;
+            std::cout << "grad layer2 error "<< _NNUEmodel->getLayer(1).getBiasSumGradient(i)<<" "<<_biasGrad.BiasGradLayer2[i]<<std::endl;
+            std::cout << _NNUEmodel->getLayer(1).getBiasSumGradient(i) - _biasGrad.BiasGradLayer2[i]<<std::endl;
+            exit(-1);
+        }
+    }
+#endif
 
     // check layer1
     for (unsigned int in = 0; in < SizeInputLayer; ++in) {
@@ -273,6 +333,16 @@ double PedoneCheck::calcGrad(double label) {
     _varCalL1_2bias.addValue(_biasGrad.BiasGradLayer1[128] + _biasGrad.BiasGradLayer1[128 + SizeInputLayer]);
     _varCalL1_3bias.addValue(_biasGrad.BiasGradLayer1[256] + _biasGrad.BiasGradLayer1[256 + SizeInputLayer]);
     _varCalL1_4bias.addValue(_biasGrad.BiasGradLayer1[384] + _biasGrad.BiasGradLayer1[384 + SizeInputLayer]);*/
+#ifdef COMPARE
+    for(unsigned int i = 0; i < SizeLayer1 / 2; ++i) {
+        if (_NNUEmodel->getLayer(0).getBiasSumGradient(i) != _biasGrad.BiasGradLayer1[i] + _biasGrad.BiasGradLayer1[i + SizeInputLayer]) {
+            std::cout<<_risRete.risLayer1[i]<<std::endl;
+            std::cout << "grad layer1 error "<< i <<" "<<_NNUEmodel->getLayer(0).getBiasSumGradient(i)<<" "<<_biasGrad.BiasGradLayer1[i] + _biasGrad.BiasGradLayer1[i+256]<<std::endl;
+            std::cout << _NNUEmodel->getLayer(0).getBiasSumGradient(i) - _biasGrad.BiasGradLayer1[i] - _biasGrad.BiasGradLayer1[i + SizeInputLayer]<<std::endl;
+            exit(-1);
+        }
+    }
+#endif
 
     return std::pow(_risRete.output - label, 2.0) / 2.0;
 }
@@ -280,43 +350,125 @@ double PedoneCheck::calcGrad(double label) {
 void PedoneCheck::updateweights(double l) {
     // output layer
     _pesi.biasOutput -= l * _biasGrad.BiasGradOutput;
+#ifdef COMPARE
+    if(_pesi.biasOutput != _NNUEmodel->getLayer(3).bias()[0]) {
+        std::cout<<"error updating bias of output layer"<<std::endl;
+        std::cout<<_pesi.biasOutput<<std::endl;
+        std::cout<<_NNUEmodel->getLayer(3).bias()[0]<<std::endl;
+        std::cout<<(_pesi.biasOutput - _NNUEmodel->getLayer(3).bias()[0])*1e7<<std::endl;
+        exit(-1);
+    }
+#endif
 
     for( unsigned int out = 0; out < SizeLayer3; ++out) {
-        _pesi.pesiOutput[out] -= l * _biasGrad.BiasGradOutput * _risRete.risLayer3[out];
+        _pesi.pesiOutput[out] -= l * (_biasGrad.BiasGradOutput * _risRete.risLayer3[out]);
         /*_varCalOutWeight[out].addValue(_biasGrad.BiasGradOutput * _risRete.risLayer3[out]);*/
+#ifdef COMPARE
+        if(_pesi.pesiOutput[out] != _NNUEmodel->getLayer(3).weight()[out]) {
+            std::cout<<"error updating pesi of output layer"<<std::endl;
+            std::cout<<_pesi.pesiOutput[out] <<std::endl;
+            std::cout<<_NNUEmodel->getLayer(3).weight()[out]<<std::endl;
+            std::cout<<(_pesi.pesiOutput[out] - _NNUEmodel->getLayer(3).weight()[out])*1e7<<std::endl;
+            exit(-1);
+        }
+#endif
     }
 
     // layer3
     for (unsigned int out = 0; out < SizeLayer3; ++out) {
         for (unsigned int in = 0; in < SizeLayer2; ++in) {
-            _pesi.pesiLayer3[in][out] -= l * _biasGrad.BiasGradLayer3[out] * _risRete.risLayer2[in];
+            _pesi.pesiLayer3[in][out] -= l * (_biasGrad.BiasGradLayer3[out] * _risRete.risLayer2[in]);
+#ifdef COMPARE
+            if(_pesi.pesiLayer3[in][out] != _NNUEmodel->getLayer(2).weight()[out + in * SizeLayer3]) {
+                std::cout<<"error updating pesi of layer3"<<std::endl;
+                std::cout<<_pesi.pesiLayer3[in][out] <<std::endl;
+                std::cout<< _NNUEmodel->getLayer(2).weight()[out + in * SizeLayer3]<<std::endl;
+                exit(-1);
+            }
+#endif
         } 
         _pesi.biasLayer3[out] -= l * _biasGrad.BiasGradLayer3[out];
+#ifdef COMPARE
+        if(_pesi.biasLayer3[out] != _NNUEmodel->getLayer(2).bias()[out]) {
+            std::cout<<"error updating bias of layer3"<<std::endl;
+            std::cout<<_pesi.biasLayer3[out] <<std::endl;
+            std::cout<< _NNUEmodel->getLayer(2).bias()[out]<<std::endl;
+            exit(-1);
+        }
+#endif
 
     }
 
     // layer2
     for (unsigned int out = 0; out < SizeLayer2; ++out) {
         for (unsigned int in = 0; in < SizeLayer1; ++in) {
-            _pesi.pesiLayer2[in][out] -= l * _biasGrad.BiasGradLayer2[out] * _risRete.risLayer1[in];
+            _pesi.pesiLayer2[in][out] -= l * (_biasGrad.BiasGradLayer2[out] * _risRete.risLayer1[in]);
+#ifdef COMPARE
+            if(_pesi.pesiLayer2[in][out] != _NNUEmodel->getLayer(1).weight()[out + in * SizeLayer2]) {
+                std::cout<<"error updating pesi of layer2"<<std::endl;
+                std::cout<<_pesi.pesiLayer2[in][out] <<std::endl;
+                std::cout<< _NNUEmodel->getLayer(1).weight()[out + in * SizeLayer2]<<std::endl;
+                exit(-1);
+            }
+#endif
         } 
-        _pesi.biasLayer2[out] -= l * _biasGrad.BiasGradLayer2[out];   
+        _pesi.biasLayer2[out] -= l * _biasGrad.BiasGradLayer2[out];  
+#ifdef COMPARE
+        if(_pesi.biasLayer2[out] != _NNUEmodel->getLayer(1).bias()[out]) {
+            std::cout<<"error updating bias of layer2"<<std::endl;
+            std::cout<<_pesi.biasLayer2[out] <<std::endl;
+            std::cout<< _NNUEmodel->getLayer(1).bias()[out]<<std::endl;
+            exit(-1);
+        } 
+#endif
     }
 
     //layer1
+    std::set<uint16_t> features;
     for (unsigned int pl = 0; pl < 2; ++pl) {
         for (unsigned int in = 0; in < _input.NInput[pl]; ++in) {
             uint16_t idx = _input.InputCompatto[pl][in];
+            features.insert(idx);
             for (unsigned int out = 0; out < SizeInputLayer; ++out) {
-                _pesi.pesiLayer1[idx][out] -= l * _biasGrad.BiasGradLayer1[out + pl * SizeInputLayer];
+                //_pesi.pesiLayer1[idx][out] -= l * _biasGrad.BiasGradLayer1[out + pl * SizeInputLayer];
+                _biasGrad.WeightGradLayer1[idx][out] += _biasGrad.BiasGradLayer1[out + pl * SizeInputLayer];
             }
+        }
+    }
+
+    for(auto f:features) {
+        for (unsigned int out = 0; out < SizeInputLayer; ++out) {
+            _pesi.pesiLayer1[f][out] -= l * _biasGrad.WeightGradLayer1[f][out];
+            _biasGrad.WeightGradLayer1[f][out] = 0.0;
         }
     }
     
     for (unsigned int out = 0; out < SizeInputLayer; ++out) {
-      _pesi.biasLayer1[out] -= l * _biasGrad.BiasGradLayer1[out];
-      _pesi.biasLayer1[out] -= l * _biasGrad.BiasGradLayer1[out + SizeInputLayer];
+        _pesi.biasLayer1[out] -= l * (_biasGrad.BiasGradLayer1[out] + _biasGrad.BiasGradLayer1[out + SizeInputLayer]);
+#ifdef COMPARE
+        if(_pesi.biasLayer1[out] != _NNUEmodel->getLayer(0).bias()[out]) {
+            std::cout<<"error updating bias of layer1"<<std::endl;
+            std::cout<<_pesi.biasLayer1[out] <<std::endl;
+            std::cout<< _NNUEmodel->getLayer(0).bias()[out]<<std::endl;
+            std::cout<< _NNUEmodel->getLayer(0).bias()[out + SizeInputLayer]<<std::endl;
+            exit(-1);
+        }
+#endif
     }
+#ifdef COMPARE
+    for (unsigned int in = 0; in < MaxInput; ++in) {
+        for (unsigned int out = 0; out < SizeLayer1 / 2; ++out) {
+            if(_pesi.pesiLayer1[in][out] != _NNUEmodel->getLayer(0).weight()[in * SizeLayer1 / 2 + out]) {
+                std::cout<<in<< " "<<out<<std::endl;
+                std::cout<<"error updating pesi of layer1"<<std::endl;
+                std::cout<<"PEDONE "<<_pesi.pesiLayer1[in][out] <<std::endl;
+                std::cout<<"VAJO "<<_NNUEmodel->getLayer(0).weight()[in * SizeLayer1 / 2 + out]<<std::endl;
+                std::cout<<std::abs(_pesi.pesiLayer1[in][out] - _NNUEmodel->getLayer(0).weight()[in * SizeLayer1 / 2 + out])*1e5<<std::endl;
+                exit(-1);
+            }
+        }
+    }
+#endif
 }
 
 
