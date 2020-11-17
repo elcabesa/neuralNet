@@ -189,7 +189,8 @@ void DenseLayer::upgradeBias(double beta, double learnRate, bool rmsprop) {
             _biasMovAvg[i] += beta2 * gradBias * gradBias;
             b -= gradBias * (learnRate / sqrt(_biasMovAvg[i] + 1e-8));
         } else {
-            b -= gradBias * learnRate;
+            /*_biasMovAvg[i] += gradBias * gradBias;*/
+            b -= gradBias * learnRate /*/ std::sqrt(_biasMovAvg[i] + 1e-8)*/;
         }
         if(std::abs(b) > std::pow(2, 31)) {std::cout<<"ERROR, bias overflow"<<i<<" "<<b<<" ["<<_inputSize<<"*"<<_outputSize<<"]"<<std::endl;}
         if(b > 2147483647) {b = 2147483647;}
@@ -220,7 +221,8 @@ void DenseLayer::upgradeWeight(double beta, double learnRate, double regularizat
                 _weight[idx] = (regularization * _weight[idx]) - gradWeight * (learnRate / sqrt(_weightMovAvg[idx] + 1e-8));
             }
             else {
-                _weight[idx] = (regularization * _weight[idx]) - gradWeight * learnRate;
+                /*_weightMovAvg[idx] += gradWeight * gradWeight;*/
+                _weight[idx] = (regularization * _weight[idx]) - gradWeight * learnRate/* / std::sqrt(_weightMovAvg[idx] + 1e-8)*/;
             }
             if(std::abs(_weight[idx]) > std::pow(2, 7)) {std::cout<<"ERROR, weight overflow "<<idx<<" "<<_weight[idx]<<" ["<<_inputSize<<"*"<<_outputSize<<"]"<<std::endl;}
             if(_weight[idx] > 127) {_weight[idx] = 127;}

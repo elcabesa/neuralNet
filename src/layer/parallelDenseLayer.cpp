@@ -220,7 +220,8 @@ void ParallelDenseLayer::upgradeBias(double beta, double learnRate, bool rmsprop
             _biasMovAvg[i] += beta2 * gradBias * gradBias;
             b -= gradBias * (learnRate / sqrt(_biasMovAvg[i] + 1e-8));
         } else {
-            b -= gradBias * learnRate;
+            /*_biasMovAvg[i] += gradBias * gradBias;*/
+            b -= gradBias * learnRate/*/ std::sqrt(_biasMovAvg[i] + 1e-8)*/;
         }
         if(std::abs(b) > std::pow(2, 15)) {std::cout<<"ERROR, parallel bias overflow"<<i<<" "<<b<<std::endl;}
         if(b > 32767) {b = 32767;}
@@ -252,7 +253,8 @@ void ParallelDenseLayer::upgradeWeight(double beta, double learnRate, double reg
                 _weight[idx] = (regularization * _weight[idx]) - gradWeight * (learnRate / sqrt(_weightMovAvg[idx] + 1e-8));
             }
             else {
-                _weight[idx] = (regularization * _weight[idx]) - gradWeight * learnRate;
+                /*_weightMovAvg[idx] += gradWeight * gradWeight;*/
+                _weight[idx] = (regularization * _weight[idx]) - gradWeight * learnRate/* / std::sqrt(_weightMovAvg[idx] + 1e-8)*/;
             }
             if(std::abs(_weight[idx]) > std::pow(2, 7)) {std::cout<<"ERROR, parallel weight overflow "<<idx<<" "<<_weight[idx]<<std::endl;}
             if(_weight[idx] > 127) {_weight[idx] = 127;}
