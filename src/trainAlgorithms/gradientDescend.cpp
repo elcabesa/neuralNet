@@ -109,7 +109,7 @@ void GradientDescend::_printTrainResult(const unsigned int pass, unsigned int de
 
         std::cout << "pass: " << p << " loss "<< sqrt(2.0 * pl) / 10000.0 << " " <<sqrt(2.0 * vl) / 10000.0<<std::endl;
         //std::cout << sqrt(_totalLoss/_totalCount)<<std::endl;
-        //_save(p);
+        _save(p);
 
         
         //std::cout<<" AVGLOSS " << _lossLowPassFilter<<std::endl; 

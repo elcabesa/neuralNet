@@ -42,6 +42,8 @@ void ParallelDenseLayer::randomizeParams() {
 }
 
 void ParallelDenseLayer::serialize(std::ofstream& ss) const{
+    double min = 1e8;
+    double max = -1e8;
     union _bb{
         int16_t d;
         char c[2];
@@ -51,19 +53,32 @@ void ParallelDenseLayer::serialize(std::ofstream& ss) const{
         int8_t d;
         char c[1];
     }ww;
-
+    std::cout<<"SERIALIZE PARALLEL LAYER"<<std::endl;
     ss << "{";
+    
     for (auto & b: _bias) {
-        bb.d = std::round(b);
+        double _b = b * 127.0;
+        max = std::max(_b, max);
+        min = std::min(_b, min);
+        bb.d = std::round(_b);
         ss.write(bb.c, 2);
         //ss<<", ";
     }
     ss <<std::endl;
+    std::cout<<" input layer bias min: "<<min<< " max: "<< max<<std::endl;
+
+
+    min = 1e8;
+    max = -1e8;
     for (auto & w: _weight) {
-        ww.d = std::round(w);
+        double _w = w * 127.0;
+        max = std::max(_w, max);
+        min = std::min(_w, min);
+        ww.d = std::round(_w);
         ss.write(ww.c, 1);
         //ss<<", ";
     }
+    std::cout<<" input layer weight min: "<<min<< " max: "<< max<<std::endl;
 
     ss << "}"<<std::endl;
 }
@@ -82,14 +97,14 @@ bool ParallelDenseLayer::deserialize(std::ifstream& ss) {
     if(ss.get() != '{') {std::cout<<"DenseLayer missing {"<<std::endl;return false;}
     for (auto & b: _bias) {
         ss.read(bb.c, 2);
-        b = bb.d;
+        b = bb.d / 127.0;
         //if(ss.get() != ',') {std::cout<<"DenseLayer missing ,"<<std::endl;return false;}
         //if(ss.get() != ' ') {std::cout<<"DenseLayer missing space"<<std::endl;return false;}
     }
     if(ss.get() != '\n') {std::cout<<"DenseLayer missing line feed"<<std::endl;return false;}
     for (auto & w: _weight) {
         ss.read(ww.c, 1);
-        w = ww.d;
+        w = ww.d / 127.0;
         //if(ss.get() != ',') {std::cout<<"DenseLayer missing ,"<<std::endl;return false;}
         //if(ss.get() != ' ') {std::cout<<"DenseLayer missing space"<<std::endl;return false;}
     }

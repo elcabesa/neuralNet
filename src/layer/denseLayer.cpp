@@ -232,6 +232,8 @@ void DenseLayer::upgradeWeight(double beta, double learnRate, double regularizat
 }
 
 void DenseLayer::serialize(std::ofstream& ss) const{
+    double min = 1e8;
+    double max = -1e8;
     union _bb{
         int32_t d;
         char c[4];
@@ -241,19 +243,34 @@ void DenseLayer::serialize(std::ofstream& ss) const{
         int8_t d;
         char c[1];
     }ww;
+    std::cout<<"SERIALIZE LAYER"<<std::endl;
 
     ss << "{";
+    double bgain = _outputSize == 1 ? 30000.0 : 127.0 * 64.0;
     for (auto & b: _bias) {
-        bb.d = std::round(b);
+        double _b = b * bgain;
+        max = std::max(_b, max);
+        min = std::min(_b, min);
+        bb.d = std::round(_b);
         ss.write(bb.c, 4);
         //ss<<", ";
     }
+    std::cout<<" layer bias min: "<<min<< " max: "<< max<<std::endl;
+
+
+    min = 1e8;
+    max = -1e8;
     ss <<std::endl;
+    double wgain = _outputSize == 1 ? 30000.0 / 4.0 / 127.0 : 64.0;
     for (auto & w: _weight) {
-        ww.d = std::round(w);
+        double _w = w * wgain;
+        max = std::max(_w, max);
+        min = std::min(_w, min);
+        ww.d = std::round(_w);
         ss.write(ww.c, 1);
         //ss<<", ";
     }
+    std::cout<<" layer weight min: "<<min<< " max: "<< max<<std::endl;
 
     ss << "}"<<std::endl;
 }
@@ -268,18 +285,19 @@ bool DenseLayer::deserialize(std::ifstream& ss) {
         int8_t d;
         char c[1];
     }ww;
-
+    double bgain = _outputSize == 1 ? 30000.0 : 127.0 * 64.0;
     if(ss.get() != '{') {std::cout<<"DenseLayer missing {"<<std::endl;return false;}
     for (auto & b: _bias) {
         ss.read(bb.c, 4);
-        b = bb.d;
+        b = bb.d / bgain;
         //if(ss.get() != ',') {std::cout<<"DenseLayer missing ,"<<std::endl;return false;}
         //if(ss.get() != ' ') {std::cout<<"DenseLayer missing space"<<std::endl;return false;}
     }
     if(ss.get() != '\n') {std::cout<<"DenseLayer missing line feed"<<std::endl;return false;}
+    double wgain = _outputSize == 1 ? 30000.0 /4.0 / 127.0 : 64.0;
     for (auto & w: _weight) {
         ss.read(ww.c, 1);
-        w = ww.d;
+        w = ww.d / wgain;
         //if(ss.get() != ',') {std::cout<<"DenseLayer missing ,"<<std::endl;return false;}
         //if(ss.get() != ' ') {std::cout<<"DenseLayer missing space"<<std::endl;return false;}
     }
