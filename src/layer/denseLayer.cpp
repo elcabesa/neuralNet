@@ -246,7 +246,7 @@ void DenseLayer::serialize(std::ofstream& ss) const{
     std::cout<<"SERIALIZE LAYER"<<std::endl;
 
     ss << "{";
-    double bgain = _outputSize == 1 ? 30000.0 : 127.0 * 64.0;
+    double bgain = _outputSize == 1 ? 30000.0 / 4.0 : 127.0 * 64.0;
     for (auto & b: _bias) {
         double _b = b * bgain;
         max = std::max(_b, max);
@@ -285,7 +285,7 @@ bool DenseLayer::deserialize(std::ifstream& ss) {
         int8_t d;
         char c[1];
     }ww;
-    double bgain = _outputSize == 1 ? 30000.0 : 127.0 * 64.0;
+    double bgain = _outputSize == 1 ? 30000.0 / 4.0 : 127.0 * 64.0;
     if(ss.get() != '{') {std::cout<<"DenseLayer missing {"<<std::endl;return false;}
     for (auto & b: _bias) {
         ss.read(bb.c, 4);
@@ -294,7 +294,7 @@ bool DenseLayer::deserialize(std::ifstream& ss) {
         //if(ss.get() != ' ') {std::cout<<"DenseLayer missing space"<<std::endl;return false;}
     }
     if(ss.get() != '\n') {std::cout<<"DenseLayer missing line feed"<<std::endl;return false;}
-    double wgain = _outputSize == 1 ? 30000.0 /4.0 / 127.0 : 64.0;
+    double wgain = _outputSize == 1 ? 30000.0 / 4.0 / 127.0 : 64.0;
     for (auto & w: _weight) {
         ss.read(ww.c, 1);
         w = ww.d / wgain;
