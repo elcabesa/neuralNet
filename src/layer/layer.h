@@ -10,7 +10,7 @@
 
 class Layer {
 public:
-    Layer(const unsigned int inputSize, const unsigned int outputSize, const unsigned int accumulatorBits, const double outScaling, const double stdDev, std::shared_ptr<Activation> act);
+    Layer(const unsigned int inputSize, const unsigned int outputSize, const double stdDev, std::shared_ptr<Activation> act);
     virtual ~Layer();
     
     unsigned int getInputSize() const;
@@ -51,8 +51,6 @@ protected:
     DenseInput _output;
     const double _stdDev;
     bool _quantization;
-    unsigned int _accumulatorBits;
-    double _outScaling;
 
     std::shared_ptr<Activation> _act;
 

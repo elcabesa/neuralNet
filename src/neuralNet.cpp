@@ -34,10 +34,10 @@ Model createModel(double stdDev, double scaling) {
     std::cout<<"creating model"<<std::endl;
     
     Model m(scaling);
-    m.addLayer(std::make_unique<ParallelDenseLayer>(2, 40960, 256, ActivationFactory::create(Activation::type::relu), 16, 1.0, stdDev));
-    m.addLayer(std::make_unique<DenseLayer>(512,32, ActivationFactory::create(Activation::type::relu), 32, 1.0));
-    m.addLayer(std::make_unique<DenseLayer>(32,32, ActivationFactory::create(Activation::type::relu), 32, 1.0));
-    m.addLayer(std::make_unique<DenseLayer>(32, 1, ActivationFactory::create(Activation::type::linear), 32, 1.0));
+    m.addLayer(std::make_unique<ParallelDenseLayer>(2, 40960, 256, ActivationFactory::create(Activation::type::relu), 127.0, stdDev));
+    m.addLayer(std::make_unique<DenseLayer>(512,32, ActivationFactory::create(Activation::type::relu), 1.0));
+    m.addLayer(std::make_unique<DenseLayer>(32,32, ActivationFactory::create(Activation::type::relu), 1.0));
+    m.addLayer(std::make_unique<DenseLayer>(32, 1, ActivationFactory::create(Activation::type::linear), 1.0));
     
     std::cout<<"done"<<std::endl;
     

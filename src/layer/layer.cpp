@@ -3,14 +3,12 @@
 
 #include "layer.h"
 
-Layer::Layer(const unsigned int inputSize, const unsigned int outputSize, const unsigned int accumulatorBits, const double outScaling, const double stdDev, std::shared_ptr<Activation> act):
+Layer::Layer(const unsigned int inputSize, const unsigned int outputSize, const double stdDev, std::shared_ptr<Activation> act):
     _inputSize(inputSize),
     _outputSize(outputSize),
     _output(outputSize),
     _stdDev(stdDev),
     _quantization(false),
-    _accumulatorBits(accumulatorBits),
-    _outScaling(outScaling),
     _act(std::move(act))
 
 {}

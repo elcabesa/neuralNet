@@ -6,8 +6,8 @@
 #include "denseLayer.h"
 #include "input.h"
 
-DenseLayer::DenseLayer(const unsigned int inputSize, const unsigned int outputSize, std::shared_ptr<Activation> act, const unsigned int accumulatorBits, const double outScaling, const double stdDev):
-    Layer{inputSize, outputSize, accumulatorBits, outScaling, stdDev, act}
+DenseLayer::DenseLayer(const unsigned int inputSize, const unsigned int outputSize, std::shared_ptr<Activation> act, const double outScaling, const double stdDev):
+    Layer{inputSize, outputSize, stdDev, act}
 {
     _bias.resize(outputSize, 0.0);
     _weight.resize(outputSize * inputSize, 1.0);
@@ -35,20 +35,17 @@ void DenseLayer::_calcNetOut(const Input& input) {
     unsigned int num = input.getElementNumber();
     for(unsigned int idx = 0; idx < num; ++idx) {
         auto& el = input.getElementFromIndex(idx);
-        double in = _quantization ? std::trunc(el.second) : el.second;
         _activeFeature.insert(el.first);
         for(unsigned int o = 0; o < _outputSize; ++o) {
-            _netOutput[o] += in * _getQuantizedWeight(_calcWeightIndex(el.first,o));
+            _netOutput[o] += el.second * _getQuantizedWeight(_calcWeightIndex(el.first,o));
         }
     }
 }
 
 void DenseLayer::_calcOut() {
     for(unsigned int o=0; o < _outputSize; ++o) {
-        // overflow warning
-        if(std::abs(_netOutput[o]) > std::pow(2, _accumulatorBits - 1)) { std::cout<<"warning acc overflow: accumulator["<<o<<"] = " <<_netOutput[o]<<std::endl;}
         
-        _output.set(o, _act->propagate(_netOutput[o] / _outScaling));
+        _output.set(o, _act->propagate(_netOutput[o]));
 
         // save min and max
         _min = std::min(_min, _output.get(o));
@@ -156,8 +153,8 @@ void DenseLayer::_backwardCalcBiasGradient(const std::vector<double>& h) {
     assert(h.size() == _outputSize);
     unsigned int i = 0;
     for(auto& b: _biasGradient) {
-        double activationDerivate = _act->derivate(_netOutput[i] / _outScaling);
-        b = h[i] * activationDerivate / _outScaling;
+        double activationDerivate = _act->derivate(_netOutput[i]);
+        b = h[i] * activationDerivate;
         ++i;
     }
 }
@@ -192,9 +189,6 @@ void DenseLayer::upgradeBias(double beta, double learnRate, bool rmsprop) {
             /*_biasMovAvg[i] += gradBias * gradBias;*/
             b -= gradBias * learnRate /*/ std::sqrt(_biasMovAvg[i] + 1e-8)*/;
         }
-        if(std::abs(b) > std::pow(2, 31)) {std::cout<<"ERROR, bias overflow"<<i<<" "<<b<<" ["<<_inputSize<<"*"<<_outputSize<<"]"<<std::endl;}
-        if(b > 2147483647) {b = 2147483647;}
-        if(b < -2147483647) {b = -2147483647;}
         ++i;
     }
 }
@@ -224,9 +218,6 @@ void DenseLayer::upgradeWeight(double beta, double learnRate, double regularizat
                 /*_weightMovAvg[idx] += gradWeight * gradWeight;*/
                 _weight[idx] = (regularization * _weight[idx]) - gradWeight * learnRate/* / std::sqrt(_weightMovAvg[idx] + 1e-8)*/;
             }
-            if(std::abs(_weight[idx]) > std::pow(2, 7)) {std::cout<<"ERROR, weight overflow "<<idx<<" "<<_weight[idx]<<" ["<<_inputSize<<"*"<<_outputSize<<"]"<<std::endl;}
-            if(_weight[idx] > 127) {_weight[idx] = 127;}
-            if(_weight[idx] < -127) {_weight[idx] = -127;}
         }
     }
 }
@@ -315,7 +306,8 @@ void DenseLayer::printMinMax() {
 
 double DenseLayer::_getQuantizedWeight(unsigned int i) const {
     if(_quantization) {
-        return std::round(_weight[i]);
+        double wgain = _outputSize == 1 ? 30000.0 / 4.0 / 127.0 : 64.0;
+        return std::round(wgain * _weight[i]) / wgain;
     } else {
         return _weight[i];
     }
@@ -323,7 +315,8 @@ double DenseLayer::_getQuantizedWeight(unsigned int i) const {
 
 double DenseLayer::_getQuantizedBias(unsigned int i) const {
     if(_quantization) {
-        return std::round(_bias[i]);
+        double bgain = _outputSize == 1 ? 30000.0 / 4.0 : 127.0 * 64.0;
+        return std::round(bgain * _bias[i]) / bgain;
     } else {
         return _bias[i];
     }

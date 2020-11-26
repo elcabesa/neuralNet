@@ -11,7 +11,7 @@ class Activation;
 
 class ParallelDenseLayer: public Layer {
 public:
-    ParallelDenseLayer(const unsigned int number, const unsigned int inputSize, const unsigned int outputSize, std::shared_ptr<Activation> act, const unsigned int accumulatorBits, const double outScaling, const double stdDev = 0.0);
+    ParallelDenseLayer(const unsigned int number, const unsigned int inputSize, const unsigned int outputSize, std::shared_ptr<Activation> act, const double outScaling, const double stdDev = 0.0);
     ~ParallelDenseLayer();
     
     void propagate(const Input& input);
@@ -67,6 +67,8 @@ private:
 
     double _min = 1e8;
     double _max = -1e8;
+
+    double _quantizerOuputScale;
 
 };
 

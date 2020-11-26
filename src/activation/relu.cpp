@@ -15,7 +15,7 @@ double reluActivation::propagate(double input) const {
 }
 
 double reluActivation::derivate(double input) const {
-    return (input > 0.0) && (input < saturation) ? 1 : alpha;
+    return (input > 0.0) && (input < saturation) ? 1.0 : alpha;
 }
 
 Activation::type reluActivation::getType() const {

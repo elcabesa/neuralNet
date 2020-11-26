@@ -94,20 +94,20 @@ void GradientDescend::_printTrainResult(const unsigned int pass, unsigned int de
     if((pass%decimation)==0) 
     {
         unsigned int p = pass / decimation;
-        /*_model.setQuantization(true);
-        double l = _model.calcAvgLoss(_inputSet.validationSet());
-        _model.setQuantization(_quantization);*/
-        double pl = _PedoneAccumulatorLoss/_count;
+        _model.setQuantization(true);
+        double pl = _model.calcAvgLoss(_inputSet.validationSet());
+        _model.setQuantization(_quantization);
+        //double pl = _PedoneAccumulatorLoss/_count;
         double vl = _VajoletAccumulatorLoss/_count;
         //std::cout << "pass: " << p << " loss "<< sqrt(_accumulatorLoss/_count)<<std::endl;
         
 
-        std::cerr <<sqrt(2.0 * pl) / 10000.0 <<",";
+        std::cerr <<sqrt(2.0 * vl) / 10000.0 <<",";
         //_totalLoss += _accumulatorLoss;
         //_totalCount += _count;
-        std::cerr <<sqrt(2.0 * vl) / 10000.0 <<std::endl;
+        std::cerr <<sqrt(2.0 * pl) / 10000.0 <<std::endl;
 
-        std::cout << "pass: " << p << " loss "<< sqrt(2.0 * pl) / 10000.0 << " " <<sqrt(2.0 * vl) / 10000.0<<std::endl;
+        std::cout << "pass: " << p << " loss "<< sqrt(2.0 * vl) / 10000.0 << " " <<sqrt(2.0 * pl) / 10000.0<<std::endl;
         //std::cout << sqrt(_totalLoss/_totalCount)<<std::endl;
         _save(p);
 
