@@ -24,7 +24,7 @@ private:
     void _save(const unsigned int pass);
     
     double _min;
-    double _PedoneAccumulatorLoss;
+    //double _PedoneAccumulatorLoss;
     double _VajoletAccumulatorLoss;
     unsigned int _count;
     bool _quantization;
@@ -33,7 +33,7 @@ private:
     //double _totalLoss;
     //unsigned long long int _totalCount;
 
-    PedoneCheck* _pedone = nullptr;
+    //PedoneCheck* _pedone = nullptr;
     
 };
 

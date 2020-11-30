@@ -18,7 +18,7 @@ GradientDescend::GradientDescend(Model& model, const InputSet& inputSet, unsigne
     _regularization(regularization),
     _beta(beta),
     _min(1e20),
-    _PedoneAccumulatorLoss(0.0),
+    //_PedoneAccumulatorLoss(0.0),
     _VajoletAccumulatorLoss(0.0),
     _count(0),
     _quantization(false),
@@ -41,9 +41,9 @@ double GradientDescend::train(unsigned int decimation) {
     std::cout<<"initial ValidationSet avg loss: " << sqrt(2.0 * avgLoss) / 10000.0 <<std::endl;
     _model.setQuantization(_quantization);
     
-    if(_pedone) {delete _pedone;}
+    /*if(_pedone) {delete _pedone;}
     _pedone = new PedoneCheck(&_model);
-    _pedone->caricaPesi();
+    _pedone->caricaPesi();*/
 
     for(unsigned int p = 1; infinite || p <= _passes; ++p) {
         if (_quantizationPass != 0 && p >= _quantizationPass) {_quantization = true;}
@@ -66,9 +66,9 @@ void GradientDescend::_pass(const unsigned int pass) {
     _model.calcTotalLossGradient(batch);
     // TODO REMOVE
     //_pedone->caricaPesi();
-    _pedone->caricaInput((*batch[0]));
-    _pedone->calcolaRisRete();
-    double pedLoss = _model.getOutputScaling() * _model.getOutputScaling() * _pedone->calcGrad((*batch[0]).label() / _model.getOutputScaling());
+    /*_pedone->caricaInput((*batch[0]));
+    _pedone->calcolaRisRete();*/
+    //double pedLoss = _model.getOutputScaling() * _model.getOutputScaling() * _pedone->calcGrad((*batch[0]).label() / _model.getOutputScaling());
     //_model.VerifyTotalLossGradient(batch);
     
     //std::cout<<"-----------------"<<std::endl;
@@ -78,14 +78,14 @@ void GradientDescend::_pass(const unsigned int pass) {
         l.upgradeBias(_beta, _learnRate, _rmsProp);
         l.upgradeWeight(_beta, _learnRate, _regularization, _rmsProp);
     }
-    _pedone->updateweights(_learnRate);
+    //_pedone->updateweights(_learnRate);
     //double avgLoss = _model.calcAvgLoss(batch);
     //std::cout<<sqrt(_model.getAvgLoss())<<" "<< sqrt(avgLoss) <<std::endl;
     //std::cout<<"intermediate loss "<< sqrt(_model.getAvgLoss()) <<std::endl;
     /*if(_model.getAvgLoss() > 400 ){
         std::cout<<"WARNING AVG LOSS "<<_model.getAvgLoss()<<std::endl;
     }*/
-    _PedoneAccumulatorLoss += pedLoss;
+    //_PedoneAccumulatorLoss += pedLoss;
     _VajoletAccumulatorLoss += _model.getAvgLoss();
     ++_count;
 }
@@ -113,7 +113,7 @@ void GradientDescend::_printTrainResult(const unsigned int pass, unsigned int de
 
         
         //std::cout<<" AVGLOSS " << _lossLowPassFilter<<std::endl; 
-        _PedoneAccumulatorLoss = 0.0;
+        //_PedoneAccumulatorLoss = 0.0;
         _VajoletAccumulatorLoss = 0.0;
         _count = 0;
     }
