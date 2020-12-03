@@ -14,11 +14,12 @@ class InputSet;
 
 class Model {
 public:
-    Model();
+    Model(double outputScaling);
     
     void addLayer(std::unique_ptr<Layer> l);
     Layer& getLayer(unsigned int index);
-    unsigned int getLayerCount();
+    const Layer& getLayer(unsigned int index) const;
+    unsigned int getLayerCount() const;
     
     void randomizeParams();
     void printParams();
@@ -42,12 +43,16 @@ public:
 
     void setQuantization(bool q);
 
+    //todo remove
+    double getOutputScaling() const { return _outputScaling;}
+
 
 private:
     std::vector<std::unique_ptr<Layer>> _layers;
     Cost cost;
     double _totalLoss;
     double _avgLoss;
+    const double _outputScaling;
 };
 
 #endif

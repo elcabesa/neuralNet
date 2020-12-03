@@ -3,15 +3,13 @@
 
 #include "layer.h"
 
-Layer::Layer(const unsigned int inputSize, const unsigned int outputSize, unsigned int outScale, unsigned int weightScale, const unsigned int accumulatorBits, const double stdDev):
+Layer::Layer(const unsigned int inputSize, const unsigned int outputSize, const double stdDev, std::shared_ptr<Activation> act):
     _inputSize(inputSize),
     _outputSize(outputSize),
     _output(outputSize),
     _stdDev(stdDev),
     _quantization(false),
-    _outScale(outScale),
-    _weightScale(weightScale),
-    _accumulatorBits(accumulatorBits)
+    _act(std::move(act))
 
 {}
 
@@ -34,4 +32,15 @@ const Input& Layer::output() const {return _output;}
 void Layer::printOutput() const {
     _output.print();
 }
+
+void Layer::setQuantization(bool q) {
+    _quantization = q;
+}
+
+Activation::type Layer::getActivatinType() const {
+    return _act->getType();
+}
+
+std::vector<double>& Layer::bias() {return _bias;}
+std::vector<double>& Layer::weight() {return _weight;}
 

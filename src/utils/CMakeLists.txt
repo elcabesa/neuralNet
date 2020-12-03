@@ -1,6 +1,7 @@
 target_sources(libNeuralNet PRIVATE 
-    ${CMAKE_CURRENT_SOURCE_DIR}/model.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/stats.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/variance.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/chessUtils.cpp
+
 )
 
 # Make sure the compiler can find include files for our libNeuralNet library

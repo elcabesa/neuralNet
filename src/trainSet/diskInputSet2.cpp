@@ -9,6 +9,7 @@
 #include "diskInputSet2.h"
 #include "labeledExample.h"
 #include "dense.h"
+#include "chessUtils.h"
 
 DiskInputSet2::DiskInputSet2(const std::string path, unsigned int inputSize, unsigned int batchsize):
     _path(path),
@@ -55,13 +56,21 @@ const std::vector<std::shared_ptr<LabeledExample>>& DiskInputSet2::validationSet
     
 }
 
-const std::vector<std::shared_ptr<LabeledExample>>& DiskInputSet2::batch()const {    
+const std::vector<std::shared_ptr<LabeledExample>>& DiskInputSet2::batch() const {    
     _batch.clear();
     
     unsigned int count = 0;
     bool finish = false;
     while(!finish && count < _batchsize){
         auto ex = _parseLine(_ss, finish);
+    /*
+        //accumulator += ex.label();
+        accumulator += std::pow((ex.label() - 68), 2.0);
+        ++counter;
+        std::cout << sqrt(accumulator / counter) << std::endl;*/
+        /*_varCal.addValue(ex.label());
+        _varCal.print();*/
+
         if(finish) {
             _ss.close();
             ++_n;
@@ -119,24 +128,16 @@ LabeledExample DiskInputSet2::_parseLine(std::ifstream& ss, bool& finish) const 
 }
 
 std::shared_ptr<Input> DiskInputSet2::_getFeatures(const char * const buf, unsigned int& index) const {
-    std::string x = "";
+    std::string fen;
     std::vector<unsigned int> inVec = {};
-    char temp;
-    do {
+    char temp = buf[index++];
+    while(temp != '}') {
+        fen += temp;
         temp = buf[index++];
-        while(temp != ',' && temp != '}') {
-            x += temp;
-            temp = buf[index++];
-        }
-        if(x != "") {
-            assert((unsigned int)std::stoi(x)<_inputSize);
-            //std::cout<<x<<std::endl;
-            inVec.push_back(std::stoi(x));
-            
-        }
-        x= "";
-    }while(temp != '}');
-    std::shared_ptr<Input> feature(new SparseInput(_inputSize, inVec));
+    }
+    std::vector<unsigned int> features = parseFen(fen);
+    std::shared_ptr<Input> feature(new SparseInput(_inputSize, features));
+    //feature->print();
     return feature;
 }
 

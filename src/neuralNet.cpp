@@ -30,14 +30,14 @@ void getInputSet(DiskInputSet2& inSet) {
     std::cout<<"done"<<std::endl;
 }
 
-Model createModel(double stdDev) {
+Model createModel(double stdDev, double scaling) {
     std::cout<<"creating model"<<std::endl;
     
-    Model m;
-    m.addLayer(std::make_unique<ParallelDenseLayer>(2, 40960, 256, ActivationFactory::create(Activation::type::relu), 255, 16320, 16, stdDev));
-    m.addLayer(std::make_unique<DenseLayer>(512,32, ActivationFactory::create(Activation::type::relu),255, 256, 32));
-    m.addLayer(std::make_unique<DenseLayer>(32,32, ActivationFactory::create(Activation::type::relu),255, 256, 32));
-    m.addLayer(std::make_unique<DenseLayer>(32, 1, ActivationFactory::create(Activation::type::linear),0, 64, 32));
+    Model m(scaling);
+    m.addLayer(std::make_unique<ParallelDenseLayer>(2, 41600, 256, ActivationFactory::create(Activation::type::relu), 127.0, stdDev));
+    m.addLayer(std::make_unique<DenseLayer>(512,32, ActivationFactory::create(Activation::type::relu), 1.0));
+    m.addLayer(std::make_unique<DenseLayer>(32,32, ActivationFactory::create(Activation::type::relu), 1.0));
+    m.addLayer(std::make_unique<DenseLayer>(32, 1, ActivationFactory::create(Activation::type::linear), 1.0));
     
     std::cout<<"done"<<std::endl;
     
@@ -60,6 +60,7 @@ int main(int argc, const char*argv[]) {
         ("s,batchSize", "batchSize", cxxopts::value<unsigned int>()->default_value("30"))
         ("c,decimation", "decimation", cxxopts::value<unsigned int>()->default_value("10000"))
         ("q,quantization", "quantization #", cxxopts::value<unsigned int>()->default_value("50"))
+        ("i,labelScaling", "labelScaling", cxxopts::value<unsigned int>()->default_value("30000"))
 
         ("help", "Print help")
         ("print", "print validation error", cxxopts::value<unsigned int>()->default_value("30"))
@@ -87,7 +88,7 @@ int main(int argc, const char*argv[]) {
     if (result.count("stdDev")) {
         stdDev = result["stdDev"].as<double>();
     }
-    auto m = createModel(stdDev);
+    auto m = createModel(stdDev, result["labelScaling"].as<unsigned int>());
     
     if (result["randomize"].as<bool>()) {
         m.randomizeParams();
@@ -98,7 +99,7 @@ int main(int argc, const char*argv[]) {
         m.serialize(nnFile);
         nnFile.close();
         std::cout<<"done"<<std::endl;
-        return 0;
+        //return 0;
     }
     
     if (result.count("nPath")) {

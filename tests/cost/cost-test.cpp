@@ -24,3 +24,12 @@ TEST(costTest, derivate) {
     
     ASSERT_DOUBLE_EQ(c.derivate(500, -500), 1000);
 }
+
+TEST(costTest, derivate2) {
+    double epsilon = 1e-8;
+    Cost c;
+    double x1 = c.calc(526, 1122);
+    double x2 = c.calc(526 + epsilon, 1122);
+
+    ASSERT_NEAR(c.derivate(526,1122), (x2-x1)/epsilon, 1e-5);
+}

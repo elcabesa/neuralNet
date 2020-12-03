@@ -3,6 +3,7 @@
 
 class Model;
 class InputSet;
+class PedoneCheck;
 
 class GradientDescend {
 public:
@@ -23,13 +24,16 @@ private:
     void _save(const unsigned int pass);
     
     double _min;
-    double _accumulatorLoss;
+    //double _PedoneAccumulatorLoss;
+    double _VajoletAccumulatorLoss;
     unsigned int _count;
     bool _quantization;
     unsigned int _quantizationPass;
     bool _rmsProp;
-    double _totalLoss;
-    unsigned long long int _totalCount;
+    //double _totalLoss;
+    //unsigned long long int _totalCount;
+
+    //PedoneCheck* _pedone = nullptr;
     
 };
 

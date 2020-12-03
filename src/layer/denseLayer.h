@@ -12,47 +12,32 @@ class Activation;
 
 class DenseLayer: public Layer {
 public:
-    DenseLayer(const unsigned int inputSize, const unsigned int outputSize, std::shared_ptr<Activation> act, unsigned int outScale, unsigned int weightScale, const unsigned int accumulatorBits, const double stdDev = 0.0);
+    DenseLayer(const unsigned int inputSize, const unsigned int outputSize, std::shared_ptr<Activation> act, const double outScaling, const double stdDev = 0.0);
     ~DenseLayer();
     
     void propagate(const Input& input);
     void printParams() const;
     void randomizeParams();
-    void backwardCalcBiasGradient(const std::vector<double>& h);
-    void backwardCalcWeightGradient(const Input& input);
+    void backwardPropagate(const std::vector<double>& h, const Input& input);
+    
     std::vector<double> backPropHelper() const;
     
     void resetSum();
-    void accumulateGradients(const Input& input);
-    
-    std::vector<double>& bias();
-    std::vector<double>& weight();
-    
-    void consolidateResult();
-    
+
     double getBiasSumGradient(unsigned int index) const;
     double getWeightSumGradient(unsigned int index) const;
     
     void upgradeBias(double beta, double learnRate, bool rmsprop = true);
     void upgradeWeight(double beta, double learnRate, double regularization, bool rmsprop = true);
 
-    double getQuantizedWeight(unsigned int) const;
-    
-    unsigned int _calcWeightIndex(const unsigned int i, const unsigned int o) const;
-    
-    void serialize(std::ofstream& ss) const;
-    bool deserialize(std::ifstream& ss);
-
     void printMinMax();
     void setQuantization(bool q);
+
+    void serialize(std::ofstream& ss) const;
+    bool deserialize(std::ifstream& ss);
     
 private:
-    std::vector<double> _bias;
-    std::vector<double> _weight;
-    //std::vector<double> _quantizedWeight;
-
     std::vector<double> _netOutput;
-    std::shared_ptr<Activation> _act;
 
     std::vector<double> _biasGradient;
     std::vector<double> _weightGradient;
@@ -65,15 +50,17 @@ private:
     
     std::set<unsigned int> _activeFeature;
     
-    void calcNetOut(const Input& input);
-    void calcOut();
+    void _calcNetOut(const Input& input);
+    void _calcOut();
+    double _getQuantizedWeight(unsigned int) const;
+    double _getQuantizedBias(unsigned int) const;
+    unsigned int _calcWeightIndex(const unsigned int i, const unsigned int o) const;
+    void _backwardCalcBiasGradient(const std::vector<double>& h);
+    void _backwardCalcWeightGradient(const Input& input);
+    void _accumulateGradients(const Input& input);
 
     double _min = 1e8;
     double _max = -1e8;
-
-    //void _quantizeWeight();
-
-    unsigned int _outputShift;
 };
 
 #endif  

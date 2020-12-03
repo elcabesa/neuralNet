@@ -1,13 +1,16 @@
 #ifndef _LAYER_H
 #define _LAYER_H
 
-#include <iostream>
 #include <fstream>
+#include <iostream>
+#include <memory>
+
+#include "activation.h"
 #include "dense.h"
 
 class Layer {
 public:
-    Layer(const unsigned int inputSize, const unsigned int outputSize, unsigned int outScale, unsigned int weightScale, const unsigned int accumulatorBits, const double stdDev);
+    Layer(const unsigned int inputSize, const unsigned int outputSize, const double stdDev, std::shared_ptr<Activation> act);
     virtual ~Layer();
     
     unsigned int getInputSize() const;
@@ -19,16 +22,13 @@ public:
     virtual void propagate(const Input& input) = 0;
     virtual void printParams() const = 0;
     virtual void randomizeParams() = 0;
-    virtual void backwardCalcBiasGradient(const std::vector<double>& h) = 0;
-    virtual void backwardCalcWeightGradient(const Input& input) = 0;
+    virtual void backwardPropagate(const std::vector<double>& h, const Input& input) = 0;
     virtual std::vector<double> backPropHelper() const = 0;
     
     virtual void resetSum() = 0;
-    virtual void accumulateGradients(const Input& input) = 0;
     
-    virtual std::vector<double>& bias() = 0;
-    virtual std::vector<double>& weight() = 0;
-    
+    std::vector<double>& bias();
+    std::vector<double>& weight();
     
     virtual double getBiasSumGradient(unsigned int index) const = 0;
     virtual double getWeightSumGradient(unsigned int index) const = 0;
@@ -41,7 +41,9 @@ public:
 
     virtual void printMinMax() = 0;
 
-    virtual void setQuantization(bool q) = 0;
+    void setQuantization(bool q);
+
+    Activation::type getActivatinType() const;
 
 protected:
     unsigned int _inputSize;
@@ -49,9 +51,11 @@ protected:
     DenseInput _output;
     const double _stdDev;
     bool _quantization;
-    unsigned int _outScale;
-    unsigned int _weightScale;
-    unsigned int _accumulatorBits;
+
+    std::shared_ptr<Activation> _act;
+
+    std::vector<double> _bias;
+    std::vector<double> _weight;
     
 };
 

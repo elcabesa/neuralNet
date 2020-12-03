@@ -9,10 +9,10 @@
 
 TEST(modelTest, layers) {
     Model m;
-    m.addLayer(std::make_unique<ParallelDenseLayer>(2, 40960, 256, ActivationFactory::create(Activation::type::linear), 1, 1));
-    m.addLayer(std::make_unique<DenseLayer>(512,32, ActivationFactory::create(Activation::type::relu), 1, 1));
-    m.addLayer(std::make_unique<DenseLayer>(32,32, ActivationFactory::create(Activation::type::relu), 1, 1));
-    m.addLayer(std::make_unique<DenseLayer>(32, 1, ActivationFactory::create(Activation::type::linear), 1, 1));
+    m.addLayer(std::make_unique<ParallelDenseLayer>(2, 40960, 256, ActivationFactory::create(Activation::type::linear), 16, 1.0));
+    m.addLayer(std::make_unique<DenseLayer>(512,32, ActivationFactory::create(Activation::type::relu), 32, 1.0));
+    m.addLayer(std::make_unique<DenseLayer>(32,32, ActivationFactory::create(Activation::type::relu), 32, 1.0));
+    m.addLayer(std::make_unique<DenseLayer>(32, 1, ActivationFactory::create(Activation::type::linear), 32, 1.0));
     
     ASSERT_EQ(m.getLayerCount(),4);
     
@@ -32,15 +32,15 @@ TEST(modelTest, layers) {
 
 TEST(modelTest, wrongSize) {
     Model m;
-    m.addLayer(std::make_unique<DenseLayer>(2, 2, ActivationFactory::create(Activation::type::relu), 1, 1));
-    ASSERT_EXIT(m.addLayer(std::make_unique<DenseLayer>(23,1, ActivationFactory::create(Activation::type::linear), 1, 1)),::testing::ExitedWithCode(0),"");
+    m.addLayer(std::make_unique<DenseLayer>(2, 2, ActivationFactory::create(Activation::type::relu), 1, 1.0));
+    ASSERT_EXIT(m.addLayer(std::make_unique<DenseLayer>(23,1, ActivationFactory::create(Activation::type::linear), 1, 1.0)),::testing::ExitedWithCode(0),"");
 }
 
 
 TEST(modelTest, forwardPass) {
     Model m;
-    m.addLayer(std::make_unique<DenseLayer>(2, 2, ActivationFactory::create(Activation::type::relu), 1, 1));
-    m.addLayer(std::make_unique<DenseLayer>(2, 1, ActivationFactory::create(Activation::type::linear), 1, 1));
+    m.addLayer(std::make_unique<DenseLayer>(2, 2, ActivationFactory::create(Activation::type::relu), 16, 1.0));
+    m.addLayer(std::make_unique<DenseLayer>(2, 1, ActivationFactory::create(Activation::type::linear), 16, 1.0));
     DenseInput in({0.25, 0.17});
     
     {
@@ -76,8 +76,8 @@ TEST(modelTest, forwardPass) {
 
 TEST(modelTest, forwardPassRelu) {
     Model m;
-    m.addLayer(std::make_unique<DenseLayer>(2, 2, ActivationFactory::create(Activation::type::relu), 1, 1));
-    m.addLayer(std::make_unique<DenseLayer>(2,1, ActivationFactory::create(Activation::type::relu), 1, 1));
+    m.addLayer(std::make_unique<DenseLayer>(2, 2, ActivationFactory::create(Activation::type::relu), 16, 1.0));
+    m.addLayer(std::make_unique<DenseLayer>(2,1, ActivationFactory::create(Activation::type::relu), 16, 1.0));
     DenseInput in({0.25, 0.17});
     
     {
@@ -113,10 +113,10 @@ TEST(modelTest, forwardPassRelu) {
 
 TEST(modelTest, calcLoss) {
     Model m;
-    m.addLayer(std::make_unique<DenseLayer>(2, 2, ActivationFactory::create(Activation::type::relu), 1, 1));
-    m.addLayer(std::make_unique<DenseLayer>(2,1, ActivationFactory::create(Activation::type::relu), 1, 1));
+    m.addLayer(std::make_unique<DenseLayer>(2, 2, ActivationFactory::create(Activation::type::relu), 16, 1.0));
+    m.addLayer(std::make_unique<DenseLayer>(2,1, ActivationFactory::create(Activation::type::relu), 16, 2.0));
     std::shared_ptr<Input> in(new DenseInput({2.5, 1.7}));
-    LabeledExample le(std::move(in), 72000);
+    LabeledExample le(std::move(in), 7.2);
     
     m.getLayer(0).bias() = {0.2, -0.3};
     m.getLayer(1).bias() = {0.5};
@@ -124,13 +124,13 @@ TEST(modelTest, calcLoss) {
     m.getLayer(0).weight() = {0.2, 0.4, -0.2, 1.7};
     m.getLayer(1).weight() = {1.02, -0.2};
     
-    ASSERT_DOUBLE_EQ(m.calcLoss(le), 21.3725912402);
+    ASSERT_DOUBLE_EQ(m.calcLoss(le), 25.38566258);
 }
 
 TEST(modelTest, calcTotalLoss) {
     Model m;
-    m.addLayer(std::make_unique<DenseLayer>(2, 2, ActivationFactory::create(Activation::type::relu), 1, 1));
-    m.addLayer(std::make_unique<DenseLayer>(2,1, ActivationFactory::create(Activation::type::relu), 1, 1));
+    m.addLayer(std::make_unique<DenseLayer>(2, 2, ActivationFactory::create(Activation::type::relu), 16, 1.0));
+    m.addLayer(std::make_unique<DenseLayer>(2,1, ActivationFactory::create(Activation::type::relu), 16, 1.0));
     
     m.getLayer(0).bias() = {0.2, -0.3};
     m.getLayer(1).bias() = {0.5};
@@ -175,8 +175,8 @@ TEST(modelTest, calcTotalLoss) {
 
 TEST(modelTest, calcLossGradient) {
     Model m;
-    m.addLayer(std::make_unique<DenseLayer>(2, 2, ActivationFactory::create(Activation::type::linear), 1, 1));
-    m.addLayer(std::make_unique<DenseLayer>(2, 1, ActivationFactory::create(Activation::type::linear), 1, 1));
+    m.addLayer(std::make_unique<DenseLayer>(2, 2, ActivationFactory::create(Activation::type::linear), 16, 3.0));
+    m.addLayer(std::make_unique<DenseLayer>(2, 1, ActivationFactory::create(Activation::type::linear), 16, 2.0));
     
     m.getLayer(0).bias() = {0.2, -0.3};
     m.getLayer(1).bias() = {0.5};
@@ -223,8 +223,8 @@ TEST(modelTest, calcLossGradient) {
 
 TEST(modelTest, calcLossGradientRelu) {
     Model m;
-    m.addLayer(std::make_unique<DenseLayer>(2, 2, ActivationFactory::create(Activation::type::relu), 1, 1));
-    m.addLayer(std::make_unique<DenseLayer>(2, 1, ActivationFactory::create(Activation::type::linear), 1, 1));
+    m.addLayer(std::make_unique<DenseLayer>(2, 2, ActivationFactory::create(Activation::type::relu), 16, 4.0));
+    m.addLayer(std::make_unique<DenseLayer>(2, 1, ActivationFactory::create(Activation::type::linear), 16, 2.0));
     
     m.getLayer(0).bias() = {0.2, -0.3};
     m.getLayer(1).bias() = {0.5};
@@ -285,10 +285,10 @@ TEST(modelTest, calcLossGradientRelu) {
 TEST(modelTest, calcLossGradientComplex) {
     Model m;
 
-    m.addLayer(std::make_unique<ParallelDenseLayer>(2, 2, 2, ActivationFactory::create(Activation::type::linear), 1, 1));
-    m.addLayer(std::make_unique<DenseLayer>(4, 2, ActivationFactory::create(Activation::type::relu), 1, 1));
-    m.addLayer(std::make_unique<DenseLayer>(2, 2, ActivationFactory::create(Activation::type::relu), 1, 1));
-    m.addLayer(std::make_unique<DenseLayer>(2, 1, ActivationFactory::create(Activation::type::linear), 1, 1));
+    m.addLayer(std::make_unique<ParallelDenseLayer>(2, 2, 2, ActivationFactory::create(Activation::type::linear), 16, 7.0));
+    m.addLayer(std::make_unique<DenseLayer>(4, 2, ActivationFactory::create(Activation::type::relu), 16, 8.0));
+    m.addLayer(std::make_unique<DenseLayer>(2, 2, ActivationFactory::create(Activation::type::relu), 16, 6.0));
+    m.addLayer(std::make_unique<DenseLayer>(2, 1, ActivationFactory::create(Activation::type::linear), 16, 2.0));
     
     m.randomizeParams();
     
@@ -331,75 +331,36 @@ TEST(modelTest, calcLossGradientComplex) {
         for(unsigned int l = 0; l < m.getLayerCount(); ++l) {
             auto& actualLayer = m.getLayer(l);
             //std::cout<<"layer "<<l<<std::endl;
-            ParallelDenseLayer*  pdl = dynamic_cast<ParallelDenseLayer*>(&actualLayer);
-            if(!pdl) {
-                for(unsigned int i = 0; auto& b : actualLayer.bias()) {
-                    //std::cout<<"\tbias "<<i<<std::endl;
-                    double grad = 0.0;
-                    for(auto& e :examples) {
-                        auto originalB = b;
-                        b = originalB + delta;
-                        auto lplus = m.calcLoss(*(e));
-                        b = originalB - delta;
-                        auto lminus = m.calcLoss(*(e));
-                        b = originalB;
-                        grad += (lplus - lminus)/(2.0 * delta);
-                    }
-                    ASSERT_NEAR(actualLayer.getBiasSumGradient(i), grad, 1e-6);
-                    ++i;
+            for(unsigned int i = 0; auto& b : actualLayer.bias()) {
+                double grad = 0.0;
+                for(auto& e :examples) {
+                    auto originalB = b;
+                    b = originalB + delta;
+                    auto lplus = m.calcLoss(*(e));
+                    b = originalB - delta;
+                    auto lminus = m.calcLoss(*(e));
+                    b = originalB;
+                    grad += (lplus - lminus)/(2.0 * delta);
                 }
+                //std::cout<<"\tbias "<<i<<" "<<actualLayer.getBiasSumGradient(i)<<" "<<grad<<std::endl;
+                ASSERT_NEAR(actualLayer.getBiasSumGradient(i), grad, 1e-1);
+                ++i;
+            }
 
-                for(unsigned int i = 0; auto& w : actualLayer.weight()) {
-                    //std::cout<<"\tweight "<<i<<std::endl;
-                    double grad = 0;
-                    for(auto& e :examples) {
-                        auto originalW = w;
-                        w = originalW + delta;
-                        auto lplus = m.calcLoss(*(e));
-                        w = originalW - delta;
-                        auto lminus = m.calcLoss(*(e));
-                        w = originalW;
-                        grad += (lplus - lminus)/(2.0 * delta);
-                    }
-                    ASSERT_NEAR(actualLayer.getWeightSumGradient(i), grad, 1e-6);
-                    ++i;
+            for(unsigned int i = 0; auto& w : actualLayer.weight()) {
+                double grad = 0;
+                for(auto& e :examples) {
+                    auto originalW = w;
+                    w = originalW + delta;
+                    auto lplus = m.calcLoss(*(e));
+                    w = originalW - delta;
+                    auto lminus = m.calcLoss(*(e));
+                    w = originalW;
+                    grad += (lplus - lminus)/(2.0 * delta);
                 }
-            } else {
-                for(unsigned int n = 0; n < pdl->getLayerNumber(); ++n) {
-                    //std::cout<<"\tparallel layer "<<n<<std::endl;
-                    auto & layer = pdl->getLayer(n);
-                    for(unsigned int i = 0; auto& b : layer.bias()) {
-                        //std::cout<<"\t\tbias "<<i<<std::endl;
-                        double grad = 0.0;
-                        for(auto& e :examples) {
-                            auto originalB = b;
-                            b = originalB + delta;
-                            auto lplus = m.calcLoss(*(e));
-                            b = originalB - delta;
-                            auto lminus = m.calcLoss(*(e));
-                            b = originalB;
-                            grad += (lplus - lminus)/(2.0 * delta);
-                        }
-                        ASSERT_NEAR(layer.getBiasSumGradient(i), grad, 1e-6);
-                        ++i;
-                    }
-
-                    for(unsigned int i = 0; auto& w : layer.weight()) {
-                        //std::cout<<"\t\tweight "<<i<<std::endl;
-                        double grad = 0;
-                        for(auto& e :examples) {
-                            auto originalW = w;
-                            w = originalW + delta;
-                            auto lplus = m.calcLoss(*(e));
-                            w = originalW - delta;
-                            auto lminus = m.calcLoss(*(e));
-                            w = originalW;
-                            grad += (lplus - lminus)/(2.0 * delta);
-                        }
-                        ASSERT_NEAR(layer.getWeightSumGradient(i), grad, 1e-6);
-                        ++i;
-                    }
-                }
+                //std::cout<<"\tweight "<<i<<" "<<actualLayer.getWeightSumGradient(i)<<" "<<grad<<std::endl;
+                ASSERT_NEAR(actualLayer.getWeightSumGradient(i), grad, 1e-1);
+                ++i;
             }
         }  
     }

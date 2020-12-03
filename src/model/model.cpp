@@ -8,8 +8,9 @@
 #include "inputSet.h"
 #include "model.h"
 #include "parallelDenseLayer.h"
+#include "stats.h"
 
-Model::Model():_totalLoss{0}, _avgLoss{0} {}
+Model::Model(double outputScaling):_totalLoss{0}, _avgLoss{0}, _outputScaling(outputScaling) {}
 
 void Model::addLayer(std::unique_ptr<Layer> l) {
     if(_layers.size() > 0 && _layers.back()->getOutputSize() != l->getInputSize()) {
@@ -48,13 +49,14 @@ const Input& Model::forwardPass(const Input& input, bool verbose /* = false */) 
 double Model::calcLoss(const LabeledExample& le, bool verbose) {
     //std::cout<<"calcLoss"<<std::endl;
     auto& out = forwardPass(le.features());
-    auto c = cost.calc(out.get(0), le.label());
-    if (verbose) { std::cerr<< out.get(0) <<","<<le.label()<<","<<c<<std::endl;}
+    auto c = cost.calc(out.get(0), le.label() / _outputScaling);
+    if (verbose) { std::cerr<< out.get(0) <<","<<le.label() / _outputScaling<<","<<c<<std::endl;}
     return c;
 }
 
 double Model::calcAvgLoss(const std::vector<std::shared_ptr<LabeledExample>>& input, bool verbose, unsigned int count/* = 30*/) {
     //std::cout<<"calcAvgLoss"<<std::endl;
+    Stats st(*this);
     double error = 0.0;
     unsigned int n = 0;
     //double avg = -0.271935;
@@ -62,12 +64,14 @@ double Model::calcAvgLoss(const std::vector<std::shared_ptr<LabeledExample>>& in
     for(auto& le: input) {
         //sum += std::pow((*le).label() -avg, 2.0);
         error += calcLoss(*le, verbose);
+        st.update();
         if(verbose && ++n >= count) {
             break;
         }
     }
+    st.print();
     //std::cout<<"std dev:"<< sqrt(sum/input.size());
-    return error / input.size();
+    return (_outputScaling * _outputScaling * error / input.size());
 }
 
 double Model::getAvgLoss() const {
@@ -77,33 +81,19 @@ double Model::getAvgLoss() const {
 void Model::calcLossGradient(const LabeledExample& le) {
     //std::cout<<"calcLossGradient"<<std::endl;
     auto& out = forwardPass(le.features());
-    _totalLoss += cost.calc(out.get(0), le.label());
+    _totalLoss += cost.calc(out.get(0), le.label() / _outputScaling);
     for (auto actualLayer = _layers.rbegin(); actualLayer!= _layers.rend(); ++actualLayer) {
-        
-        // todo uniformare
-        if(actualLayer == _layers.rbegin()) {
-            // todo manage multi output network
-            std::vector<double> h = {cost.derivate(out.get(0), le.label())};
-            (*actualLayer)->backwardCalcBiasGradient(h);
-        }
-        else {
-            auto PreviousLayer = actualLayer - 1;
-            auto h = (*PreviousLayer)->backPropHelper();
-            (*actualLayer)->backwardCalcBiasGradient(h);
-        }
-        
         auto nextLayer = actualLayer + 1;
-        if(nextLayer != _layers.rend()) {
-            const Input& input = (*nextLayer)->output();
-            (*actualLayer)->backwardCalcWeightGradient(input);
-            (*actualLayer)->accumulateGradients(input);
-        }
-        else {
-            const Input& input = le.features();
-            (*actualLayer)->backwardCalcWeightGradient(input);
-            (*actualLayer)->accumulateGradients(input);
-        }
         
+        std::vector<double> h;
+        if(actualLayer == _layers.rbegin()) {
+            h = {cost.derivate(out.get(0), le.label() / _outputScaling)};
+        } else {
+            h = (*(actualLayer - 1))->backPropHelper();  
+        }
+        const Input& input = (nextLayer != _layers.rend()? (*nextLayer)->output(): le.features());
+
+        (*actualLayer)->backwardPropagate(h, input);
     }
 }
 
@@ -116,10 +106,10 @@ void Model::calcTotalLossGradient(const std::vector<std::shared_ptr<LabeledExamp
         //std::cout<<"batch size "<<ex->features().getElementNumber()<<std::endl;
         calcLossGradient(*ex);
     }
-    _avgLoss = _totalLoss / input.size();
+    _avgLoss = _outputScaling * _outputScaling * _totalLoss / input.size();
 }
 
-#define VERSION "0001"
+#define VERSION "0004"
 void Model::serialize(std::ofstream& ss) const {
     ss<<"{V:"<<VERSION<<"}";
     ss<<"{";
@@ -151,7 +141,13 @@ Layer& Model::getLayer(unsigned int index) {
     assert(index < getLayerCount());
     return *(_layers[index]);
 }
-unsigned int Model::getLayerCount() {
+
+const Layer& Model::getLayer(unsigned int index) const {
+    assert(index < getLayerCount());
+    return *(_layers[index]);
+}
+
+unsigned int Model::getLayerCount() const {
     return _layers.size();
 }
 
@@ -190,97 +186,62 @@ void Model::clear() {
 }
 
 void Model::VerifyTotalLossGradient(const std::vector<std::shared_ptr<LabeledExample>>& input) {
-    const double delta = 0.00001;
+    const double delta = 1e-4;
     const double maxError = 1e-6;
+    const double maxRelError = 1e-4;
     //std::cout<<"eccomi"<<std::endl;
     for(unsigned int l = 0; l < getLayerCount(); ++l) {
         auto& actualLayer = getLayer(l);
         //std::cout<<"layer "<<l<<std::endl;
-        ParallelDenseLayer*  pdl = dynamic_cast<ParallelDenseLayer*>(&actualLayer);
-        if(!pdl) {
-            for(unsigned int i = 0; auto& b : actualLayer.bias()) {
-                //std::cout<<"\tbias "<<i<<std::endl;
-                std::cout<<"\rlayer "<<l<<" bias "<<i<<"\t\t";
-                double grad = 0.0;
-                for(auto& e :input) {
-                    auto originalB = b;
-                    b = originalB + delta;
-                    auto lplus = calcLoss(*(e));
-                    b = originalB - delta;
-                    auto lminus = calcLoss(*(e));
-                    b = originalB;
-                    grad += (lplus - lminus)/(2.0 * delta);
-                }
-                if(std::abs(actualLayer.getBiasSumGradient(i) - grad) > maxError) {
-                    std::cout<<"EEEEEEEERRRRRRORE"<<std::endl;
-                    exit(-1);
-                }
-                ++i;
+        
+        for(unsigned int i = 0; auto& b : actualLayer.bias()) {
+            //std::cout<<"\tbias "<<i<<std::endl;
+            //std::cout<<"\rlayer "<<l<<" bias "<<i<<"\t\t";
+            double grad = 0.0;
+            for(auto& e :input) {
+                auto originalB = b;
+                b = originalB + delta;
+                auto lplus = calcLoss(*(e));
+                b = originalB - delta;
+                auto lminus = calcLoss(*(e));
+                b = originalB;
+                grad += (lplus - lminus)/(2.0 * delta);
             }
+            double abserr = std::abs(actualLayer.getBiasSumGradient(i) - grad);
+            if( std::abs(abserr/grad)>maxRelError && abserr > maxError  ) {
+                std::cout<<"EEEEEEEERRRRRRORE"<<std::endl;
+                std::cout<<"layer "<<l<<" bias "<<i<<std::endl;
+                std::cout<<actualLayer.getBiasSumGradient(i)<<std::endl;
+                std::cout<<grad<<std::endl;
+                exit(-1);
+            }
+            ++i;
+        }
+        //std::cout<<std::endl;
 
-            for(unsigned int i = 0; auto& w : actualLayer.weight()) {
-                //std::cout<<"\tweight "<<i<<std::endl;
-                std::cout<<"\rlayer "<<l<<" weight "<<i<<"\t\t";
-                double grad = 0.0;
-                for(auto& e :input) {
-                    auto originalW = w;
-                    w = originalW + delta;
-                    auto lplus = calcLoss(*(e));
-                    w = originalW - delta;
-                    auto lminus = calcLoss(*(e));
-                    w = originalW;
-                    grad += (lplus - lminus)/(2.0 * delta);
-                }
-                if(std::abs(actualLayer.getWeightSumGradient(i) - grad) > maxError) {
-                    std::cout<<"EEEEEEEERRRRRRORE"<<std::endl;
-                    exit(-1);
-                }
-                ++i;
+        for(unsigned int i = 0; auto& w : actualLayer.weight()) {
+            //std::cout<<"\tweight "<<i<<std::endl;
+            //if( i%100 ==0)std::cout<<"\rlayer "<<l<<" weight "<<i<<"\t\t";
+            double grad = 0.0;
+            for(auto& e :input) {
+                auto originalW = w;
+                w = originalW + delta;
+                auto lplus = calcLoss(*(e));
+                w = originalW - delta;
+                auto lminus = calcLoss(*(e));
+                w = originalW;
+                grad += (lplus - lminus)/(2.0 * delta);
             }
-        } else {
-            for(unsigned int n = 0; n < pdl->getLayerNumber(); ++n) {
-                //std::cout<<"\tparallel layer "<<n<<std::endl;
-                auto & layer = pdl->getLayer(n);
-                for(unsigned int i = 0; auto& b : layer.bias()) {
-                    //std::cout<<"\t\tbias "<<i<<std::endl;
-                    std::cout<<"\rlayer "<<l<<" subLayer "<<n<<" bias "<<i<<"\t\t";
-                    double grad = 0.0;
-                    for(auto& e :input) {
-                        auto originalB = b;
-                        b = originalB + delta;
-                        auto lplus = calcLoss(*(e));
-                        b = originalB - delta;
-                        auto lminus = calcLoss(*(e));
-                        b = originalB;
-                        grad += (lplus - lminus)/(2.0 * delta);
-                    }
-                    if(std::abs(layer.getBiasSumGradient(i) - grad) > maxError) {
-                        std::cout<<"EEEEEEEERRRRRRORE"<<std::endl;
-                        exit(-1);
-                    }
-                    ++i;
-                }
-
-                for(unsigned int i = 0; auto& w : layer.weight()) {
-                    //std::cout<<"\t\tweight "<<i<<std::endl;
-                    std::cout<<"\rlayer "<<l<<" subLayer "<<n<<" weight "<<i<<"\t\t";
-                    double grad = 0.0;
-                    for(auto& e :input) {
-                        auto originalW = w;
-                        w = originalW + delta;
-                        auto lplus = calcLoss(*(e));
-                        w = originalW - delta;
-                        auto lminus = calcLoss(*(e));
-                        w = originalW;
-                        grad += (lplus - lminus)/(2.0 * delta);
-                    }
-                    if(std::abs(layer.getWeightSumGradient(i) - grad) > maxError) {
-                        std::cout<<"EEEEEEEERRRRRRORE"<<std::endl;
-                        exit(-1);
-                    }
-                    ++i;
-                }
+            double abserr = std::abs(actualLayer.getWeightSumGradient(i) - grad);
+            if( std::abs(abserr/grad)>maxRelError && abserr > maxError  ) {
+                std::cout<<"EEEEEEEERRRRRRORE"<<std::endl;
+                std::cout<<"layer "<<l<<" bias "<<i<<std::endl;
+                std::cout<<"weight "<<w<<std::endl;
+                std::cout<<actualLayer.getWeightSumGradient(i)<<std::endl;
+                std::cout<<grad<<std::endl;
+                exit(-1);
             }
+            ++i;
         }
     }
     std::cout<<std::endl;
