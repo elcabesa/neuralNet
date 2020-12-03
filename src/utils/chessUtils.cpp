@@ -84,7 +84,7 @@ static inline tSquare iterateBit(bitMap& b)
 }
 
 unsigned int turnOffset(bool myTurn) {
-    return myTurn ? 0 : 40960;
+    return myTurn ? 0 : 41600;
 }
 
 unsigned int whiteFeature(unsigned int  piece, tSquare pSquare, tSquare ksq, eNextMove turn) {
@@ -94,6 +94,16 @@ unsigned int whiteFeature(unsigned int  piece, tSquare pSquare, tSquare ksq, eNe
 
 unsigned int blackFeature(unsigned int  piece, tSquare pSquare, tSquare ksq, eNextMove turn) {
     unsigned int f = piece + (10 * (pSquare ^ 56)) + (640 * (ksq ^ 56))+ turnOffset(turn == eNextMove::blackTurn);
+    return f;
+}
+
+unsigned int whiteFeaturePSQ(unsigned int  piece, tSquare pSquare, eNextMove turn) {
+    unsigned int f = piece + (10 * pSquare) + 40960 + turnOffset(turn == eNextMove::whiteTurn);
+    return f;
+}
+
+unsigned int blackFeaturePSQ(unsigned int  piece, tSquare pSquare, eNextMove turn) {
+    unsigned int f = piece + (10 * (pSquare ^ 56)) + 40960 + turnOffset(turn == eNextMove::blackTurn);
     return f;
 }
 
@@ -120,6 +130,7 @@ void createBlackFeatures(bitMap* bitboards, std::vector<unsigned int>& fl, eNext
         {
             tSquare pieceSq = iterateBit(b);
             fl.push_back(blackFeature(piece, pieceSq, bkSq, turn));
+			fl.push_back(blackFeaturePSQ(piece, pieceSq, turn));
         }
     }
 }
@@ -146,6 +157,7 @@ void createWhiteFeatures(bitMap* bitboards, std::vector<unsigned int>& fl, eNext
         {
             tSquare pieceSq = iterateBit(b);
             fl.push_back(whiteFeature(piece, pieceSq, wkSq, turn));
+			fl.push_back(whiteFeaturePSQ(piece, pieceSq, turn));
         }
     }
 }

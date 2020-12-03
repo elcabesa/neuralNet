@@ -5,5 +5,6 @@
 #include <string>
 
 std::vector<unsigned int> parseFen(const std::string& fen);
+void validateTransformation();
 
 #endif  

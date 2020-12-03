@@ -71,13 +71,16 @@ void ParallelDenseLayer::serialize(std::ofstream& ss) const{
 
     min = 1e8;
     max = -1e8;
-    for (auto & w: _weight) {
-        double _w = w * _quantizerOuputScale;
-        max = std::max(_w, max);
-        min = std::min(_w, min);
-        ww.d = std::round(_w);
-        ss.write(ww.c, 1);
-        //ss<<", ";
+    for(unsigned int in = 0; in < 40960; ++in) {
+        unsigned int inKPSQ = in;
+        unsigned int inPSQ = (in % 640) + 40960;
+        for(unsigned int out = 0; out < _layerOutputSize; ++out) {
+            double _w = (_weight[_calcWeightIndex(inKPSQ, out)] + _weight[_calcWeightIndex(inPSQ, out)]) * _quantizerOuputScale;
+            max = std::max(_w, max);
+            min = std::min(_w, min);
+            ww.d = std::round(_w);
+            ss.write(ww.c, 1);
+        }
     }
     std::cout<<" input layer weight min: "<<min<< " max: "<< max<<std::endl;
 
@@ -103,11 +106,18 @@ bool ParallelDenseLayer::deserialize(std::ifstream& ss) {
         //if(ss.get() != ' ') {std::cout<<"DenseLayer missing space"<<std::endl;return false;}
     }
     if(ss.get() != '\n') {std::cout<<"DenseLayer missing line feed"<<std::endl;return false;}
-    for (auto & w: _weight) {
-        ss.read(ww.c, 1);
-        w = ww.d / _quantizerOuputScale;
-        //if(ss.get() != ',') {std::cout<<"DenseLayer missing ,"<<std::endl;return false;}
-        //if(ss.get() != ' ') {std::cout<<"DenseLayer missing space"<<std::endl;return false;}
+    for(unsigned int in = 0; in < _layerInputSize; ++in) {
+        for(unsigned int out = 0; out < _layerOutputSize; ++out) {
+             _weight[_calcWeightIndex(in, out)] = 0.0;
+        }
+    }
+    for(unsigned int in = 0; in < 40960; ++in) {
+        for(unsigned int out = 0; out < _layerOutputSize; ++out) {
+            ss.read(ww.c, 1);
+            _weight[_calcWeightIndex(in, out)] =  ww.d / _quantizerOuputScale;
+            //if(ss.get() != ',') {std::cout<<"DenseLayer missing ,"<<std::endl;return false;}
+            //if(ss.get() != ' ') {std::cout<<"DenseLayer missing space"<<std::endl;return false;}
+        }
     }
     if(ss.get() != '}') {std::cout<<"DenseLayer missing }"<<std::endl;return false;}
     if(ss.get() != '\n') {std::cout<<"DenseLayer missing line feed"<<std::endl;return false;}
